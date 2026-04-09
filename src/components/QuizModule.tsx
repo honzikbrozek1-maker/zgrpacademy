@@ -22,7 +22,7 @@ interface Props {
   onComplete: () => void;
 }
 
-export default function QuizModule({ questions, levelId, onComplete }: Props) {
+export default function QuizModule({ questions, onComplete }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -32,7 +32,6 @@ export default function QuizModule({ questions, levelId, onComplete }: Props) {
 
   const question = questions[currentIndex];
   const options = [question?.option_1, question?.option_2, question?.option_3, question?.option_4].filter(Boolean);
-  const isCorrect = selected === question?.correct_answer;
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   const handleSelect = async (optIndex: number) => {
@@ -44,14 +43,10 @@ export default function QuizModule({ questions, levelId, onComplete }: Props) {
       setCorrectCount(c => c + 1);
       // Award points
       if (user) {
-        await supabase.rpc('increment_points' as never, { user_id_param: user.id, points_param: 10 } as never).catch(() => {
-          // Fallback: update directly
-          supabase.from('profiles').select('total_points').eq('user_id', user.id).single().then(({ data }) => {
-            if (data) {
-              supabase.from('profiles').update({ total_points: data.total_points + 10 }).eq('user_id', user.id);
-            }
-          });
-        });
+        const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
+        if (prof) {
+          await supabase.from('profiles').update({ total_points: prof.total_points + 10 }).eq('user_id', user.id);
+        }
       }
     } else {
       // Save as failed quiz item for review
