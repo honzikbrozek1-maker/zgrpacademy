@@ -1,0 +1,206 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle } from 'lucide-react';
+
+interface Question {
+  id: string;
+  question_text: string;
+  option_1: string | null;
+  option_2: string | null;
+  option_3: string | null;
+  option_4: string | null;
+  correct_answer: number | null;
+}
+
+interface Props {
+  questions: Question[];
+  levelId: string;
+  passingScore: number;
+}
+
+export default function LevelTest({ questions, levelId, passingScore }: Props) {
+  const { user, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const [started, setStarted] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [finished, setFinished] = useState(false);
+
+  const question = questions[currentIndex];
+  const options = question ? [question.option_1, question.option_2, question.option_3, question.option_4].filter(Boolean) : [];
+  const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+
+  const handleSelect = (optNum: number) => {
+    setAnswers(a => ({ ...a, [currentIndex]: optNum }));
+  };
+
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(i => i + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(i => i - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    let correct = 0;
+    for (let i = 0; i < questions.length; i++) {
+      if (answers[i] === questions[i].correct_answer) {
+        correct++;
+      } else {
+        // Save failed questions for review
+        if (user) {
+          await supabase.from('review_items').upsert({
+            user_id: user.id,
+            question_id: questions[i].id,
+            confidence: 'unknown',
+            source: 'failed_quiz',
+          }, { onConflict: 'user_id,question_id' });
+        }
+      }
+    }
+
+    const score = Math.round((correct / questions.length) * 100);
+    const passed = score >= passingScore;
+
+    if (user) {
+      await supabase.from('user_progress').upsert({
+        user_id: user.id,
+        level_id: levelId,
+        completed: passed,
+        test_score: score,
+        completed_at: passed ? new Date().toISOString() : null,
+      }, { onConflict: 'user_id,level_id' });
+
+      if (passed) {
+        // Award bonus points
+        const { data: profile } = await supabase.from('profiles').select('total_points, current_level').eq('user_id', user.id).single();
+        if (profile) {
+          await supabase.from('profiles').update({
+            total_points: profile.total_points + 50,
+            current_level: profile.current_level + 1,
+          }).eq('user_id', user.id);
+        }
+      }
+      await refreshProfile();
+    }
+
+    setFinished(true);
+  };
+
+  if (!started) {
+    return (
+      <Card className="shadow-elevated">
+        <CardContent className="p-8 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full gradient-primary flex items-center justify-center">
+            <Trophy className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <h3 className="text-xl font-bold">Závěrečný test</h3>
+          <p className="text-muted-foreground">
+            Pro postup do dalšího levelu potřebujete minimálně {passingScore}% správných odpovědí.
+          </p>
+          <p className="text-sm text-muted-foreground">Počet otázek: {questions.length}</p>
+          <Button onClick={() => setStarted(true)} className="gradient-primary text-primary-foreground" disabled={questions.length === 0}>
+            Začít test <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (finished) {
+    let correct = 0;
+    for (let i = 0; i < questions.length; i++) {
+      if (answers[i] === questions[i].correct_answer) correct++;
+    }
+    const score = Math.round((correct / questions.length) * 100);
+    const passed = score >= passingScore;
+
+    return (
+      <Card className="shadow-elevated">
+        <CardContent className="p-8 text-center space-y-4">
+          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
+            {passed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
+          </div>
+          <h3 className="text-xl font-bold">{passed ? 'Gratulujeme!' : 'Bohužel neprojdete'}</h3>
+          <p className="text-2xl font-bold">{score}%</p>
+          <p className="text-muted-foreground">
+            {passed ? 'Úspěšně jste dokončili tento level! Nový level je odemčen.' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => navigate('/')}>
+              Zpět na Dashboard
+            </Button>
+            {!passed && (
+              <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); }} className="gradient-primary text-primary-foreground">
+                Zkusit znovu
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1" />
+      </div>
+
+      <Card className="shadow-card">
+        <CardContent className="p-6 space-y-6">
+          <h3 className="text-lg font-semibold">{question.question_text}</h3>
+          <div className="space-y-3">
+            {options.map((opt, i) => {
+              const optNum = i + 1;
+              const isSelected = answers[currentIndex] === optNum;
+              return (
+                <button
+                  key={i}
+                  className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  onClick={() => handleSelect(optNum)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-sm font-medium">
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <span className="flex-1">{opt}</span>
+                    {isSelected && <CheckCircle className="h-5 w-5 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+        </Button>
+        <div className="flex gap-2">
+          {currentIndex < questions.length - 1 ? (
+            <Button onClick={handleNext} disabled={!answers[currentIndex]} className="gradient-primary text-primary-foreground">
+              Další <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={Object.keys(answers).length < questions.length} className="gradient-primary text-primary-foreground">
+              Odevzdat test
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
