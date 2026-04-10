@@ -303,6 +303,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_admins: {
+        Args: never
+        Returns: {
+          display_name: string
+          user_id: string
+        }[]
+      }
       lookup_invite: {
         Args: { invite_code: string }
         Returns: {
