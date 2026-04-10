@@ -344,9 +344,22 @@ export default function AdminPanel() {
                   {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">Žádost byla zamítnuta.</span></>}
                 </div>
               ) : (
-                <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest}>
-                  <Send className="h-4 w-4" /> Požádat o admin přístup
-                </Button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Vyberte admina, kterému chcete žádost poslat:</label>
+                    <Select value={selectedTargetAdmin || ''} onValueChange={v => setSelectedTargetAdmin(v)}>
+                      <SelectTrigger><SelectValue placeholder="Vyberte admina..." /></SelectTrigger>
+                      <SelectContent>
+                        {adminList.map(a => (
+                          <SelectItem key={a.user_id} value={a.user_id}>{a.display_name || 'Admin'}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest} disabled={!selectedTargetAdmin}>
+                    <Send className="h-4 w-4" /> Požádat o admin přístup
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
