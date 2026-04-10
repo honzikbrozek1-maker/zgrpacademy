@@ -421,7 +421,7 @@ export default function AdminPanel() {
           <div>
             <label className="text-sm font-medium mb-1 block">Věta s vynechaným slovem</label>
             <Textarea
-              placeholder="Napište celou větu. Chybějící slovo napište do pole „Správná odpověď" níže."
+              placeholder={'Napište celou větu. Chybějící slovo napište do pole „Správná odpověď" níže.'}
               value={qForm.back_text}
               onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
             />

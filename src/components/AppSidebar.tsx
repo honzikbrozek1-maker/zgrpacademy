@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap, Volume2, VolumeX, Settings } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap, Volume2, VolumeX } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { isSoundEnabled, setSoundEnabled, getVolume, setVolume } from '@/lib/sounds';
 import { useState } from 'react';
