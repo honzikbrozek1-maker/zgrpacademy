@@ -18,11 +18,13 @@ export default function InvitePage() {
   useEffect(() => {
     const checkInvite = async () => {
       if (!code) { setStatus('invalid'); return; }
-      const { data } = await supabase.from('invite_links').select('*').eq('code', code).single();
-      if (!data) { setStatus('invalid'); return; }
-      if (data.used_by) { setStatus('used'); return; }
-      if (new Date(data.expires_at) < new Date()) { setStatus('invalid'); return; }
-      setInvite({ role: data.role });
+      // Use secure RPC to look up invite without exposing all invite data
+      const { data, error } = await supabase.rpc('lookup_invite', { invite_code: code });
+      if (error || !data || data.length === 0) { setStatus('invalid'); return; }
+      const inv = data[0];
+      if (inv.used_by) { setStatus('used'); return; }
+      if (new Date(inv.expires_at) < new Date()) { setStatus('invalid'); return; }
+      setInvite({ role: inv.role });
       setStatus('valid');
     };
     checkInvite();
@@ -30,11 +32,11 @@ export default function InvitePage() {
 
   const handleAccept = async () => {
     if (!user || !code) return;
-    // Mark invite as used
-    await supabase.from('invite_links').update({ used_by: user.id, used_at: new Date().toISOString() }).eq('code', code);
-    // Add role if admin
-    if (invite?.role === 'admin') {
-      await supabase.from('user_roles').upsert({ user_id: user.id, role: 'admin' }, { onConflict: 'user_id,role' });
+    // Use secure RPC to accept invite (server-side role assignment)
+    const { error } = await supabase.rpc('accept_invite', { invite_code: code });
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
     }
     toast({ title: 'Pozvánka přijata!' });
     navigate('/');
