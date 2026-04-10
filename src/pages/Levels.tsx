@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Lock, CheckCircle, ArrowRight } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
@@ -24,6 +23,7 @@ interface UserProgressRow {
 
 export default function Levels() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
 
@@ -58,15 +58,19 @@ export default function Levels() {
             const unlocked = isLevelUnlocked(level);
             const prog = getLevelProgress(level.id);
             return (
-              <Card key={level.id} className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}>
+              <Card
+                key={level.id}
+                className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
+                onClick={() => unlocked && navigate(`/level/${level.id}`)}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'gradient-primary' : 'bg-muted'}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
                         {prog?.completed ? (
                           <CheckCircle className="h-5 w-5 text-success" />
                         ) : unlocked ? (
-                          <span className="text-primary-foreground font-bold">{level.order_index}</span>
+                          <span className="text-primary font-bold">{level.order_index}</span>
                         ) : (
                           <Lock className="h-5 w-5 text-muted-foreground" />
                         )}
@@ -83,11 +87,7 @@ export default function Levels() {
                         </Badge>
                       )}
                       {unlocked && (
-                        <Link to={`/level/${level.id}`}>
-                          <Button size="sm" variant={prog?.completed ? 'outline' : 'default'} className={!prog?.completed ? 'gradient-primary text-primary-foreground' : ''}>
-                            {prog?.completed ? 'Opakovat' : 'Začít'} <ArrowRight className="ml-1 h-4 w-4" />
-                          </Button>
-                        </Link>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
                   </div>

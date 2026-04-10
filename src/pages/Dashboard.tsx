@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +25,7 @@ interface UserProgressRow {
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [reviewCount, setReviewCount] = useState(0);
@@ -66,7 +67,7 @@ export default function Dashboard() {
           <Card className="shadow-card relative">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="absolute top-2 left-2 text-muted-foreground hover:text-primary transition-colors z-10">
+                <button className="absolute top-2 right-2 text-muted-foreground hover:text-primary transition-colors z-10">
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </DialogTrigger>
@@ -107,8 +108,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                <Star className="h-5 w-5 text-accent" />
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Star className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
@@ -118,8 +119,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-secondary-foreground" />
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Dokončeno</p>
@@ -127,7 +128,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="shadow-card">
+          <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate('/review')}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
                 <RotateCcw className="h-5 w-5 text-warning" />
@@ -184,7 +185,11 @@ export default function Dashboard() {
               const unlocked = isLevelUnlocked(level);
               const prog = getLevelProgress(level.id);
               return (
-                <Card key={level.id} className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated'}`}>
+                <Card
+                  key={level.id}
+                  className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
+                  onClick={() => unlocked && navigate(`/level/${level.id}`)}
+                >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -203,9 +208,7 @@ export default function Dashboard() {
                           </Badge>
                         )}
                         {unlocked && (
-                          <Link to={`/level/${level.id}`}>
-                            <Button size="sm" variant="ghost"><ArrowRight className="h-4 w-4" /></Button>
-                          </Link>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         )}
                       </div>
                     </div>
