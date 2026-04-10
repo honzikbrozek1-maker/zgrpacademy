@@ -75,7 +75,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/account')}>
               <Link to="/account" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
                 {!collapsed && <span>{profile?.display_name || 'Můj účet'}</span>}
               </Link>
             </SidebarMenuButton>
