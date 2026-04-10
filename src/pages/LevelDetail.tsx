@@ -39,6 +39,7 @@ export default function LevelDetail() {
   const { levelId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { category, basePath } = useAppPath();
   const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
@@ -65,7 +66,7 @@ export default function LevelDetail() {
     if (isUuid) {
       levelQuery = supabase.from('levels').select('*').eq('id', levelId).single();
     } else {
-      levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).single();
+      levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).eq('category', category).single();
     }
     const levelRes = await levelQuery;
     if (!levelRes.data) return;
