@@ -209,7 +209,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                 <>
                   <XCircle className="h-5 w-5 text-destructive shrink-0" />
                   <span className="text-destructive">
-                    Správná odpověď: <span className="font-bold">{correctAnswer}</span>
+                    Správná odpověď: <span className="font-bold">{[question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || correctAnswerText}</span>
                   </span>
                 </>
               )}
