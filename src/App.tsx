@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
@@ -24,13 +25,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAdmin, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
-  if (!isAdmin) return <Navigate to="/" replace />;
-  return <>{children}</>;
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -43,11 +37,13 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/invite/:code" element={<InvitePage />} />
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
               <Route path="/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPanel /></AdminRoute></ProtectedRoute>} />
-              <Route path="/admin/share" element={<ProtectedRoute><AdminRoute><AdminShare /></AdminRoute></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+              <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
+              <Route path="/admin/share" element={<Navigate to="/share" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
