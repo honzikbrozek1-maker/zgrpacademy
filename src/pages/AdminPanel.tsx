@@ -68,7 +68,6 @@ export default function AdminPanel() {
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
   const [adminList, setAdminList] = useState<{ user_id: string; display_name: string }[]>([]);
-  const [targetAdminSearch, setTargetAdminSearch] = useState('');
   const [selectedTargetAdmin, setSelectedTargetAdmin] = useState<string | null>(null);
 
   const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70, category });
