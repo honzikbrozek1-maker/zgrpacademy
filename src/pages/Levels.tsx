@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Lock, CheckCircle, ArrowRight } from 'lucide-react';
@@ -24,21 +25,24 @@ interface UserProgressRow {
 export default function Levels() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { category, basePath, currentPath } = useAppPath();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
+
+  const isBackoffice = currentPath === 'backoffice';
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
       const [levelsRes, progressRes] = await Promise.all([
-        supabase.from('levels').select('*').order('order_index'),
+        supabase.from('levels').select('*').eq('category', category).order('order_index'),
         supabase.from('user_progress').select('*').eq('user_id', user.id),
       ]);
       if (levelsRes.data) setLevels(levelsRes.data);
       if (progressRes.data) setProgress(progressRes.data);
     };
     fetchData();
-  }, [user]);
+  }, [user, category]);
 
   const isLevelUnlocked = (level: Level) => {
     if (level.order_index === 1) return true;
@@ -52,7 +56,7 @@ export default function Levels() {
   const getProgressPercent = (prog: UserProgressRow | undefined) => {
     if (!prog) return 0;
     if (prog.completed && prog.test_score) return 100;
-    if (prog.completed) return 75; // modules done, test not yet
+    if (prog.completed) return 75;
     return 0;
   };
 
@@ -69,17 +73,21 @@ export default function Levels() {
               <Card
                 key={level.id}
                 className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                onClick={() => unlocked && navigate(`/level/${level.order_index}`)}
+                onClick={() => unlocked && navigate(`${basePath}/level/${level.order_index}`)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed && prog.test_score ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          prog?.completed && prog.test_score ? 'bg-success/20' 
+                          : unlocked ? (isBackoffice ? 'bg-indigo-500/15' : 'bg-primary/15') 
+                          : 'bg-muted'
+                        }`}>
                           {prog?.completed && prog.test_score ? (
                             <CheckCircle className="h-5 w-5 text-success" />
                           ) : unlocked ? (
-                            <span className="text-primary font-bold">{level.order_index}</span>
+                            <span className={`font-bold ${isBackoffice ? 'text-indigo-600 dark:text-indigo-400' : 'text-primary'}`}>{level.order_index}</span>
                           ) : (
                             <Lock className="h-5 w-5 text-muted-foreground" />
                           )}
@@ -101,12 +109,11 @@ export default function Levels() {
                       )}
                     </div>
                   </div>
-                  {/* Progress bar with percentage */}
                   {unlocked && (
                     <div className="mt-3 flex items-center gap-2">
                       <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-primary/60 transition-all"
+                          className={`h-full rounded-full transition-all ${isBackoffice ? 'bg-indigo-500/60' : 'bg-primary/60'}`}
                           style={{ width: `${percent}%` }}
                         />
                       </div>

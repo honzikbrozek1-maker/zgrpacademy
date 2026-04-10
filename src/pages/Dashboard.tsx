@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info } from 'lucide-react';
+import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { POINT_ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
 
@@ -27,15 +28,18 @@ interface UserProgressRow {
 export default function Dashboard() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { currentPath, category, basePath, pathLabel } = useAppPath();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [reviewCount, setReviewCount] = useState(0);
+
+  const isBackoffice = currentPath === 'backoffice';
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
       const [levelsRes, progressRes, reviewRes] = await Promise.all([
-        supabase.from('levels').select('*').order('order_index'),
+        supabase.from('levels').select('*').eq('category', category).order('order_index'),
         supabase.from('user_progress').select('*').eq('user_id', user.id),
         supabase.from('review_items').select('id', { count: 'exact' }).eq('user_id', user.id).in('confidence', ['partial', 'unknown']),
       ]);
@@ -44,9 +48,9 @@ export default function Dashboard() {
       setReviewCount(reviewRes.count || 0);
     };
     fetchData();
-  }, [user]);
+  }, [user, category]);
 
-  const completedCount = progress.filter(p => p.completed && p.test_score).length;
+  const completedCount = progress.filter(p => p.completed && p.test_score && levels.some(l => l.id === p.level_id)).length;
   const progressPercent = levels.length > 0 ? (completedCount / levels.length) * 100 : 0;
   const totalPoints = profile?.total_points || 0;
   const unlockedAchievements = getUnlockedAchievements(totalPoints);
@@ -67,14 +71,27 @@ export default function Dashboard() {
     return 0;
   };
 
+  // Color scheme per path
+  const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
+  const accentBadge = isBackoffice ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : '';
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
-        <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
+        {/* Path header */}
+        <div className="flex items-center gap-3">
+          {headerIcon}
+          <div>
+            <h1 className="text-2xl font-bold">{pathLabel}</h1>
+            <p className="text-sm text-muted-foreground">
+              {isBackoffice ? 'Práce s backoffice systémem a systém odměn' : 'Procvičování znalostí o produktech Zinzino'}
+            </p>
+          </div>
+        </div>
 
-        {/* Stats - fixed colors */}
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate('/achievements')}>
+          <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/achievements`)}>
             <Dialog>
               <DialogTrigger asChild>
                 <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10" onClick={(event) => event.stopPropagation()}>
@@ -126,8 +143,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                <Star className="h-5 w-5 text-violet-500" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isBackoffice ? 'bg-indigo-500/15' : 'bg-violet-500/15'}`}>
+                <Star className={`h-5 w-5 ${isBackoffice ? 'text-indigo-500' : 'text-violet-500'}`} />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
@@ -146,7 +163,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate('/review')}>
+          <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/review`)}>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
                 <RotateCcw className="h-5 w-5 text-orange-500" />
@@ -172,7 +189,7 @@ export default function Dashboard() {
 
         {/* Quick actions */}
         {reviewCount > 0 && (
-          <Link to="/review">
+          <Link to={`${basePath}/review`}>
             <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -192,9 +209,9 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Layers className="h-5 w-5 text-primary" /> Levely
+              <Layers className={`h-5 w-5 ${isBackoffice ? 'text-indigo-500' : 'text-primary'}`} /> Levely
             </h2>
-            <Link to="/levels">
+            <Link to={`${basePath}/levels`}>
               <Button variant="ghost" size="sm">Zobrazit vše <ArrowRight className="ml-1 h-4 w-4" /></Button>
             </Link>
           </div>
@@ -207,12 +224,16 @@ export default function Dashboard() {
                 <Card
                   key={level.id}
                   className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                  onClick={() => unlocked && navigate(`/level/${level.order_index}`)}
+                  onClick={() => unlocked && navigate(`${basePath}/level/${level.order_index}`)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${prog?.completed && prog.test_score ? 'bg-success/20' : unlocked ? 'bg-primary/15 text-primary' : 'bg-muted'}`}>
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${
+                          prog?.completed && prog.test_score ? 'bg-success/20' 
+                          : unlocked ? (isBackoffice ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : 'bg-primary/15 text-primary') 
+                          : 'bg-muted'
+                        }`}>
                           {prog?.completed && prog.test_score ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div>
@@ -231,12 +252,11 @@ export default function Dashboard() {
                         )}
                       </div>
                     </div>
-                    {/* Progress bar with % */}
                     {unlocked && (
                       <div className="mt-2 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-primary/60 transition-all"
+                            className={`h-full rounded-full transition-all ${isBackoffice ? 'bg-indigo-500/60' : 'bg-primary/60'}`}
                             style={{ width: `${percent}%` }}
                           />
                         </div>
@@ -247,6 +267,13 @@ export default function Dashboard() {
                 </Card>
               );
             })}
+            {levels.length === 0 && (
+              <Card className="shadow-card">
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  Zatím nejsou k dispozici žádné levely v této sekci.
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
