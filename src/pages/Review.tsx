@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft } from 'lucide-react';
+import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft, PenLine } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface ReviewItem {
@@ -30,7 +30,7 @@ export default function Review() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState<'menu' | 'flashcard' | 'quiz'>('menu');
+  const [mode, setMode] = useState<'menu' | 'flashcard' | 'quiz' | 'fillin'>('menu');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
@@ -56,18 +56,52 @@ export default function Review() {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  const updateConfidence = async (id: string, confidence: string) => {
-    await supabase.from('review_items').update({ confidence }).eq('id', id);
+  const updateConfidence = (id: string, confidence: string) => {
     if (confidence === 'know') {
-      // Remove immediately from list
       setItems(prev => prev.filter(i => i.id !== id));
     } else {
       setItems(prev => prev.map(i => i.id === id ? { ...i, confidence } : i));
+    }
+
+    void supabase.from('review_items').update({ confidence }).eq('id', id);
+  };
+
+  const advanceReviewItem = (confidence: 'know' | 'partial' | 'unknown') => {
+    if (!currentItem) return;
+
+    const totalItems = activeItems.length;
+    const itemId = currentItem.id;
+
+    updateConfidence(itemId, confidence);
+    setFlipped(false);
+    setSelected(null);
+    setShowResult(false);
+
+    if (confidence === 'know') {
+      if (totalItems === 1) {
+        setMode('menu');
+        setCurrentIndex(0);
+        return;
+      }
+
+      if (currentIndex >= totalItems - 1) {
+        setCurrentIndex(totalItems - 2);
+      }
+
+      return;
+    }
+
+    if (currentIndex < totalItems - 1) {
+      setCurrentIndex(i => i + 1);
+    } else {
+      setMode('menu');
+      setCurrentIndex(0);
     }
   };
 
   const flashcardItems = items.filter(i => i.question?.type === 'flashcard' || i.source === 'flashcard');
   const quizItems = items.filter(i => i.question?.type === 'quiz' || i.source === 'failed_quiz');
+  const fillBlankItems = items.filter(i => i.question?.type === 'fill_blank' || i.source === 'fill_blank');
 
   const activeItems = mode === 'flashcard' ? flashcardItems : mode === 'quiz' ? quizItems : items;
   const currentItem = activeItems[currentIndex];
@@ -142,12 +176,13 @@ export default function Review() {
           {flipped && (
             <div className="flex justify-center gap-3 animate-slide-up">
               <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => { updateConfidence(currentItem.id, 'know'); handleNext(); }}>
+              <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => advanceReviewItem('know')}>
                 <CheckCircle className="mr-1 h-4 w-4" /> Umím
               </Button>
-              <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={() => { updateConfidence(currentItem.id, 'partial'); handleNext(); }}>
+              <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={() => advanceReviewItem('partial')}>
                 <HelpCircle className="mr-1 h-4 w-4" /> Částečně
               </Button>
-              <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10" onClick={() => { updateConfidence(currentItem.id, 'unknown'); handleNext(); }}>
+              <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10" onClick={() => advanceReviewItem('unknown')}>
                 <XCircle className="mr-1 h-4 w-4" /> Neumím
               </Button>
             </div>
@@ -174,11 +209,6 @@ export default function Review() {
       if (showResult) return;
       setSelected(optIndex);
       setShowResult(true);
-      if (optIndex !== q?.correct_answer) {
-        updateConfidence(currentItem.id, 'unknown');
-      } else {
-        updateConfidence(currentItem.id, 'know');
-      }
     };
 
     return (
@@ -229,7 +259,104 @@ export default function Review() {
               <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
             </Button>
             {showResult && (
-              <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
+              <Button onClick={() => advanceReviewItem(selected === q?.correct_answer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
+                {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (mode === 'fillin' && currentItem) {
+    const q = currentItem.question;
+    const correctAnswerIndex = q?.correct_answer || 1;
+    const correctAnswerText = [q?.option_1, q?.option_2, q?.option_3, q?.option_4][correctAnswerIndex - 1] || '';
+    const options = [
+      q?.option_1 ? { text: q.option_1, index: 1 } : null,
+      q?.option_2 ? { text: q.option_2, index: 2 } : null,
+      q?.option_3 ? { text: q.option_3, index: 3 } : null,
+      q?.option_4 ? { text: q.option_4, index: 4 } : null,
+    ].filter((option): option is { text: string; index: number } => Boolean(option));
+
+    const backText = q?.back_text || '';
+    const blankIndex = backText.indexOf('______');
+    const fallbackIndex = correctAnswerText ? backText.toLowerCase().indexOf(correctAnswerText.toLowerCase()) : -1;
+    const sentenceData = blankIndex >= 0
+      ? { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) }
+      : fallbackIndex >= 0
+        ? { before: backText.slice(0, fallbackIndex), after: backText.slice(fallbackIndex + correctAnswerText.length) }
+        : null;
+
+    const handleSelect = (optIndex: number) => {
+      if (showResult) return;
+      setSelected(optIndex);
+      setShowResult(true);
+    };
+
+    return (
+      <AppLayout>
+        <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={goBack}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-bold">Procvičování doplňování</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">{currentIndex + 1}/{activeItems.length}</span>
+            <Progress value={progressVal} className="h-2 flex-1" />
+          </div>
+          <Card className="shadow-card">
+            <CardContent className="p-6 space-y-6">
+              {sentenceData ? (
+                <div className="text-lg leading-relaxed">
+                  <span>{sentenceData.before}</span>
+                  <span className={`font-bold px-2 py-0.5 rounded ${
+                    showResult
+                      ? selected === correctAnswerIndex ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
+                      : 'bg-primary/10 text-primary'
+                  }`}>
+                    {showResult ? correctAnswerText : '______'}
+                  </span>
+                  <span>{sentenceData.after}</span>
+                </div>
+              ) : (
+                <h3 className="text-lg font-semibold">{q?.question_text}</h3>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {options.map((option) => {
+                  const isSelected = selected === option.index;
+                  const isCorrect = option.index === correctAnswerIndex;
+                  let className = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm '; 
+
+                  if (!showResult) {
+                    className += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
+                  } else if (isCorrect) {
+                    className += 'border-success bg-success/10 text-success';
+                  } else if (isSelected) {
+                    className += 'border-destructive bg-destructive/10 text-destructive';
+                  } else {
+                    className += 'border-border opacity-50';
+                  }
+
+                  return (
+                    <button key={option.index} className={className} onClick={() => handleSelect(option.index)} disabled={showResult}>
+                      {option.text}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
+              <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+            </Button>
+            {showResult && (
+              <Button onClick={() => advanceReviewItem(selected === correctAnswerIndex ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
                 {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
@@ -286,6 +413,23 @@ export default function Review() {
                   <div>
                     <h3 className="font-semibold">Kvíz</h3>
                     <p className="text-sm text-muted-foreground">{quizItems.length} k procvičení</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
+                </CardContent>
+              </Card>
+            )}
+            {fillBlankItems.length > 0 && (
+              <Card
+                className="shadow-card cursor-pointer hover:shadow-elevated transition-all"
+                onClick={() => { setMode('fillin'); setCurrentIndex(0); setSelected(null); setShowResult(false); }}
+              >
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                    <PenLine className="h-6 w-6 text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Doplňování</h3>
+                    <p className="text-sm text-muted-foreground">{fillBlankItems.length} k procvičení</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
                 </CardContent>

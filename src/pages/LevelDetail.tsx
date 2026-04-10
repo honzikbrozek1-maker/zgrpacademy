@@ -46,6 +46,17 @@ export default function LevelDetail() {
   const [showDiploma, setShowDiploma] = useState(false);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
 
+  const refreshReviewCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from('review_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('confidence', ['partial', 'unknown']);
+
+    setReviewCount(count || 0);
+  }, [user]);
+
   const fetchData = useCallback(async () => {
     if (!user) return;
     let levelQuery;
@@ -296,7 +307,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {quizQuestions.length > 0 ? (
-              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => markModuleComplete('quiz')} />
+              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => markModuleComplete('quiz')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
             )}
@@ -309,7 +320,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {flashcardQuestions.length > 0 ? (
-              <FlashcardModule questions={flashcardQuestions} onComplete={() => markModuleComplete('flashcards')} />
+              <FlashcardModule questions={flashcardQuestions} onComplete={() => markModuleComplete('flashcards')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kartičky v tomto levelu.</CardContent></Card>
             )}
@@ -322,7 +333,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => markModuleComplete('fillin')} />
+              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => markModuleComplete('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}

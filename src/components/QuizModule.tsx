@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
-import MilestoneDialog, { checkMilestone } from '@/components/MilestoneDialog';
+import MilestoneDialog from '@/components/MilestoneDialog';
+import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
@@ -22,9 +23,10 @@ interface Props {
   questions: Question[];
   levelId: string;
   onComplete: () => void;
+  onReviewItemsChange?: () => void;
 }
 
-export default function QuizModule({ questions, onComplete }: Props) {
+export default function QuizModule({ questions, onComplete, onReviewItemsChange }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -64,6 +66,7 @@ export default function QuizModule({ questions, onComplete }: Props) {
           confidence: 'unknown',
           source: 'failed_quiz',
         }, { onConflict: 'user_id,question_id' });
+        onReviewItemsChange?.();
       }
     }
   };

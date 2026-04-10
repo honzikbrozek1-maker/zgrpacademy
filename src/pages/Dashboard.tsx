@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { POINT_ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
 
 interface Level {
   id: string;
@@ -47,6 +48,8 @@ export default function Dashboard() {
 
   const completedCount = progress.filter(p => p.completed && p.test_score).length;
   const progressPercent = levels.length > 0 ? (completedCount / levels.length) * 100 : 0;
+  const totalPoints = profile?.total_points || 0;
+  const unlockedAchievements = getUnlockedAchievements(totalPoints);
 
   const isLevelUnlocked = (level: Level) => {
     if (level.order_index === 1) return true;
@@ -71,10 +74,10 @@ export default function Dashboard() {
 
         {/* Stats - fixed colors */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card relative">
+          <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate('/achievements')}>
             <Dialog>
               <DialogTrigger asChild>
-                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10">
+                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10" onClick={(event) => event.stopPropagation()}>
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </DialogTrigger>
@@ -105,7 +108,7 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-2">
                     <h4 className="font-semibold">Milníky:</h4>
-                    <p className="text-muted-foreground">Za dosažení 50, 100, 200, 500 a 1000 bodů dostanete speciální odměnu! 🎉</p>
+                    <p className="text-muted-foreground">Achievementy odemykáte při dosažení: {POINT_ACHIEVEMENTS.map((achievement) => achievement.threshold).join(', ')} bodů.</p>
                   </div>
                 </div>
               </DialogContent>
@@ -116,7 +119,8 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Body</p>
-                <p className="text-lg font-bold">{profile?.total_points || 0}</p>
+                <p className="text-lg font-bold">{totalPoints}</p>
+                <p className="text-xs text-muted-foreground">{unlockedAchievements.length} achievementů</p>
               </div>
             </CardContent>
           </Card>
