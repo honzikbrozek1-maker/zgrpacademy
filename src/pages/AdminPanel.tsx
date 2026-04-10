@@ -179,14 +179,15 @@ export default function AdminPanel() {
 
   const saveQuestion = async () => {
     if (!selectedLevel) return;
+    const needsOptions = qForm.type === 'quiz' || qForm.type === 'fill_blank';
     const payload = {
       ...qForm,
       level_id: selectedLevel.id,
-      option_1: qForm.type === 'quiz' ? qForm.option_1 : null,
-      option_2: qForm.type === 'quiz' ? qForm.option_2 : null,
-      option_3: qForm.type === 'quiz' ? qForm.option_3 : null,
-      option_4: qForm.type === 'quiz' ? qForm.option_4 : null,
-      correct_answer: qForm.type === 'quiz' ? qForm.correct_answer : null,
+      option_1: needsOptions ? qForm.option_1 : null,
+      option_2: needsOptions ? qForm.option_2 : null,
+      option_3: needsOptions ? qForm.option_3 : null,
+      option_4: needsOptions ? qForm.option_4 : null,
+      correct_answer: qForm.type === 'quiz' ? qForm.correct_answer : (qForm.type === 'fill_blank' ? qForm.correct_answer : null),
       back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
     };
     if (editingQuestion) {
@@ -363,14 +364,18 @@ export default function AdminPanel() {
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                       <DialogHeader><DialogTitle>{editingQuestion ? 'Upravit' : 'Nová otázka/kartička'}</DialogTitle></DialogHeader>
                       <div className="space-y-4">
-                        <Select value={qForm.type} onValueChange={v => setQForm({ ...qForm, type: v })}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="quiz">Kvíz</SelectItem>
-                            <SelectItem value="flashcard">Kartička</SelectItem>
-                            <SelectItem value="fill_blank">Doplňování</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {/* Type selector - always first */}
+                        <div>
+                          <label className="text-sm font-medium mb-1 block">Typ</label>
+                          <Select value={qForm.type} onValueChange={v => setQForm({ ...qForm, type: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="quiz">🧠 Kvíz</SelectItem>
+                              <SelectItem value="flashcard">📖 Kartička</SelectItem>
+                              <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <Textarea placeholder="Text otázky" value={qForm.question_text} onChange={e => setQForm({ ...qForm, question_text: e.target.value })} />
                         {qForm.type === 'quiz' && (
                           <>
@@ -393,54 +398,72 @@ export default function AdminPanel() {
                           <Textarea placeholder="Text zadní strany" value={qForm.back_text} onChange={e => setQForm({ ...qForm, back_text: e.target.value })} />
                         )}
                         {qForm.type === 'fill_blank' && (
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <Textarea
-                              placeholder="Věta s vynechaným slovem v hranatých závorkách, např: Zinzino je [síťová] marketingová společnost"
+                              placeholder="Věta s vynechaným slovem v [hranatých závorkách], např: Zinzino je [síťová] marketingová společnost"
                               value={qForm.back_text}
                               onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
                             />
                             <p className="text-xs text-muted-foreground">
-                              Slovo v [hranatých závorkách] bude vynecháno a uživatel ho bude muset doplnit. AI kontroluje i překlepy a podobná slova.
+                              Slovo v [hranatých závorkách] bude vynecháno. Níže zadejte 4 možnosti na výběr.
                             </p>
+                            <Input placeholder="Možnost 1 (správná)" value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
+                            <Input placeholder="Možnost 2" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
+                            <Input placeholder="Možnost 3" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
+                            <Input placeholder="Možnost 4" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+                            <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
+                              <SelectTrigger><SelectValue placeholder="Správná odpověď" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Možnost 1</SelectItem>
+                                <SelectItem value="2">Možnost 2</SelectItem>
+                                <SelectItem value="3">Možnost 3</SelectItem>
+                                <SelectItem value="4">Možnost 4</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         )}
-                        <Input type="number" placeholder="Pořadí" value={qForm.order_index} onChange={e => setQForm({ ...qForm, order_index: parseInt(e.target.value) || 0 })} />
                         <Button onClick={saveQuestion} className="w-full">Uložit</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
                 </div>
 
-                <div className="space-y-2">
-                  {questions.map(q => (
-                    <Card key={q.id} className="shadow-card">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">
-                              {q.type === 'quiz' ? 'Kvíz' : q.type === 'flashcard' ? 'Kartička' : 'Doplňování'}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">#{q.order_index}</span>
-                          </div>
-                          <p className="mt-1 font-medium">{q.question_text}</p>
-                          {q.type === 'quiz' && (
-                            <p className="text-xs text-success mt-1">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
-                          )}
-                          {q.type === 'fill_blank' && q.back_text && (
-                            <p className="text-xs text-muted-foreground mt-1">{q.back_text}</p>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {questions.length === 0 && (
-                    <p className="text-muted-foreground text-center py-8">Žádné otázky v tomto levelu.</p>
-                  )}
-                </div>
+                {/* Questions grouped by type */}
+                {(['quiz', 'flashcard', 'fill_blank'] as const).map(type => {
+                  const typeQuestions = questions.filter(q => q.type === type);
+                  if (typeQuestions.length === 0) return null;
+                  const label = type === 'quiz' ? '🧠 Kvíz' : type === 'flashcard' ? '📖 Kartičky' : '✏️ Doplňování';
+                  return (
+                    <div key={type} className="space-y-2">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{label} ({typeQuestions.length})</h3>
+                      {typeQuestions.map(q => (
+                        <Card key={q.id} className="shadow-card">
+                          <CardContent className="p-3 flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{q.question_text}</p>
+                              {q.type === 'quiz' && (
+                                <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                              )}
+                              {q.type === 'fill_blank' && q.back_text && (
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate">{q.back_text}</p>
+                              )}
+                              {q.type === 'flashcard' && q.back_text && (
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  );
+                })}
+                {questions.length === 0 && (
+                  <p className="text-muted-foreground text-center py-8">Žádné otázky v tomto levelu.</p>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
