@@ -35,12 +35,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Logo */}
-        <div className="flex items-center gap-2 px-4 py-4">
+        <Link to="/" className="flex items-center gap-2 px-4 py-4 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
             <GraduationCap className="h-4 w-4 text-primary-foreground" />
           </div>
           {!collapsed && <span className="font-bold text-lg">Zinzino Academy</span>}
-        </div>
+        </Link>
 
         <SidebarGroup>
           <SidebarGroupContent>
@@ -72,10 +72,10 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/account')}>
+            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-3">
               <Link to="/account" className="flex items-center gap-2">
-                <UserCog className="h-4 w-4" />
-                {!collapsed && <span>{profile?.display_name || 'Můj účet'}</span>}
+                <UserCog className="h-5 w-5" />
+                {!collapsed && <span className="font-medium">{profile?.display_name || 'Můj účet'}</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
