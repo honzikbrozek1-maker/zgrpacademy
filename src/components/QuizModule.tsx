@@ -51,7 +51,8 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
         // Award points via secure RPC
         const { data: result } = await supabase.rpc('award_points', { points: 10 });
         if (result) {
-          const m = checkMilestone(result.old_points, result.new_points);
+          const r = result as unknown as { old_points: number; new_points: number };
+          const m = checkMilestone(r.old_points, r.new_points);
           if (m) setMilestone(m);
         }
         // Remove from review if previously failed
