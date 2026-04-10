@@ -12,7 +12,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap, Volume2, VolumeX } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { isSoundEnabled, setSoundEnabled, getVolume, setVolume } from '@/lib/sounds';
+import { useState } from 'react';
 
 export function AppSidebar() {
   const { isAdmin, profile, signOut } = useAuth();
@@ -20,6 +23,8 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [vol, setVol] = useState(getVolume());
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
@@ -30,6 +35,20 @@ export function AppSidebar() {
     { to: '/share', icon: Share2, label: 'Sdílet aplikaci' },
     { to: '/admin', icon: Shield, label: 'Admin panel' },
   ];
+
+  const handleToggleSound = () => {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    const v = value[0];
+    setVol(v);
+    setVolume(v);
+    if (v === 0 && soundOn) { setSoundOn(false); setSoundEnabled(false); }
+    if (v > 0 && !soundOn) { setSoundOn(true); setSoundEnabled(true); }
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -65,14 +84,33 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          {/* Theme toggle */}
           <SidebarMenuItem>
             <SidebarMenuButton onClick={toggleTheme}>
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
+          {/* Volume control */}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-3">
+            <div className="flex items-center gap-2 px-3 py-2">
+              <button onClick={handleToggleSound} className="shrink-0">
+                {soundOn ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
+              </button>
+              {!collapsed && (
+                <Slider
+                  value={[vol]}
+                  onValueChange={handleVolumeChange}
+                  max={100}
+                  step={5}
+                  className="flex-1"
+                />
+              )}
+            </div>
+          </SidebarMenuItem>
+          {/* Account - bigger clickable area */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-4 min-h-[48px]">
               <Link to="/account" className="flex items-center gap-2">
                 <UserCog className="h-5 w-5" />
                 {!collapsed && <span className="font-medium">{profile?.display_name || 'Můj účet'}</span>}

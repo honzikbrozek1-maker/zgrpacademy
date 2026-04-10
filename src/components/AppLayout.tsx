@@ -16,8 +16,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <header className="h-12 flex items-center justify-between border-b bg-card/80 backdrop-blur-md sticky top-0 z-50 px-3">
             <SidebarTrigger />
             {isMobile && (
-              <Link to="/account" className="p-2 rounded-lg hover:bg-muted transition-colors">
-                <UserCog className="h-5 w-5 text-muted-foreground" />
+              <Link to="/account" className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors">
+                <UserCog className="h-6 w-6 text-muted-foreground" />
               </Link>
             )}
           </header>

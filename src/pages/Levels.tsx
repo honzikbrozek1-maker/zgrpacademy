@@ -49,6 +49,13 @@ export default function Levels() {
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
+  const getProgressPercent = (prog: UserProgressRow | undefined) => {
+    if (!prog) return 0;
+    if (prog.completed && prog.test_score) return 100;
+    if (prog.completed) return 75; // modules done, test not yet
+    return 0;
+  };
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
@@ -57,18 +64,19 @@ export default function Levels() {
           {levels.map((level) => {
             const unlocked = isLevelUnlocked(level);
             const prog = getLevelProgress(level.id);
+            const percent = getProgressPercent(prog);
             return (
               <Card
                 key={level.id}
                 className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                onClick={() => unlocked && navigate(`/level/${level.id}`)}
+                onClick={() => unlocked && navigate(`/level/${level.order_index}`)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
-                          {prog?.completed ? (
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed && prog.test_score ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
+                          {prog?.completed && prog.test_score ? (
                             <CheckCircle className="h-5 w-5 text-success" />
                           ) : unlocked ? (
                             <span className="text-primary font-bold">{level.order_index}</span>
@@ -83,7 +91,7 @@ export default function Levels() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {prog?.completed && (
+                      {prog?.test_score && (
                         <Badge variant="secondary" className="bg-success/10 text-success">
                           {prog.test_score}%
                         </Badge>
@@ -93,15 +101,16 @@ export default function Levels() {
                       )}
                     </div>
                   </div>
-                  {/* Progress bar */}
+                  {/* Progress bar with percentage */}
                   {unlocked && (
-                    <div className="mt-3">
-                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-primary/60 transition-all"
-                          style={{ width: `${prog?.completed ? 100 : prog?.test_score ? Math.min(prog.test_score, 99) : 0}%` }}
+                          style={{ width: `${percent}%` }}
                         />
                       </div>
+                      <span className="text-xs text-muted-foreground w-8 text-right">{percent}%</span>
                     </div>
                   )}
                 </CardContent>
