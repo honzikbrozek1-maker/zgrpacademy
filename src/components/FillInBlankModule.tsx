@@ -24,14 +24,6 @@ interface Props {
   onComplete: () => void;
 }
 
-function extractBlank(text: string): { before: string; answer: string; after: string } | null {
-  const bracketMatch = text.match(/^(.*?)\[(.+?)\](.*)$/s);
-  if (bracketMatch) return { before: bracketMatch[1], answer: bracketMatch[2], after: bracketMatch[3] };
-  const underscoreMatch = text.match(/^(.*?)___(.+?)___(.*)$/s);
-  if (underscoreMatch) return { before: underscoreMatch[1], answer: underscoreMatch[2], after: underscoreMatch[3] };
-  return null;
-}
-
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -54,10 +46,20 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  const blankData = question?.back_text ? extractBlank(question.back_text) : null;
-  // Correct answer: use correct_answer index if available, else fall back to blank extraction
-  const correctOptionIndex = question?.correct_answer || 1;
-  const correctAnswerText = blankData?.answer || '';
+  // Correct answer is always option_1 (correct_answer defaults to 1 for fill_blank)
+  const correctAnswerText = question?.option_1 || '';
+
+  // Build display sentence: back_text is the full sentence, option_1 is the word to blank out
+  const sentenceData = useMemo(() => {
+    if (!question?.back_text || !question?.option_1) return null;
+    const word = question.option_1;
+    const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
+    if (idx === -1) return { before: question.back_text, after: '' };
+    return {
+      before: question.back_text.substring(0, idx),
+      after: question.back_text.substring(idx + word.length),
+    };
+  }, [question]);
 
   // Build options from option_1-4
   const options = useMemo(() => {
@@ -67,16 +69,13 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
     if (question?.option_3) opts.push(question.option_3);
     if (question?.option_4) opts.push(question.option_4);
     if (opts.length >= 2) return shuffleArray(opts);
-    // Fallback: just show the correct answer with some placeholders
     return shuffleArray([correctAnswerText, 'žádná odpověď', 'neutrální', 'jiná možnost']);
   }, [question, correctAnswerText]);
 
   const handleSelect = async (option: string) => {
     if (showResult) return;
     setSelected(option);
-    // Match by correct_answer index: option at that index (1-based)
-    const correctOpt = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || '';
-    const correct = option.trim().toLowerCase() === correctOpt.trim().toLowerCase();
+    const correct = option.trim().toLowerCase() === correctAnswerText.trim().toLowerCase();
     setIsCorrect(correct);
     setShowResult(true);
 
@@ -159,17 +158,17 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
         <CardContent className="p-6 space-y-6">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Vyberte správné slovo</p>
 
-          {blankData ? (
+          {sentenceData ? (
             <div className="text-lg leading-relaxed">
-              <span>{blankData.before}</span>
+              <span>{sentenceData.before}</span>
               <span className={`font-bold px-2 py-0.5 rounded ${
                 showResult
                   ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                   : 'bg-primary/10 text-primary'
               }`}>
-                {showResult ? (isCorrect ? selected : blankData.answer) : '______'}
+                {showResult ? (isCorrect ? selected : correctAnswerText) : '______'}
               </span>
-              <span>{blankData.after}</span>
+              <span>{sentenceData.after}</span>
             </div>
           ) : (
             <h3 className="text-lg font-semibold">{question.question_text}</h3>
@@ -178,8 +177,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           <div className="grid grid-cols-2 gap-3">
             {options.map((option, idx) => {
               const isThis = selected === option;
-              const correctOpt = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || '';
-              const isAnswer = option.trim().toLowerCase() === correctOpt.trim().toLowerCase();
+              const isAnswer = option.trim().toLowerCase() === correctAnswerText.trim().toLowerCase();
               let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
@@ -209,7 +207,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                 <>
                   <XCircle className="h-5 w-5 text-destructive shrink-0" />
                   <span className="text-destructive">
-                    Správná odpověď: <span className="font-bold">{[question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || correctAnswerText}</span>
+                    Správná odpověď: <span className="font-bold">{correctAnswerText}</span>
                   </span>
                 </>
               )}

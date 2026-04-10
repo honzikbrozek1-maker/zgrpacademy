@@ -16,18 +16,24 @@ import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap
 import { Slider } from '@/components/ui/slider';
 import { isSoundEnabled, setSoundEnabled, getVolume, setVolume } from '@/lib/sounds';
 import { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppSidebar() {
   const { isAdmin, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [vol, setVol] = useState(getVolume());
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+
+  const closeMobileIfNeeded = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const topItems = [
     { to: '/', icon: Home, label: 'Dashboard' },
@@ -54,7 +60,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 px-4 py-4 hover:opacity-80 transition-opacity">
+        <Link to="/" onClick={closeMobileIfNeeded} className="flex items-center gap-2 px-4 py-4 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
             <GraduationCap className="h-4 w-4 text-primary-foreground" />
           </div>
@@ -69,7 +75,7 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={active}>
-                      <Link to={item.to} className="flex items-center gap-2">
+                      <Link to={item.to} onClick={closeMobileIfNeeded} className="flex items-center gap-2">
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span>{item.label}</span>}
                       </Link>
@@ -108,17 +114,19 @@ export function AppSidebar() {
               )}
             </div>
           </SidebarMenuItem>
-          {/* Account - bigger clickable area */}
+          {/* Account */}
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-4 min-h-[48px]">
-              <Link to="/account" className="flex items-center gap-2">
-                <UserCog className="h-5 w-5" />
+              <Link to="/account" onClick={closeMobileIfNeeded} className="flex items-center gap-2">
+                <div className="relative">
+                  <UserCog className="h-5 w-5" />
+                </div>
                 {!collapsed && <span className="font-medium">{profile?.display_name || 'Můj účet'}</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={signOut}>
+            <SidebarMenuButton onClick={() => { closeMobileIfNeeded(); signOut(); }}>
               <LogOut className="h-4 w-4" />
               {!collapsed && <span>Odhlásit se</span>}
             </SidebarMenuButton>

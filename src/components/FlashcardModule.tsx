@@ -30,12 +30,20 @@ export default function FlashcardModule({ questions, onComplete }: Props) {
   const handleRate = async (confidence: 'know' | 'partial' | 'unknown') => {
     setRatings(r => ({ ...r, [question.id]: confidence }));
     if (user) {
-      await supabase.from('review_items').upsert({
-        user_id: user.id,
-        question_id: question.id,
-        confidence,
-        source: 'flashcard',
-      }, { onConflict: 'user_id,question_id' });
+      // Only upsert review items for partial/unknown — "know" should NOT create/update review items
+      if (confidence === 'partial' || confidence === 'unknown') {
+        await supabase.from('review_items').upsert({
+          user_id: user.id,
+          question_id: question.id,
+          confidence,
+          source: 'flashcard',
+        }, { onConflict: 'user_id,question_id' });
+      } else {
+        // If user now knows it, remove from review items
+        await supabase.from('review_items').delete()
+          .eq('user_id', user.id)
+          .eq('question_id', question.id);
+      }
     }
 
     if (currentIndex < questions.length - 1) {
