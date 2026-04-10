@@ -77,6 +77,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          color_scheme: string
           created_at: string
           current_level: number
           display_name: string
@@ -87,6 +88,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          color_scheme?: string
           created_at?: string
           current_level?: number
           display_name?: string
@@ -97,6 +99,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          color_scheme?: string
           created_at?: string
           current_level?: number
           display_name?: string
