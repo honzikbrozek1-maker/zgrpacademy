@@ -13,7 +13,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export function AppSidebar() {
   const { isAdmin, profile, signOut } = useAuth();
@@ -75,7 +74,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/account')}>
               <Link to="/account" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+                <UserCog className="h-4 w-4" />
                 {!collapsed && <span>{profile?.display_name || 'Můj účet'}</span>}
               </Link>
             </SidebarMenuButton>
