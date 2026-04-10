@@ -63,54 +63,52 @@ export default function Dashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-1">
-                  <p className="text-xs text-muted-foreground">Body</p>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="text-muted-foreground hover:text-primary transition-colors">
-                        <Info className="h-3 w-3" />
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <Trophy className="h-5 w-5 text-primary" /> Bodový systém
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-3 text-sm">
-                        <p className="text-muted-foreground">Body získáváte za aktivitu v aplikaci. Slouží jako motivace a přehled vašeho pokroku.</p>
-                        <div className="space-y-2">
-                          <h4 className="font-semibold">Jak získat body:</h4>
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
-                              <span>✅ Správná odpověď v kvízu</span>
-                              <Badge variant="secondary">+10 bodů</Badge>
-                            </div>
-                            <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
-                              <span>🏆 Úspěšný závěrečný test</span>
-                              <Badge variant="secondary">+50 bodů</Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground text-xs">Čím více se učíte, tím více bodů získáte!</p>
+          <Card className="shadow-card relative">
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="absolute top-2 left-2 text-muted-foreground hover:text-primary transition-colors z-10">
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" /> Bodový systém
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 text-sm">
+                  <p className="text-muted-foreground">Body získáváte za aktivitu v aplikaci. Slouží jako motivace a přehled vašeho pokroku.</p>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Jak získat body:</h4>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
+                        <span>✅ Správná odpověď v kvízu</span>
+                        <Badge variant="secondary">+10 bodů</Badge>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
+                        <span>🏆 Úspěšný závěrečný test</span>
+                        <Badge variant="secondary">+50 bodů</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-xs">Čím více se učíte, tím více bodů získáte!</p>
                 </div>
+              </DialogContent>
+            </Dialog>
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Body</p>
                 <p className="text-lg font-bold">{profile?.total_points || 0}</p>
               </div>
             </CardContent>
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center">
-                <Star className="h-5 w-5 text-accent-foreground" />
+              <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
+                <Star className="h-5 w-5 text-accent" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
@@ -131,7 +129,7 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
                 <RotateCcw className="h-5 w-5 text-warning" />
               </div>
               <div>
@@ -190,7 +188,7 @@ export default function Dashboard() {
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${prog?.completed ? 'bg-success/20' : unlocked ? 'gradient-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15 text-primary' : 'bg-muted'}`}>
                           {prog?.completed ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div>

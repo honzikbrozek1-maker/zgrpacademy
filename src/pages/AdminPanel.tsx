@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, Layers, CheckCircle, XCircle, Clock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -43,13 +43,22 @@ interface UserProfile {
   created_at: string;
 }
 
+interface AdminRequest {
+  id: string;
+  user_id: string;
+  status: string;
+  created_at: string;
+}
+
 export default function AdminPanel() {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [levels, setLevels] = useState<Level[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
+  const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
+  const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
 
   const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
@@ -67,22 +76,22 @@ export default function AdminPanel() {
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
 
   useEffect(() => {
+    fetchLevels();
     if (isAdmin) {
-      fetchLevels();
       fetchUsers();
+      fetchAdminRequests();
+    } else if (user) {
+      fetchMyRequest();
     }
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
   useEffect(() => {
-    if (selectedLevel) fetchQuestions(selectedLevel);
+    if (selectedLevel) fetchQuestions(selectedLevel.id);
   }, [selectedLevel]);
 
   const fetchLevels = async () => {
     const { data } = await supabase.from('levels').select('*').order('order_index');
-    if (data) {
-      setLevels(data);
-      if (!selectedLevel && data.length > 0) setSelectedLevel(data[0].id);
-    }
+    if (data) setLevels(data);
   };
 
   const fetchQuestions = async (levelId: string) => {
@@ -93,6 +102,43 @@ export default function AdminPanel() {
   const fetchUsers = async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     if (data) setUsers(data);
+  };
+
+  const fetchAdminRequests = async () => {
+    const { data } = await supabase.from('admin_requests').select('*').eq('status', 'pending').order('created_at');
+    if (data) setAdminRequests(data);
+  };
+
+  const fetchMyRequest = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('admin_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1);
+    if (data && data.length > 0) setMyRequest(data[0]);
+  };
+
+  const sendAdminRequest = async () => {
+    if (!user) return;
+    const { error } = await supabase.from('admin_requests').insert({ user_id: user.id });
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Žádost odeslána', description: 'Administrátor bude informován o vaší žádosti.' });
+      fetchMyRequest();
+    }
+  };
+
+  const handleAdminRequest = async (requestId: string, userId: string, approve: boolean) => {
+    if (!user) return;
+    await supabase.from('admin_requests').update({
+      status: approve ? 'approved' : 'rejected',
+      reviewed_by: user.id,
+      updated_at: new Date().toISOString(),
+    }).eq('id', requestId);
+
+    if (approve) {
+      await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+    }
+    toast({ title: approve ? 'Žádost schválena' : 'Žádost zamítnuta' });
+    fetchAdminRequests();
   };
 
   const saveLevel = async () => {
@@ -111,7 +157,7 @@ export default function AdminPanel() {
   const deleteLevel = async (id: string) => {
     await supabase.from('levels').delete().eq('id', id);
     fetchLevels();
-    if (selectedLevel === id) setSelectedLevel(null);
+    if (selectedLevel?.id === id) setSelectedLevel(null);
     toast({ title: 'Level smazán' });
   };
 
@@ -125,7 +171,7 @@ export default function AdminPanel() {
     if (!selectedLevel) return;
     const payload = {
       ...qForm,
-      level_id: selectedLevel,
+      level_id: selectedLevel.id,
       option_1: qForm.type === 'quiz' ? qForm.option_1 : null,
       option_2: qForm.type === 'quiz' ? qForm.option_2 : null,
       option_3: qForm.type === 'quiz' ? qForm.option_3 : null,
@@ -141,13 +187,13 @@ export default function AdminPanel() {
     setShowQuestionDialog(false);
     setEditingQuestion(null);
     resetQForm();
-    fetchQuestions(selectedLevel);
+    fetchQuestions(selectedLevel.id);
     toast({ title: 'Uloženo' });
   };
 
   const deleteQuestion = async (id: string) => {
     await supabase.from('questions').delete().eq('id', id);
-    if (selectedLevel) fetchQuestions(selectedLevel);
+    if (selectedLevel) fetchQuestions(selectedLevel.id);
     toast({ title: 'Otázka smazána' });
   };
 
@@ -192,14 +238,19 @@ export default function AdminPanel() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Pokud potřebujete administrátorský přístup, kontaktujte stávajícího administrátora
-                nebo požádejte o pozvánku s admin rolí v záložce "Sdílet aplikaci".
+                Pokud potřebujete administrátorský přístup, můžete odeslat žádost administrátorovi.
               </p>
-              <Button variant="outline" className="flex items-center gap-2" onClick={() => {
-                toast({ title: 'Žádost odeslána', description: 'Administrátor bude informován o vaší žádosti.' });
-              }}>
-                <Send className="h-4 w-4" /> Požádat o admin přístup
-              </Button>
+              {myRequest ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
+                  {myRequest.status === 'pending' && <><Clock className="h-4 w-4 text-warning" /><span className="text-sm">Vaše žádost čeká na schválení...</span></>}
+                  {myRequest.status === 'approved' && <><CheckCircle className="h-4 w-4 text-success" /><span className="text-sm">Žádost schválena! Odhlaste se a přihlaste znovu.</span></>}
+                  {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">Žádost byla zamítnuta.</span></>}
+                </div>
+              ) : (
+                <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest}>
+                  <Send className="h-4 w-4" /> Požádat o admin přístup
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -207,6 +258,7 @@ export default function AdminPanel() {
     );
   }
 
+  // Admin view with level drill-down
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up">
@@ -218,59 +270,29 @@ export default function AdminPanel() {
           <TabsList>
             <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
             <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
+            {adminRequests.length > 0 && (
+              <TabsTrigger value="requests" className="relative">
+                <Shield className="mr-1 h-4 w-4" /> Žádosti
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{adminRequests.length}</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="content" className="mt-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Levely</h2>
-              <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
-                <DialogTrigger asChild>
-                  <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 }); }}>
-                    <Plus className="mr-1 h-4 w-4" /> Přidat level
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>{editingLevel ? 'Upravit level' : 'Nový level'}</DialogTitle></DialogHeader>
-                  <div className="space-y-4">
-                    <Input placeholder="Název" value={levelForm.title} onChange={e => setLevelForm({ ...levelForm, title: e.target.value })} />
-                    <Textarea placeholder="Popis" value={levelForm.description} onChange={e => setLevelForm({ ...levelForm, description: e.target.value })} />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm text-muted-foreground">Pořadí</label>
-                        <Input type="number" value={levelForm.order_index} onChange={e => setLevelForm({ ...levelForm, order_index: parseInt(e.target.value) || 0 })} />
-                      </div>
-                      <div>
-                        <label className="text-sm text-muted-foreground">Skóre pro postup (%)</label>
-                        <Input type="number" value={levelForm.passing_score} onChange={e => setLevelForm({ ...levelForm, passing_score: parseInt(e.target.value) || 70 })} />
-                      </div>
-                    </div>
-                    <Button onClick={saveLevel} className="w-full gradient-primary text-primary-foreground">Uložit</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              {levels.map(level => (
-                <div key={level.id} className="flex items-center gap-1">
-                  <Button
-                    variant={selectedLevel === level.id ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedLevel(level.id)}
-                    className={selectedLevel === level.id ? 'gradient-primary text-primary-foreground' : ''}
-                  >
-                    {level.order_index}. {level.title}
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editLevel(level)}><Edit className="h-3 w-3" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteLevel(level.id)}><Trash2 className="h-3 w-3" /></Button>
-                </div>
-              ))}
-            </div>
-
-            {selectedLevel && (
+            {selectedLevel ? (
+              // Drill-down: questions for selected level
               <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedLevel(null)}>
+                    <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
+                  </Button>
+                  <h2 className="text-lg font-semibold">{selectedLevel.order_index}. {selectedLevel.title}</h2>
+                </div>
+
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">Otázky & Kartičky</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček
+                  </p>
                   <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
                     <DialogTrigger asChild>
                       <Button size="sm" onClick={() => { setEditingQuestion(null); resetQForm(); }}>
@@ -309,7 +331,7 @@ export default function AdminPanel() {
                           <Textarea placeholder="Text zadní strany" value={qForm.back_text} onChange={e => setQForm({ ...qForm, back_text: e.target.value })} />
                         )}
                         <Input type="number" placeholder="Pořadí" value={qForm.order_index} onChange={e => setQForm({ ...qForm, order_index: parseInt(e.target.value) || 0 })} />
-                        <Button onClick={saveQuestion} className="w-full gradient-primary text-primary-foreground">Uložit</Button>
+                        <Button onClick={saveQuestion} className="w-full">Uložit</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -341,6 +363,64 @@ export default function AdminPanel() {
                   )}
                 </div>
               </div>
+            ) : (
+              // Level list view
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Levely</h2>
+                  <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 }); }}>
+                        <Plus className="mr-1 h-4 w-4" /> Přidat level
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>{editingLevel ? 'Upravit level' : 'Nový level'}</DialogTitle></DialogHeader>
+                      <div className="space-y-4">
+                        <Input placeholder="Název" value={levelForm.title} onChange={e => setLevelForm({ ...levelForm, title: e.target.value })} />
+                        <Textarea placeholder="Popis" value={levelForm.description} onChange={e => setLevelForm({ ...levelForm, description: e.target.value })} />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-muted-foreground">Pořadí</label>
+                            <Input type="number" value={levelForm.order_index} onChange={e => setLevelForm({ ...levelForm, order_index: parseInt(e.target.value) || 0 })} />
+                          </div>
+                          <div>
+                            <label className="text-sm text-muted-foreground">Skóre pro postup (%)</label>
+                            <Input type="number" value={levelForm.passing_score} onChange={e => setLevelForm({ ...levelForm, passing_score: parseInt(e.target.value) || 70 })} />
+                          </div>
+                        </div>
+                        <Button onClick={saveLevel} className="w-full">Uložit</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <div className="space-y-2">
+                  {levels.map(level => (
+                    <Card key={level.id} className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => setSelectedLevel(level)}>
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center text-primary font-bold">
+                            {level.order_index}
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{level.title}</h3>
+                            {level.description && <p className="text-xs text-muted-foreground line-clamp-1">{level.description}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editLevel(level)}><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteLevel(level.id)}><Trash2 className="h-4 w-4" /></Button>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground ml-1" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {levels.length === 0 && (
+                    <p className="text-muted-foreground text-center py-8">Zatím žádné levely. Přidejte první!</p>
+                  )}
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -354,7 +434,7 @@ export default function AdminPanel() {
                         <Users className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-medium">{u.display_name}</p>
+                        <p className="font-medium">{u.display_name || 'Bez jména'}</p>
                         <div className="flex gap-3 text-xs text-muted-foreground">
                           <span>Body: {u.total_points}</span>
                           <span>Level: {u.current_level}</span>
@@ -370,6 +450,34 @@ export default function AdminPanel() {
               ))}
             </div>
           </TabsContent>
+
+          {adminRequests.length > 0 && (
+            <TabsContent value="requests" className="mt-6">
+              <div className="space-y-3">
+                {adminRequests.map(req => {
+                  const reqUser = users.find(u => u.user_id === req.user_id);
+                  return (
+                    <Card key={req.id} className="shadow-card">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{reqUser?.display_name || 'Neznámý uživatel'}</p>
+                          <p className="text-xs text-muted-foreground">Odesláno: {new Date(req.created_at).toLocaleDateString('cs')}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-success" onClick={() => handleAdminRequest(req.id, req.user_id, true)}>
+                            <CheckCircle className="mr-1 h-3 w-3" /> Schválit
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleAdminRequest(req.id, req.user_id, false)}>
+                            <XCircle className="mr-1 h-3 w-3" /> Zamítnout
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </AppLayout>

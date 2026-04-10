@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, User, LogOut, GraduationCap } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, Settings, LogOut, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AppSidebar() {
