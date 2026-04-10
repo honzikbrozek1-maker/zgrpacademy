@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-
 import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
@@ -27,6 +27,7 @@ interface ReviewItem {
 
 export default function Review() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'menu' | 'flashcard' | 'quiz'>('menu');
@@ -35,7 +36,7 @@ export default function Review() {
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('review_items')
@@ -51,13 +52,18 @@ export default function Review() {
       })));
     }
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchItems(); }, [user]);
+  useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const updateConfidence = async (id: string, confidence: string) => {
     await supabase.from('review_items').update({ confidence }).eq('id', id);
-    setItems(items.map(i => i.id === id ? { ...i, confidence } : i));
+    if (confidence === 'know') {
+      // Remove immediately from list
+      setItems(prev => prev.filter(i => i.id !== id));
+    } else {
+      setItems(prev => prev.map(i => i.id === id ? { ...i, confidence } : i));
+    }
   };
 
   const flashcardItems = items.filter(i => i.question?.type === 'flashcard' || i.source === 'flashcard');
@@ -89,6 +95,15 @@ export default function Review() {
     }
   };
 
+  const goBack = () => {
+    if (mode !== 'menu') {
+      setMode('menu');
+      setCurrentIndex(0);
+    } else {
+      navigate(-1);
+    }
+  };
+
   if (loading) return (
     <AppLayout><div className="p-8 text-center text-muted-foreground">Načítání...</div></AppLayout>
   );
@@ -99,7 +114,7 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => { setMode('menu'); setCurrentIndex(0); }}>
+            <Button variant="ghost" size="icon" onClick={goBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold">Procvičování kartiček</h1>
@@ -170,7 +185,7 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => { setMode('menu'); setCurrentIndex(0); }}>
+            <Button variant="ghost" size="icon" onClick={goBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold">Procvičování kvízu</h1>
@@ -229,6 +244,9 @@ export default function Review() {
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <RotateCcw className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Procvičování</h1>
         </div>

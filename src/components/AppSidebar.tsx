@@ -12,9 +12,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, UserCog, LogOut, GraduationCap, Volume2, VolumeX } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import { isSoundEnabled, setSoundEnabled, getVolume, setVolume } from '@/lib/sounds';
+import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings } from 'lucide-react';
+import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -26,7 +25,6 @@ export function AppSidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
-  const [vol, setVol] = useState(getVolume());
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
@@ -46,14 +44,6 @@ export function AppSidebar() {
     const next = !soundOn;
     setSoundOn(next);
     setSoundEnabled(next);
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    const v = value[0];
-    setVol(v);
-    setVolume(v);
-    if (v === 0 && soundOn) { setSoundOn(false); setSoundEnabled(false); }
-    if (v > 0 && !soundOn) { setSoundOn(true); setSoundEnabled(true); }
   };
 
   return (
@@ -90,36 +80,29 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
-          {/* Theme toggle */}
+          {/* Theme toggle + Sound toggle row */}
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={toggleTheme}>
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          {/* Volume control */}
-          <SidebarMenuItem>
-            <div className="flex items-center gap-2 px-3 py-2">
-              <button onClick={handleToggleSound} className="shrink-0">
+            <div className="flex items-center gap-1 px-2">
+              <SidebarMenuButton onClick={toggleTheme} className="flex-1">
+                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
+              </SidebarMenuButton>
+              <button
+                onClick={handleToggleSound}
+                className="p-2 rounded-md hover:bg-muted transition-colors shrink-0"
+                title={soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky'}
+              >
                 {soundOn ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
               </button>
-              {!collapsed && (
-                <Slider
-                  value={[vol]}
-                  onValueChange={handleVolumeChange}
-                  max={100}
-                  step={5}
-                  className="flex-1"
-                />
-              )}
             </div>
           </SidebarMenuItem>
           {/* Account */}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-4 min-h-[48px]">
+            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-5 min-h-[52px]">
               <Link to="/account" onClick={closeMobileIfNeeded} className="flex items-center gap-2">
                 <div className="relative">
                   <UserCog className="h-5 w-5" />
+                  <Settings className="h-2.5 w-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground" />
                 </div>
                 {!collapsed && <span className="font-medium">{profile?.display_name || 'Můj účet'}</span>}
               </Link>

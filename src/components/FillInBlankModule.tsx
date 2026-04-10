@@ -36,7 +36,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 export default function FillInBlankModule({ questions, onComplete }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -46,36 +46,44 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  // Correct answer is always option_1 (correct_answer defaults to 1 for fill_blank)
-  const correctAnswerText = question?.option_1 || '';
+  const correctAnswerIndex = question?.correct_answer || 1;
+  const correctAnswerText = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || '';
 
-  // Build display sentence: back_text is the full sentence, option_1 is the word to blank out
+  // Build display sentence from back_text with ______ placeholder
   const sentenceData = useMemo(() => {
-    if (!question?.back_text || !question?.option_1) return null;
-    const word = question.option_1;
-    const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
-    if (idx === -1) return { before: question.back_text, after: '' };
+    if (!question?.back_text) return null;
+    const blankIdx = question.back_text.indexOf('______');
+    if (blankIdx === -1) {
+      // Fallback: try to find the correct answer word in the sentence
+      const word = correctAnswerText;
+      if (!word) return null;
+      const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
+      if (idx === -1) return { before: question.back_text, after: '' };
+      return {
+        before: question.back_text.substring(0, idx),
+        after: question.back_text.substring(idx + word.length),
+      };
+    }
     return {
-      before: question.back_text.substring(0, idx),
-      after: question.back_text.substring(idx + word.length),
+      before: question.back_text.substring(0, blankIdx),
+      after: question.back_text.substring(blankIdx + 6),
     };
-  }, [question]);
+  }, [question, correctAnswerText]);
 
   // Build options from option_1-4
   const options = useMemo(() => {
-    const opts: string[] = [];
-    if (question?.option_1) opts.push(question.option_1);
-    if (question?.option_2) opts.push(question.option_2);
-    if (question?.option_3) opts.push(question.option_3);
-    if (question?.option_4) opts.push(question.option_4);
-    if (opts.length >= 2) return shuffleArray(opts);
-    return shuffleArray([correctAnswerText, 'žádná odpověď', 'neutrální', 'jiná možnost']);
-  }, [question, correctAnswerText]);
+    const opts: { text: string; index: number }[] = [];
+    if (question?.option_1) opts.push({ text: question.option_1, index: 1 });
+    if (question?.option_2) opts.push({ text: question.option_2, index: 2 });
+    if (question?.option_3) opts.push({ text: question.option_3, index: 3 });
+    if (question?.option_4) opts.push({ text: question.option_4, index: 4 });
+    return shuffleArray(opts);
+  }, [question]);
 
-  const handleSelect = async (option: string) => {
+  const handleSelect = async (optIndex: number) => {
     if (showResult) return;
-    setSelected(option);
-    const correct = option.trim().toLowerCase() === correctAnswerText.trim().toLowerCase();
+    setSelected(optIndex);
+    const correct = optIndex === correctAnswerIndex;
     setIsCorrect(correct);
     setShowResult(true);
 
@@ -166,7 +174,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                   ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                   : 'bg-primary/10 text-primary'
               }`}>
-                {showResult ? (isCorrect ? selected : correctAnswerText) : '______'}
+                {showResult ? correctAnswerText : '______'}
               </span>
               <span>{sentenceData.after}</span>
             </div>
@@ -175,9 +183,9 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            {options.map((option, idx) => {
-              const isThis = selected === option;
-              const isAnswer = option.trim().toLowerCase() === correctAnswerText.trim().toLowerCase();
+            {options.map((opt) => {
+              const isThis = selected === opt.index;
+              const isAnswer = opt.index === correctAnswerIndex;
               let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
@@ -189,8 +197,8 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                 cls += 'border-border opacity-50';
               }
               return (
-                <button key={idx} className={cls} onClick={() => handleSelect(option)} disabled={showResult}>
-                  {option}
+                <button key={opt.index} className={cls} onClick={() => handleSelect(opt.index)} disabled={showResult}>
+                  {opt.text}
                 </button>
               );
             })}
