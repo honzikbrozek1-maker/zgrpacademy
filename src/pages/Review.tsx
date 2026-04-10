@@ -56,23 +56,24 @@ export default function Review() {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  const updateConfidence = (id: string, confidence: string) => {
+  const updateConfidence = async (id: string, confidence: string) => {
     if (confidence === 'know') {
+      // Delete from DB so it never comes back
+      await supabase.from('review_items').delete().eq('id', id);
       setItems(prev => prev.filter(i => i.id !== id));
     } else {
+      await supabase.from('review_items').update({ confidence }).eq('id', id);
       setItems(prev => prev.map(i => i.id === id ? { ...i, confidence } : i));
     }
-
-    void supabase.from('review_items').update({ confidence }).eq('id', id);
   };
 
-  const advanceReviewItem = (confidence: 'know' | 'partial' | 'unknown') => {
+  const advanceReviewItem = async (confidence: 'know' | 'partial' | 'unknown') => {
     if (!currentItem) return;
 
     const totalItems = activeItems.length;
     const itemId = currentItem.id;
 
-    updateConfidence(itemId, confidence);
+    await updateConfidence(itemId, confidence);
     setFlipped(false);
     setSelected(null);
     setShowResult(false);
@@ -81,6 +82,7 @@ export default function Review() {
       if (totalItems === 1) {
         setMode('menu');
         setCurrentIndex(0);
+        fetchItems();
         return;
       }
 
@@ -96,6 +98,7 @@ export default function Review() {
     } else {
       setMode('menu');
       setCurrentIndex(0);
+      fetchItems();
     }
   };
 
@@ -103,7 +106,8 @@ export default function Review() {
   const quizItems = items.filter(i => i.question?.type === 'quiz' || i.source === 'failed_quiz');
   const fillBlankItems = items.filter(i => i.question?.type === 'fill_blank' || i.source === 'fill_blank');
 
-  const activeItems = mode === 'flashcard' ? flashcardItems : mode === 'quiz' ? quizItems : items;
+  // FIX: fillin mode uses fillBlankItems, not all items
+  const activeItems = mode === 'flashcard' ? flashcardItems : mode === 'quiz' ? quizItems : mode === 'fillin' ? fillBlankItems : items;
   const currentItem = activeItems[currentIndex];
   const progressVal = activeItems.length > 0 ? ((currentIndex + 1) / activeItems.length) * 100 : 0;
 
@@ -133,6 +137,7 @@ export default function Review() {
     if (mode !== 'menu') {
       setMode('menu');
       setCurrentIndex(0);
+      fetchItems();
     } else {
       navigate(-1);
     }
