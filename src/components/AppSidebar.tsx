@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, User, LogOut, GraduationCap } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, Settings, LogOut, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AppSidebar() {
@@ -75,7 +75,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/account')}>
               <Link to="/account" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
                 {!collapsed && <span>{profile?.display_name || 'Můj účet'}</span>}
               </Link>
             </SidebarMenuButton>

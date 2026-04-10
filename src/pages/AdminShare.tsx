@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Mail } from 'lucide-react';
+import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Mail, Send } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface InviteLink {
@@ -24,6 +24,7 @@ export default function AdminShare() {
   const { toast } = useToast();
   const [invites, setInvites] = useState<InviteLink[]>([]);
   const [newRole, setNewRole] = useState<string>('user');
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     if (isAdmin) fetchInvites();
@@ -36,12 +37,30 @@ export default function AdminShare() {
 
   const createInvite = async () => {
     if (!user) return;
-    await supabase.from('invite_links').insert({
+    const { data, error } = await supabase.from('invite_links').insert({
       created_by: user.id,
       role: newRole as 'admin' | 'user',
-    });
+    }).select().single();
+
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
+    }
+
     fetchInvites();
-    toast({ title: 'Pozvánka vytvořena' });
+
+    if (email && data) {
+      const url = `${window.location.origin}/invite/${data.code}`;
+      // Copy to clipboard with email context
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: 'Pozvánka vytvořena',
+        description: `Odkaz zkopírován do schránky. Pošlete ho na: ${email}`,
+      });
+      setEmail('');
+    } else {
+      toast({ title: 'Pozvánka vytvořena' });
+    }
   };
 
   const copyLink = (code: string) => {
@@ -78,19 +97,27 @@ export default function AdminShare() {
           <>
             <Card className="shadow-card">
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Mail className="h-5 w-5" /> Pozvat uživatele</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">Vytvořte pozvánku s předem nastavenou rolí:</p>
-                <div className="flex gap-2">
-                  <Select value={newRole} onValueChange={setNewRole}>
-                    <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user"><Users className="mr-1 h-3 w-3 inline" /> Uživatel</SelectItem>
-                      <SelectItem value="admin"><Shield className="mr-1 h-3 w-3 inline" /> Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={createInvite} className="gradient-primary text-primary-foreground">
-                    <Plus className="mr-1 h-4 w-4" /> Vytvořit pozvánku
-                  </Button>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Vytvořte pozvánku a pošlete ji přímo na e-mail:</p>
+                <div className="space-y-3">
+                  <Input
+                    type="email"
+                    placeholder="E-mail příjemce (volitelné)"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Select value={newRole} onValueChange={setNewRole}>
+                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user"><Users className="mr-1 h-3 w-3 inline" /> Uživatel</SelectItem>
+                        <SelectItem value="admin"><Shield className="mr-1 h-3 w-3 inline" /> Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={createInvite}>
+                      {email ? <><Send className="mr-1 h-4 w-4" /> Vytvořit a zkopírovat</> : <><Plus className="mr-1 h-4 w-4" /> Vytvořit pozvánku</>}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
