@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
