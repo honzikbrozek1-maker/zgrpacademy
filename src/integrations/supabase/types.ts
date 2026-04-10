@@ -76,6 +76,7 @@ export type Database = {
       }
       levels: {
         Row: {
+          category: string
           created_at: string
           description: string | null
           id: string
@@ -84,6 +85,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -92,6 +94,7 @@ export type Database = {
           title: string
         }
         Update: {
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
