@@ -62,19 +62,19 @@ export default function Dashboard() {
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
         <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
 
-        {/* Stats */}
+        {/* Stats - fixed colors, not theme-dependent */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="shadow-card relative">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="absolute top-2 right-2 text-muted-foreground hover:text-primary transition-colors z-10">
+                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10">
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-primary" /> Bodový systém
+                    <Trophy className="h-5 w-5 text-amber-500" /> Bodový systém
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
@@ -87,18 +87,25 @@ export default function Dashboard() {
                         <Badge variant="secondary">+10 bodů</Badge>
                       </div>
                       <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
+                        <span>✍️ Správné doplnění slova</span>
+                        <Badge variant="secondary">+10 bodů</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
                         <span>🏆 Úspěšný závěrečný test</span>
                         <Badge variant="secondary">+50 bodů</Badge>
                       </div>
                     </div>
                   </div>
-                  <p className="text-muted-foreground text-xs">Čím více se učíte, tím více bodů získáte!</p>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Milníky:</h4>
+                    <p className="text-muted-foreground">Za dosažení 50, 100, 200, 500 a 1000 bodů dostanete speciální odměnu! 🎉</p>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Trophy className="h-5 w-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                <Trophy className="h-5 w-5 text-amber-500" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Body</p>
@@ -108,8 +115,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Star className="h-5 w-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                <Star className="h-5 w-5 text-violet-500" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
@@ -119,8 +126,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Dokončeno</p>
@@ -130,8 +137,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate('/review')}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
-                <RotateCcw className="h-5 w-5 text-warning" />
+              <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
+                <RotateCcw className="h-5 w-5 text-orange-500" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">K procvičení</p>
@@ -158,7 +165,7 @@ export default function Dashboard() {
             <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <RotateCcw className="h-5 w-5 text-warning" />
+                  <RotateCcw className="h-5 w-5 text-orange-500" />
                   <div>
                     <h3 className="font-semibold text-sm">Procvičování</h3>
                     <p className="text-xs text-muted-foreground">{reviewCount} položek k opakování</p>

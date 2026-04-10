@@ -19,6 +19,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '168 30% 95%',
       '--sidebar-accent-foreground': '168 65% 25%',
       '--sidebar-ring': '168 65% 38%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(168, 65%, 38%), hsl(180, 55%, 45%))',
     },
     dark: {
       '--primary': '168 60% 45%',
@@ -28,6 +29,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '222 20% 16%',
       '--sidebar-accent-foreground': '168 55% 55%',
       '--sidebar-ring': '168 60% 45%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(168, 60%, 45%), hsl(180, 50%, 50%))',
     },
   },
   {
@@ -42,6 +44,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '262 30% 95%',
       '--sidebar-accent-foreground': '262 60% 30%',
       '--sidebar-ring': '262 60% 50%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(262, 60%, 50%), hsl(280, 55%, 55%))',
     },
     dark: {
       '--primary': '262 55% 55%',
@@ -51,6 +54,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '262 20% 18%',
       '--sidebar-accent-foreground': '262 50% 65%',
       '--sidebar-ring': '262 55% 55%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(262, 55%, 55%), hsl(280, 50%, 60%))',
     },
   },
   {
@@ -65,6 +69,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '217 30% 95%',
       '--sidebar-accent-foreground': '217 70% 30%',
       '--sidebar-ring': '217 70% 50%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(217, 70%, 50%), hsl(230, 60%, 55%))',
     },
     dark: {
       '--primary': '217 65% 55%',
@@ -74,6 +79,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '217 20% 18%',
       '--sidebar-accent-foreground': '217 55% 65%',
       '--sidebar-ring': '217 65% 55%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(217, 65%, 55%), hsl(230, 55%, 60%))',
     },
   },
   {
@@ -88,6 +94,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '340 30% 95%',
       '--sidebar-accent-foreground': '340 65% 30%',
       '--sidebar-ring': '340 65% 50%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(340, 65%, 50%), hsl(355, 60%, 55%))',
     },
     dark: {
       '--primary': '340 60% 55%',
@@ -97,6 +104,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '340 20% 18%',
       '--sidebar-accent-foreground': '340 50% 65%',
       '--sidebar-ring': '340 60% 55%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(340, 60%, 55%), hsl(355, 55%, 60%))',
     },
   },
   {
@@ -111,6 +119,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '142 30% 95%',
       '--sidebar-accent-foreground': '142 55% 25%',
       '--sidebar-ring': '142 55% 40%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(142, 55%, 40%), hsl(155, 50%, 45%))',
     },
     dark: {
       '--primary': '142 50% 45%',
@@ -120,6 +129,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '142 20% 16%',
       '--sidebar-accent-foreground': '142 45% 55%',
       '--sidebar-ring': '142 50% 45%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(142, 50%, 45%), hsl(155, 45%, 50%))',
     },
   },
   {
@@ -134,6 +144,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '25 40% 95%',
       '--sidebar-accent-foreground': '25 90% 28%',
       '--sidebar-ring': '25 90% 48%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(25, 90%, 48%), hsl(35, 85%, 52%))',
     },
     dark: {
       '--primary': '25 85% 52%',
@@ -143,6 +154,7 @@ export const colorSchemes: ColorScheme[] = [
       '--sidebar-accent': '25 20% 18%',
       '--sidebar-accent-foreground': '25 75% 60%',
       '--sidebar-ring': '25 85% 52%',
+      '--gradient-primary': 'linear-gradient(135deg, hsl(25, 85%, 52%), hsl(35, 80%, 56%))',
     },
   },
 ];
