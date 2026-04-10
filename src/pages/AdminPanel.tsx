@@ -55,7 +55,7 @@ interface AdminRequest {
 
 export default function AdminPanel() {
   const { user, isAdmin } = useAuth();
-  const { category, pathLabel } = useAppPath();
+  const { category } = useAppPath();
   const { toast } = useToast();
   const [levels, setLevels] = useState<Level[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
