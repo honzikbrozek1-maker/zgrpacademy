@@ -47,8 +47,6 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {topItems.map(item => {
-                // Hide admin for non-admins
-                if (item.to === '/admin' && !isAdmin) return null;
                 const active = isActive(item.to);
                 return (
                   <SidebarMenuItem key={item.to}>
