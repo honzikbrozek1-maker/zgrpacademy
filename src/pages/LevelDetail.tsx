@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle, PenLine, Lock } from 'lucide-react';
+import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle, PenLine, Lock, CheckCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QuizModule from '@/components/QuizModule';
 import FlashcardModule from '@/components/FlashcardModule';
