@@ -23,10 +23,11 @@ export default function PathSelection() {
         <div className="grid gap-4 md:grid-cols-2">
           {/* Products path - teal/green */}
           <Card
-            className="shadow-card hover:shadow-elevated transition-all cursor-pointer group border-2 border-transparent hover:border-primary/30"
+            className="shadow-card hover:shadow-elevated transition-all cursor-pointer group border-2 border-transparent hover:border-primary/40 relative overflow-hidden"
             onClick={() => navigate('/products')}
           >
-            <CardContent className="p-6 md:p-8 space-y-4">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            <CardContent className="p-6 md:p-8 space-y-4 relative">
               <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Package className="h-7 w-7 text-primary" />
               </div>
@@ -42,14 +43,15 @@ export default function PathSelection() {
             </CardContent>
           </Card>
 
-          {/* Backoffice path - blue/indigo */}
+          {/* Backoffice path - indigo/blue */}
           <Card
-            className="shadow-card hover:shadow-elevated transition-all cursor-pointer group border-2 border-transparent hover:border-[hsl(230,65%,55%)]/30"
+            className="shadow-card hover:shadow-elevated transition-all cursor-pointer group border-2 border-transparent hover:border-indigo-500/40 relative overflow-hidden"
             onClick={() => navigate('/backoffice')}
           >
-            <CardContent className="p-6 md:p-8 space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-[hsl(230,65%,55%)]/15 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Briefcase className="h-7 w-7 text-[hsl(230,65%,55%)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
+            <CardContent className="p-6 md:p-8 space-y-4 relative">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Briefcase className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
                 <h2 className="text-xl font-bold mb-1">Backoffice & Odměny</h2>
@@ -57,7 +59,7 @@ export default function PathSelection() {
                   Práce s backoffice systémem, systém odměn a business nástroje.
                 </p>
               </div>
-              <div className="flex items-center text-[hsl(230,65%,55%)] text-sm font-medium gap-1 group-hover:gap-2 transition-all">
+              <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-medium gap-1 group-hover:gap-2 transition-all">
                 Pokračovat <ArrowRight className="h-4 w-4" />
               </div>
             </CardContent>

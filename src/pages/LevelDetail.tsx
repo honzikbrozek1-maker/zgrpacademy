@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,6 +39,7 @@ export default function LevelDetail() {
   const { levelId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { category, basePath } = useAppPath();
   const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
@@ -64,7 +66,7 @@ export default function LevelDetail() {
     if (isUuid) {
       levelQuery = supabase.from('levels').select('*').eq('id', levelId).single();
     } else {
-      levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).single();
+      levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).eq('category', category).single();
     }
     const levelRes = await levelQuery;
     if (!levelRes.data) return;
@@ -95,7 +97,7 @@ export default function LevelDetail() {
       setCompletedModules(allMods);
       localStorage.setItem(COMPLETED_MODULES_KEY + lvl.id, JSON.stringify([...allMods]));
     }
-  }, [levelId, user]);
+  }, [levelId, user, category]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -270,7 +272,7 @@ export default function LevelDetail() {
               </Card>
 
               {reviewCount > 0 && (
-                <Link to="/review">
+                <Link to={`${basePath}/review`}>
                   <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all">
                     <CardContent className="p-6 flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center">

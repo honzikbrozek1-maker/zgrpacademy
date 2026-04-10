@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { PathProvider } from "@/lib/pathContext";
 import Auth from "./pages/Auth";
 import PathSelection from "./pages/PathSelection";
 import Dashboard from "./pages/Dashboard";
@@ -35,22 +36,40 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/invite/:code" element={<InvitePage />} />
-              <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
-              <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/backoffice" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
-              <Route path="/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
-              <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-              <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-              <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-              <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
-              <Route path="/admin/share" element={<Navigate to="/share" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <PathProvider>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/invite/:code" element={<InvitePage />} />
+                <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
+                
+                {/* Products path */}
+                <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/products/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
+                <Route path="/products/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
+                <Route path="/products/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
+                <Route path="/products/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+
+                {/* Backoffice path */}
+                <Route path="/backoffice" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/backoffice/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
+                <Route path="/backoffice/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
+                <Route path="/backoffice/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
+                <Route path="/backoffice/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+
+                {/* Shared */}
+                <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
+                <Route path="/admin/share" element={<Navigate to="/share" replace />} />
+                
+                {/* Legacy redirects */}
+                <Route path="/levels" element={<Navigate to="/products/levels" replace />} />
+                <Route path="/review" element={<Navigate to="/products/review" replace />} />
+                <Route path="/achievements" element={<Navigate to="/products/achievements" replace />} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PathProvider>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

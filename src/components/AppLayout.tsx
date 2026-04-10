@@ -4,13 +4,15 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Home, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAppPath } from '@/lib/pathContext';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
+  const { basePath } = useAppPath();
   const isOnAccount = location.pathname === '/account';
-  const isOnDashboard = location.pathname === '/products' || location.pathname === '/';
+  const isOnDashboard = location.pathname === basePath;
 
   const handleAccountClick = () => {
     if (isOnAccount) {
@@ -31,7 +33,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-1">
                 {!isOnDashboard && (
                   <button
-                    onClick={() => navigate('/products')}
+                    onClick={() => navigate(basePath)}
                     className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
                     aria-label="Dashboard"
                   >

@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
+import { useAppPath } from '@/lib/pathContext';
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, ArrowLeftRight } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, ArrowLeftRight, Package, Briefcase } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,21 +22,26 @@ export function AppSidebar() {
   const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { state, setOpenMobile } = useSidebar();
+  const { currentPath, basePath, pathLabel } = useAppPath();
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const isMobile = useIsMobile();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
 
+  const isBackoffice = currentPath === 'backoffice';
+  const accentClass = isBackoffice ? 'text-indigo-500' : 'text-primary';
+  const accentBg = isBackoffice ? 'bg-indigo-500/15' : 'gradient-primary';
+
   const isActive = (path: string) =>
-    path === '/products' ? location.pathname === '/products' : location.pathname.startsWith(path);
+    path === basePath ? location.pathname === basePath : location.pathname.startsWith(path);
 
   const closeMobileIfNeeded = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   const topItems = [
-    { to: '/products', icon: Home, label: 'Dashboard' },
-    { to: '/levels', icon: Layers, label: 'Levely' },
+    { to: basePath, icon: Home, label: 'Dashboard' },
+    { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
     { to: '/share', icon: Share2, label: 'Sdílet aplikaci' },
     { to: '/admin', icon: Shield, label: 'Admin panel' },
   ];
@@ -51,8 +57,11 @@ export function AppSidebar() {
       <SidebarContent>
         {/* Logo */}
         <Link to="/" onClick={closeMobileIfNeeded} className="flex items-center gap-2 px-4 py-4 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-            <GraduationCap className="h-4 w-4 text-primary-foreground" />
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${accentBg}`}>
+            {isBackoffice
+              ? <Briefcase className="h-4 w-4 text-white" />
+              : <GraduationCap className="h-4 w-4 text-primary-foreground" />
+            }
           </div>
           {!collapsed && <span className="font-bold text-lg">ZGRP Academy</span>}
         </Link>
@@ -60,15 +69,18 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Path switcher */}
+              {/* Current path indicator */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/" onClick={closeMobileIfNeeded} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                    <ArrowLeftRight className="h-4 w-4" />
-                    {!collapsed && <span>Změnit sekci</span>}
+                  <Link to="/" onClick={closeMobileIfNeeded} className={`flex items-center gap-2 ${accentClass} font-medium`}>
+                    {isBackoffice ? <Briefcase className="h-4 w-4" /> : <Package className="h-4 w-4" />}
+                    {!collapsed && <span>{pathLabel}</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
+              {/* Separator-like spacing */}
+              <div className="my-1" />
 
               {topItems.map(item => {
                 const active = isActive(item.to);
