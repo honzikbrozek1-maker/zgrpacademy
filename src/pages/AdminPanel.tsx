@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, Layers, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -59,6 +59,9 @@ export default function AdminPanel() {
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
   const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
+  const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
 
   const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
@@ -80,6 +83,7 @@ export default function AdminPanel() {
     if (isAdmin) {
       fetchUsers();
       fetchAdminRequests();
+      fetchInvitedUsers();
     } else if (user) {
       fetchMyRequest();
     }
@@ -100,8 +104,14 @@ export default function AdminPanel() {
   };
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    const { data } = await supabase.from('profiles').select('*').order('display_name');
     if (data) setUsers(data);
+  };
+
+  const fetchInvitedUsers = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('invite_links').select('used_by').eq('created_by', user.id).not('used_by', 'is', null);
+    if (data) setInvitedUserIds(data.map(d => d.used_by!).filter(Boolean));
   };
 
   const fetchAdminRequests = async () => {
@@ -121,7 +131,7 @@ export default function AdminPanel() {
     if (error) {
       toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Žádost odeslána', description: 'Administrátor bude informován o vaší žádosti.' });
+      toast({ title: 'Žádost odeslána' });
       fetchMyRequest();
     }
   };
@@ -177,7 +187,7 @@ export default function AdminPanel() {
       option_3: qForm.type === 'quiz' ? qForm.option_3 : null,
       option_4: qForm.type === 'quiz' ? qForm.option_4 : null,
       correct_answer: qForm.type === 'quiz' ? qForm.correct_answer : null,
-      back_text: qForm.type === 'flashcard' ? qForm.back_text : null,
+      back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
@@ -224,7 +234,27 @@ export default function AdminPanel() {
     toast({ title: isCurrentlyAdmin ? 'Admin role odebrána' : 'Admin role přidělena' });
   };
 
-  // Non-admin view: request admin access
+  const deleteUser = async (userId: string) => {
+    await supabase.from('review_items').delete().eq('user_id', userId);
+    await supabase.from('user_progress').delete().eq('user_id', userId);
+    await supabase.from('profiles').delete().eq('user_id', userId);
+    await supabase.from('user_roles').delete().eq('user_id', userId);
+    setShowDeleteUser(null);
+    fetchUsers();
+    toast({ title: 'Uživatel smazán' });
+  };
+
+  // Filter users
+  const filteredUsers = users.filter(u => {
+    if (!userSearch) return true;
+    const search = userSearch.toLowerCase();
+    return u.display_name?.toLowerCase().includes(search);
+  });
+
+  const myInvitedUsers = filteredUsers.filter(u => invitedUserIds.includes(u.user_id));
+  const otherUsers = filteredUsers.filter(u => !invitedUserIds.includes(u.user_id));
+
+  // Non-admin view
   if (!isAdmin) {
     return (
       <AppLayout>
@@ -233,9 +263,7 @@ export default function AdminPanel() {
             <Shield className="h-6 w-6 text-primary" /> Admin panel
           </h1>
           <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Nemáte administrátorská oprávnění</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Nemáte administrátorská oprávnění</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
                 Pokud potřebujete administrátorský přístup, můžete odeslat žádost administrátorovi.
@@ -258,7 +286,41 @@ export default function AdminPanel() {
     );
   }
 
-  // Admin view with level drill-down
+  const renderUserCard = (u: UserProfile) => (
+    <Card key={u.user_id} className="shadow-card">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <Users className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="font-medium">{u.display_name || 'Bez jména'}</p>
+            <div className="flex gap-3 text-xs text-muted-foreground">
+              <span>Body: {u.total_points}</span>
+              <span>Level: {u.current_level}</span>
+              <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" onClick={() => toggleAdmin(u.user_id, false)}>
+            <Shield className="mr-1 h-3 w-3" /> Admin
+          </Button>
+          {showDeleteUser === u.user_id ? (
+            <div className="flex items-center gap-1">
+              <Button variant="destructive" size="sm" onClick={() => deleteUser(u.user_id)}>Potvrdit</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowDeleteUser(null)}>Zrušit</Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setShowDeleteUser(u.user_id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up">
@@ -280,7 +342,6 @@ export default function AdminPanel() {
 
           <TabsContent value="content" className="mt-6 space-y-6">
             {selectedLevel ? (
-              // Drill-down: questions for selected level
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="sm" onClick={() => setSelectedLevel(null)}>
@@ -291,7 +352,7 @@ export default function AdminPanel() {
 
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
-                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček
+                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček, {questions.filter(q => q.type === 'fill_blank').length} doplňování
                   </p>
                   <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
                     <DialogTrigger asChild>
@@ -307,6 +368,7 @@ export default function AdminPanel() {
                           <SelectContent>
                             <SelectItem value="quiz">Kvíz</SelectItem>
                             <SelectItem value="flashcard">Kartička</SelectItem>
+                            <SelectItem value="fill_blank">Doplňování</SelectItem>
                           </SelectContent>
                         </Select>
                         <Textarea placeholder="Text otázky" value={qForm.question_text} onChange={e => setQForm({ ...qForm, question_text: e.target.value })} />
@@ -330,6 +392,18 @@ export default function AdminPanel() {
                         {qForm.type === 'flashcard' && (
                           <Textarea placeholder="Text zadní strany" value={qForm.back_text} onChange={e => setQForm({ ...qForm, back_text: e.target.value })} />
                         )}
+                        {qForm.type === 'fill_blank' && (
+                          <div className="space-y-2">
+                            <Textarea
+                              placeholder="Věta s vynechaným slovem v hranatých závorkách, např: Zinzino je [síťová] marketingová společnost"
+                              value={qForm.back_text}
+                              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Slovo v [hranatých závorkách] bude vynecháno a uživatel ho bude muset doplnit. AI kontroluje i překlepy a podobná slova.
+                            </p>
+                          </div>
+                        )}
                         <Input type="number" placeholder="Pořadí" value={qForm.order_index} onChange={e => setQForm({ ...qForm, order_index: parseInt(e.target.value) || 0 })} />
                         <Button onClick={saveQuestion} className="w-full">Uložit</Button>
                       </div>
@@ -343,12 +417,17 @@ export default function AdminPanel() {
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline">{q.type === 'quiz' ? 'Kvíz' : 'Kartička'}</Badge>
+                            <Badge variant="outline">
+                              {q.type === 'quiz' ? 'Kvíz' : q.type === 'flashcard' ? 'Kartička' : 'Doplňování'}
+                            </Badge>
                             <span className="text-xs text-muted-foreground">#{q.order_index}</span>
                           </div>
                           <p className="mt-1 font-medium">{q.question_text}</p>
                           {q.type === 'quiz' && (
                             <p className="text-xs text-success mt-1">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                          )}
+                          {q.type === 'fill_blank' && q.back_text && (
+                            <p className="text-xs text-muted-foreground mt-1">{q.back_text}</p>
                           )}
                         </div>
                         <div className="flex gap-1">
@@ -364,7 +443,6 @@ export default function AdminPanel() {
                 </div>
               </div>
             ) : (
-              // Level list view
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Levely</h2>
@@ -424,31 +502,34 @@ export default function AdminPanel() {
             )}
           </TabsContent>
 
-          <TabsContent value="users" className="mt-6">
-            <div className="space-y-3">
-              {users.map(u => (
-                <Card key={u.user_id} className="shadow-card">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{u.display_name || 'Bez jména'}</p>
-                        <div className="flex gap-3 text-xs text-muted-foreground">
-                          <span>Body: {u.total_points}</span>
-                          <span>Level: {u.current_level}</span>
-                          <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => toggleAdmin(u.user_id, false)}>
-                      <Shield className="mr-1 h-3 w-3" /> Přidat admin
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+          <TabsContent value="users" className="mt-6 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Hledat podle jména..."
+                value={userSearch}
+                onChange={e => setUserSearch(e.target.value)}
+                className="pl-9"
+              />
             </div>
+
+            {myInvitedUsers.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vaši pozvaní uživatelé</h3>
+                {myInvitedUsers.map(renderUserCard)}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {myInvitedUsers.length > 0 && (
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Všichni uživatelé</h3>
+              )}
+              {otherUsers.map(renderUserCard)}
+            </div>
+
+            {filteredUsers.length === 0 && (
+              <p className="text-muted-foreground text-center py-8">Žádní uživatelé nenalezeni.</p>
+            )}
           </TabsContent>
 
           {adminRequests.length > 0 && (

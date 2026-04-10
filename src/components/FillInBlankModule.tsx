@@ -3,9 +3,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
+import MilestoneDialog, { checkMilestone } from '@/components/MilestoneDialog';
 
 interface Question {
   id: string;
@@ -19,8 +21,6 @@ interface Props {
 }
 
 function extractBlank(text: string): { before: string; answer: string; after: string } | null {
-  // Expects format: "Some text ___answer___ more text"
-  // or "Some text [answer] more text"
   const bracketMatch = text.match(/^(.*?)\[(.+?)\](.*)$/s);
   if (bracketMatch) return { before: bracketMatch[1], answer: bracketMatch[2], after: bracketMatch[3] };
   const underscoreMatch = text.match(/^(.*?)___(.+?)___(.*)$/s);
@@ -29,35 +29,85 @@ function extractBlank(text: string): { before: string; answer: string; after: st
 }
 
 export default function FillInBlankModule({ questions, onComplete }: Props) {
-  const { user } = useAuth();
+  const { user, refreshProfile, profile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [checking, setChecking] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [milestone, setMilestone] = useState<number | null>(null);
 
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  // Use back_text as the sentence with blank, question_text as hint
-  // Or if back_text has bracket notation, use that
   const blankData = question?.back_text ? extractBlank(question.back_text) : null;
   const correctAnswer = blankData?.answer || question?.back_text || '';
+  const sentence = blankData
+    ? `${blankData.before}___${blankData.after}`
+    : question?.question_text || '';
 
   const handleCheck = async () => {
-    if (showResult) return;
-    setShowResult(true);
-    const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
-    if (isCorrect) {
-      setCorrectCount(c => c + 1);
-    } else if (user) {
-      await supabase.from('review_items').upsert({
-        user_id: user.id,
-        question_id: question.id,
-        confidence: 'unknown',
-        source: 'fill_blank',
-      }, { onConflict: 'user_id,question_id' });
+    if (showResult || checking || !userAnswer.trim()) return;
+    setChecking(true);
+
+    try {
+      const response = await supabase.functions.invoke('check-answer', {
+        body: {
+          userAnswer: userAnswer.trim(),
+          correctAnswer: correctAnswer.trim(),
+          sentence,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      const result = response.data;
+      setIsCorrect(result.correct);
+      setFeedback(result.feedback || '');
+
+      if (result.correct) {
+        setCorrectCount(c => c + 1);
+        playCorrectSound();
+        // Award points
+        if (user) {
+          const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
+          if (prof) {
+            const oldPts = prof.total_points;
+            const newPts = oldPts + 10;
+            await supabase.from('profiles').update({ total_points: newPts }).eq('user_id', user.id);
+            const m = checkMilestone(oldPts, newPts);
+            if (m) setMilestone(m);
+          }
+        }
+      } else {
+        playIncorrectSound();
+        if (user) {
+          await supabase.from('review_items').upsert({
+            user_id: user.id,
+            question_id: question.id,
+            confidence: 'unknown',
+            source: 'fill_blank',
+          }, { onConflict: 'user_id,question_id' });
+        }
+      }
+    } catch {
+      // Fallback to exact match
+      const exact = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+      setIsCorrect(exact);
+      setFeedback('');
+      if (exact) {
+        playCorrectSound();
+        setCorrectCount(c => c + 1);
+      } else {
+        playIncorrectSound();
+      }
     }
+
+    setShowResult(true);
+    setChecking(false);
   };
 
   const handleNext = () => {
@@ -65,8 +115,11 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
       setCurrentIndex(i => i + 1);
       setUserAnswer('');
       setShowResult(false);
+      setIsCorrect(false);
+      setFeedback('');
     } else {
       setFinished(true);
+      refreshProfile();
     }
   };
 
@@ -75,6 +128,8 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
       setCurrentIndex(i => i - 1);
       setUserAnswer('');
       setShowResult(false);
+      setIsCorrect(false);
+      setFeedback('');
     }
   };
 
@@ -97,10 +152,10 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
     );
   }
 
-  const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
-
   return (
     <div className="space-y-4">
+      <MilestoneDialog open={!!milestone} milestone={milestone || 0} onClose={() => setMilestone(null)} />
+
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
         <Progress value={progress} className="h-2 flex-1" />
@@ -125,6 +180,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                   className="inline-block w-40 mx-1 border-b-2 border-primary"
                   placeholder="..."
                   autoFocus
+                  disabled={checking}
                 />
               )}
               <span>{blankData.after}</span>
@@ -132,34 +188,38 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           ) : (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">{question.question_text}</h3>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={userAnswer}
-                  onChange={e => setUserAnswer(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                  placeholder="Napište odpověď..."
-                  className="flex-1"
-                  autoFocus
-                  disabled={showResult}
-                />
-              </div>
+              <Input
+                value={userAnswer}
+                onChange={e => setUserAnswer(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleCheck()}
+                placeholder="Napište odpověď..."
+                className="flex-1"
+                autoFocus
+                disabled={showResult || checking}
+              />
             </div>
           )}
 
           {showResult && (
-            <div className={`flex items-center gap-2 p-3 rounded-lg ${isCorrect ? 'bg-success/10' : 'bg-destructive/10'}`}>
+            <div className={`flex items-start gap-2 p-3 rounded-lg ${isCorrect ? 'bg-success/10' : 'bg-destructive/10'}`}>
               {isCorrect ? (
-                <>
-                  <CheckCircle className="h-5 w-5 text-success" />
-                  <span className="font-medium text-success">Správně!</span>
-                </>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success shrink-0" />
+                  <div>
+                    <span className="font-medium text-success">Správně!</span>
+                    {feedback && <p className="text-sm text-muted-foreground mt-0.5">{feedback}</p>}
+                  </div>
+                </div>
               ) : (
-                <>
-                  <XCircle className="h-5 w-5 text-destructive" />
-                  <span className="text-destructive">
-                    Správná odpověď: <span className="font-bold">{correctAnswer}</span>
-                  </span>
-                </>
+                <div className="flex items-start gap-2">
+                  <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-destructive">
+                      Správná odpověď: <span className="font-bold">{correctAnswer}</span>
+                    </span>
+                    {feedback && <p className="text-sm text-muted-foreground mt-0.5">{feedback}</p>}
+                  </div>
+                </div>
               )}
             </div>
           )}
@@ -171,8 +231,8 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
         {!showResult ? (
-          <Button onClick={handleCheck} disabled={!userAnswer.trim()} className="gradient-primary text-primary-foreground">
-            Zkontrolovat
+          <Button onClick={handleCheck} disabled={!userAnswer.trim() || checking} className="gradient-primary text-primary-foreground">
+            {checking ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Kontroluji...</> : 'Zkontrolovat'}
           </Button>
         ) : (
           <Button onClick={handleNext} className="gradient-primary text-primary-foreground">

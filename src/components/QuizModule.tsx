@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
+import MilestoneDialog, { checkMilestone } from '@/components/MilestoneDialog';
 
 interface Question {
   id: string;
@@ -29,6 +31,7 @@ export default function QuizModule({ questions, onComplete }: Props) {
   const [showResult, setShowResult] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [milestone, setMilestone] = useState<number | null>(null);
 
   const question = questions[currentIndex];
   const options = [question?.option_1, question?.option_2, question?.option_3, question?.option_4].filter(Boolean);
@@ -41,15 +44,19 @@ export default function QuizModule({ questions, onComplete }: Props) {
 
     if (optIndex === question.correct_answer) {
       setCorrectCount(c => c + 1);
-      // Award points
+      playCorrectSound();
       if (user) {
         const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
         if (prof) {
-          await supabase.from('profiles').update({ total_points: prof.total_points + 10 }).eq('user_id', user.id);
+          const oldPts = prof.total_points;
+          const newPts = oldPts + 10;
+          await supabase.from('profiles').update({ total_points: newPts }).eq('user_id', user.id);
+          const m = checkMilestone(oldPts, newPts);
+          if (m) setMilestone(m);
         }
       }
     } else {
-      // Save as failed quiz item for review
+      playIncorrectSound();
       if (user) {
         await supabase.from('review_items').upsert({
           user_id: user.id,
@@ -101,6 +108,8 @@ export default function QuizModule({ questions, onComplete }: Props) {
 
   return (
     <div className="space-y-4">
+      <MilestoneDialog open={!!milestone} milestone={milestone || 0} onClose={() => setMilestone(null)} />
+
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
         <Progress value={progress} className="h-2 flex-1" />
