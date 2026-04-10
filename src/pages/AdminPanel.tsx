@@ -716,7 +716,7 @@ export default function AdminPanel() {
                   <h2 className="text-lg font-semibold">Levely</h2>
                   <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 }); }}>
+                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category }); }}>
                         <Plus className="mr-1 h-4 w-4" /> Přidat level
                       </Button>
                     </DialogTrigger>
