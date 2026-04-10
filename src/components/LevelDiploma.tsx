@@ -35,7 +35,7 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
       <div class="diploma">
         <div class="icon">🎓</div>
         <h1>Certifikát o absolvování</h1>
-        <h2>Zinzino Academy</h2>
+        <h2>ZGRP Academy</h2>
         <p class="detail">Tímto certifikujeme, že</p>
         <p class="name">${userName}</p>
         <p class="detail">úspěšně absolvoval/a kurz</p>
@@ -57,7 +57,7 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
           <CardContent className="p-8 md:p-12 text-center space-y-4">
             <GraduationCap className="h-12 w-12 mx-auto text-primary" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary">Certifikát o absolvování</h2>
-            <p className="text-muted-foreground">Zinzino Academy</p>
+            <p className="text-muted-foreground">ZGRP Academy</p>
             <div className="py-4">
               <p className="text-sm text-muted-foreground">Tímto certifikujeme, že</p>
               <p className="text-xl font-bold mt-1">{userName}</p>

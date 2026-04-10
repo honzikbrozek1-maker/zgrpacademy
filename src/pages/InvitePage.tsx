@@ -46,7 +46,7 @@ export default function InvitePage() {
         <Card className="max-w-md w-full shadow-elevated">
           <CardContent className="p-8 text-center space-y-4">
             <GraduationCap className="h-12 w-12 mx-auto text-primary" />
-            <h2 className="text-xl font-bold">Pozvánka do Zinzino Academy</h2>
+            <h2 className="text-xl font-bold">Pozvánka do ZGRP Academy</h2>
             <p className="text-muted-foreground">Pro přijetí pozvánky se nejprve přihlaste nebo zaregistrujte.</p>
             <Button onClick={() => navigate('/auth')} className="gradient-primary text-primary-foreground">
               Přihlásit se
@@ -78,7 +78,7 @@ export default function InvitePage() {
           {status === 'valid' && invite && (
             <>
               <CheckCircle className="h-12 w-12 mx-auto text-success" />
-              <h2 className="text-xl font-bold">Pozvánka do Zinzino Academy</h2>
+              <h2 className="text-xl font-bold">Pozvánka do ZGRP Academy</h2>
               <p className="text-muted-foreground">
                 Budete přidáni jako <strong>{invite.role === 'admin' ? 'Administrátor' : 'Uživatel'}</strong>.
               </p>
