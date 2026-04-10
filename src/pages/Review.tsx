@@ -175,7 +175,6 @@ export default function Review() {
           </div>
           {flipped && (
             <div className="flex justify-center gap-3 animate-slide-up">
-              <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => { updateConfidence(currentItem.id, 'know'); handleNext(); }}>
               <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => advanceReviewItem('know')}>
                 <CheckCircle className="mr-1 h-4 w-4" /> Umím
               </Button>

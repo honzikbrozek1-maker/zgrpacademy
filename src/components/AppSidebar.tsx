@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppSidebar() {
-  const { isAdmin, profile, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
