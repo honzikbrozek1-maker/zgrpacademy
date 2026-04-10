@@ -97,7 +97,7 @@ export default function LevelDetail() {
       setCompletedModules(allMods);
       localStorage.setItem(COMPLETED_MODULES_KEY + lvl.id, JSON.stringify([...allMods]));
     }
-  }, [levelId, user]);
+  }, [levelId, user, category]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -272,7 +272,7 @@ export default function LevelDetail() {
               </Card>
 
               {reviewCount > 0 && (
-                <Link to="/review">
+                <Link to={`${basePath}/review`}>
                   <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all">
                     <CardContent className="p-6 flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center">
