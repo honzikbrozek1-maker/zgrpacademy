@@ -1,19 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useTheme } from '@/lib/theme';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, Trophy, Star, BookOpen } from 'lucide-react';
+import { User, Mail, Lock, Trophy, Star, BookOpen, Palette } from 'lucide-react';
+import { colorSchemes } from '@/lib/colorSchemes';
 import AppLayout from '@/components/AppLayout';
 
 export default function Account() {
   const { user, profile, refreshProfile } = useAuth();
+  const { colorScheme, setColorScheme } = useTheme();
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (profile?.display_name) setDisplayName(profile.display_name);
+  }, [profile]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -42,6 +49,14 @@ export default function Account() {
       setNewPassword('');
     }
     setLoading(false);
+  };
+
+  const handleColorSchemeChange = async (schemeId: string) => {
+    setColorScheme(schemeId);
+    if (user) {
+      await supabase.from('profiles').update({ color_scheme: schemeId }).eq('user_id', user.id);
+    }
+    toast({ title: 'Barevné schéma změněno' });
   };
 
   return (
@@ -92,6 +107,36 @@ export default function Account() {
             <Button onClick={handleUpdateProfile} disabled={loading} className="gradient-primary text-primary-foreground">
               Uložit změny
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Color scheme */}
+        <Card className="shadow-card">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" /> Barevné schéma</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">Vyberte si barvu, která se vám líbí nejvíce:</p>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {colorSchemes.map(scheme => {
+                const isActive = colorScheme === scheme.id;
+                const hsl = scheme.light['--primary'];
+                return (
+                  <button
+                    key={scheme.id}
+                    onClick={() => handleColorSchemeChange(scheme.id)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                      isActive ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/30'
+                    }`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full border-2 border-background shadow-sm"
+                      style={{ backgroundColor: `hsl(${hsl})` }}
+                    />
+                    <span className="text-xs font-medium">{scheme.emoji}</span>
+                    <span className="text-xs">{scheme.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
 

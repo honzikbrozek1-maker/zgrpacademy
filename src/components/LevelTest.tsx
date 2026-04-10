@@ -21,9 +21,10 @@ interface Props {
   questions: Question[];
   levelId: string;
   passingScore: number;
+  onPassedWithDiploma?: (score: number) => void;
 }
 
-export default function LevelTest({ questions, levelId, passingScore }: Props) {
+export default function LevelTest({ questions, levelId, passingScore, onPassedWithDiploma }: Props) {
   const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [started, setStarted] = useState(false);
@@ -40,15 +41,11 @@ export default function LevelTest({ questions, levelId, passingScore }: Props) {
   };
 
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(i => i + 1);
-    }
+    if (currentIndex < questions.length - 1) setCurrentIndex(i => i + 1);
   };
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(i => i - 1);
-    }
+    if (currentIndex > 0) setCurrentIndex(i => i - 1);
   };
 
   const handleSubmit = async () => {
@@ -57,7 +54,6 @@ export default function LevelTest({ questions, levelId, passingScore }: Props) {
       if (answers[i] === questions[i].correct_answer) {
         correct++;
       } else {
-        // Save failed questions for review
         if (user) {
           await supabase.from('review_items').upsert({
             user_id: user.id,
@@ -82,7 +78,6 @@ export default function LevelTest({ questions, levelId, passingScore }: Props) {
       }, { onConflict: 'user_id,level_id' });
 
       if (passed) {
-        // Award bonus points
         const { data: profile } = await supabase.from('profiles').select('total_points, current_level').eq('user_id', user.id).single();
         if (profile) {
           await supabase.from('profiles').update({
@@ -95,6 +90,11 @@ export default function LevelTest({ questions, levelId, passingScore }: Props) {
     }
 
     setFinished(true);
+
+    if (passed && onPassedWithDiploma) {
+      // Small delay so user sees the result
+      setTimeout(() => onPassedWithDiploma(score), 1500);
+    }
   };
 
   if (!started) {
@@ -131,14 +131,14 @@ export default function LevelTest({ questions, levelId, passingScore }: Props) {
           <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
             {passed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
           </div>
-          <h3 className="text-xl font-bold">{passed ? 'Gratulujeme!' : 'Bohužel neprojdete'}</h3>
+          <h3 className="text-xl font-bold">{passed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
           <p className="text-2xl font-bold">{score}%</p>
           <p className="text-muted-foreground">
-            {passed ? 'Úspěšně jste dokončili tento level! Nový level je odemčen.' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+            {passed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
           </p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate('/')}>
-              Zpět na Dashboard
+            <Button variant="outline" onClick={() => navigate('/levels')}>
+              Zpět na levely
             </Button>
             {!passed && (
               <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); }} className="gradient-primary text-primary-foreground">
