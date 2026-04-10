@@ -16,6 +16,7 @@ interface Question {
   option_2: string | null;
   option_3: string | null;
   option_4: string | null;
+  correct_answer: number | null;
 }
 
 interface Props {
@@ -54,9 +55,11 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   const blankData = question?.back_text ? extractBlank(question.back_text) : null;
-  const correctAnswer = blankData?.answer || question?.back_text || '';
+  // Correct answer: use correct_answer index if available, else fall back to blank extraction
+  const correctOptionIndex = question?.correct_answer || 1;
+  const correctAnswerText = blankData?.answer || '';
 
-  // Build options from option_1-4 or generate from answer
+  // Build options from option_1-4
   const options = useMemo(() => {
     const opts: string[] = [];
     if (question?.option_1) opts.push(question.option_1);
@@ -65,13 +68,15 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
     if (question?.option_4) opts.push(question.option_4);
     if (opts.length >= 2) return shuffleArray(opts);
     // Fallback: just show the correct answer with some placeholders
-    return shuffleArray([correctAnswer, 'žádná odpověď', 'neutrální', 'jiná možnost']);
-  }, [question, correctAnswer]);
+    return shuffleArray([correctAnswerText, 'žádná odpověď', 'neutrální', 'jiná možnost']);
+  }, [question, correctAnswerText]);
 
   const handleSelect = async (option: string) => {
     if (showResult) return;
     setSelected(option);
-    const correct = option.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    // Match by correct_answer index: option at that index (1-based)
+    const correctOpt = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || '';
+    const correct = option.trim().toLowerCase() === correctOpt.trim().toLowerCase();
     setIsCorrect(correct);
     setShowResult(true);
 
@@ -162,7 +167,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
                   ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                   : 'bg-primary/10 text-primary'
               }`}>
-                {showResult ? (isCorrect ? selected : correctAnswer) : '______'}
+                {showResult ? (isCorrect ? selected : blankData.answer) : '______'}
               </span>
               <span>{blankData.after}</span>
             </div>
@@ -173,7 +178,8 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           <div className="grid grid-cols-2 gap-3">
             {options.map((option, idx) => {
               const isThis = selected === option;
-              const isAnswer = option.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+              const correctOpt = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctOptionIndex - 1] || '';
+              const isAnswer = option.trim().toLowerCase() === correctOpt.trim().toLowerCase();
               let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
