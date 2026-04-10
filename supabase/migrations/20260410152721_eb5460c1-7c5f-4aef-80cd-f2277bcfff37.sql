@@ -1,0 +1,2 @@
+ALTER TABLE public.review_items DROP CONSTRAINT IF EXISTS review_items_source_check;
+ALTER TABLE public.review_items ADD CONSTRAINT review_items_source_check CHECK (source IN ('flashcard', 'failed_quiz', 'fill_blank'));
