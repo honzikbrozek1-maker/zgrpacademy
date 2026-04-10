@@ -32,7 +32,7 @@ interface UserProgressRow {
   completed_at: string | null;
 }
 
-const COMPLETED_MODULES_KEY = 'zinzino_completed_modules_';
+const COMPLETED_MODULES_KEY = 'zgrp_completed_modules_';
 
 export default function LevelDetail() {
   const { levelId } = useParams();

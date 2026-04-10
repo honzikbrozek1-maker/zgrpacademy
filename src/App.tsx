@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import Auth from "./pages/Auth";
+import PathSelection from "./pages/PathSelection";
 import Dashboard from "./pages/Dashboard";
 import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
@@ -37,7 +38,9 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/invite/:code" element={<InvitePage />} />
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
+              <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/backoffice" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
               <Route path="/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />

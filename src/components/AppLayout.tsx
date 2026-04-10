@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isOnAccount = location.pathname === '/account';
-  const isOnDashboard = location.pathname === '/';
+  const isOnDashboard = location.pathname === '/products' || location.pathname === '/';
 
   const handleAccountClick = () => {
     if (isOnAccount) {
@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-1">
                 {!isOnDashboard && (
                   <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/products')}
                     className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
                     aria-label="Dashboard"
                   >

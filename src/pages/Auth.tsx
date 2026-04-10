@@ -69,8 +69,8 @@ export default function Auth() {
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-2">
             <GraduationCap className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">Zinzino Academy</CardTitle>
-          <CardDescription>Vzdělávací platforma pro partnery</CardDescription>
+          <CardTitle className="text-2xl">ZGRP Academy</CardTitle>
+          <CardDescription>Vzdělávací platforma pro partnery ZinzinoGroup</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
