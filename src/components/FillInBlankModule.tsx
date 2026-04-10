@@ -66,7 +66,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
     if (opts.length >= 2) return shuffleArray(opts);
     // Fallback: just show the correct answer with some placeholders
     return shuffleArray([correctAnswer, 'žádná odpověď', 'neutrální', 'jiná možnost']);
-  }, [currentIndex, question]);
+  }, [question, correctAnswer]);
 
   const handleSelect = async (option: string) => {
     if (showResult) return;
