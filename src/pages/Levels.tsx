@@ -66,16 +66,18 @@ export default function Levels() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
-                        {prog?.completed ? (
-                          <CheckCircle className="h-5 w-5 text-success" />
-                        ) : unlocked ? (
-                          <span className="text-primary font-bold">{level.order_index}</span>
-                        ) : (
-                          <Lock className="h-5 w-5 text-muted-foreground" />
-                        )}
+                      <div className="relative">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15' : 'bg-muted'}`}>
+                          {prog?.completed ? (
+                            <CheckCircle className="h-5 w-5 text-success" />
+                          ) : unlocked ? (
+                            <span className="text-primary font-bold">{level.order_index}</span>
+                          ) : (
+                            <Lock className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-semibold">{level.title}</h3>
                         {level.description && <p className="text-sm text-muted-foreground">{level.description}</p>}
                       </div>
@@ -91,6 +93,17 @@ export default function Levels() {
                       )}
                     </div>
                   </div>
+                  {/* Progress bar */}
+                  {unlocked && (
+                    <div className="mt-3">
+                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary/60 transition-all"
+                          style={{ width: `${prog?.completed ? 100 : prog?.test_score ? Math.min(prog.test_score, 99) : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

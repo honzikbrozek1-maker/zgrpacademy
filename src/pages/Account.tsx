@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 
-import { User, Mail, Lock, Trophy, Star, BookOpen, Palette, Volume2, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2 } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
@@ -85,75 +85,51 @@ export default function Account() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-6 animate-slide-up pb-20">
+      <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4 animate-slide-up pb-20">
         <h1 className="text-2xl font-bold">Nastavení účtu</h1>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="shadow-card">
-            <CardContent className="p-4 text-center">
-              <Trophy className="h-6 w-6 mx-auto text-amber-500 mb-1" />
-              <p className="text-2xl font-bold">{profile?.total_points || 0}</p>
-              <p className="text-xs text-muted-foreground">Body</p>
-            </CardContent>
-          </Card>
-          <Card className="shadow-card">
-            <CardContent className="p-4 text-center">
-              <Star className="h-6 w-6 mx-auto text-violet-500 mb-1" />
-              <p className="text-2xl font-bold">{profile?.current_level || 1}</p>
-              <p className="text-xs text-muted-foreground">Level</p>
-            </CardContent>
-          </Card>
-          <Card className="shadow-card">
-            <CardContent className="p-4 text-center">
-              <BookOpen className="h-6 w-6 mx-auto text-emerald-500 mb-1" />
-              <p className="text-2xl font-bold">—</p>
-              <p className="text-xs text-muted-foreground">Aktivita</p>
-            </CardContent>
-          </Card>
+        {/* Stats - compact inline */}
+        <div className="flex gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
+            <Trophy className="h-4 w-4 text-amber-500" />
+            <span className="font-bold text-sm">{profile?.total_points || 0}</span>
+            <span className="text-xs text-muted-foreground">bodů</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
+            <Star className="h-4 w-4 text-violet-500" />
+            <span className="font-bold text-sm">Level {profile?.current_level || 1}</span>
+          </div>
         </div>
 
-        {/* Profile */}
+        {/* Profile + Sound in one card */}
         <Card className="shadow-card">
-          <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Profil</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm text-muted-foreground">E-mail</label>
-              <div className="flex items-center gap-2 mt-1">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{user?.email}</span>
-              </div>
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> Profil</div>
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">{user?.email}</span>
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Zobrazované jméno</label>
-              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" />
+            <div className="flex gap-2">
+              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Zobrazované jméno" className="flex-1" />
+              <Button onClick={handleUpdateProfile} disabled={loading} size="sm" className="gradient-primary text-primary-foreground">
+                Uložit
+              </Button>
             </div>
-            <Button onClick={handleUpdateProfile} disabled={loading} className="gradient-primary text-primary-foreground">
-              Uložit změny
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Sound settings */}
-        <Card className="shadow-card">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Volume2 className="h-5 w-5" /> Zvuky</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-sm">Zvukové efekty</p>
-                <p className="text-xs text-muted-foreground">Přehrávat zvuk při správné a špatné odpovědi</p>
+            <div className="flex items-center justify-between pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Zvukové efekty</span>
               </div>
               <Switch checked={soundOn} onCheckedChange={handleSoundToggle} />
             </div>
           </CardContent>
         </Card>
 
-        {/* Color scheme */}
+        {/* Color scheme - compact */}
         <Card className="shadow-card">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" /> Barevné schéma</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">Vyberte si barvu, která se vám líbí nejvíce:</p>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> Barevné schéma</div>
+            <div className="grid grid-cols-6 gap-2">
               {colorSchemes.map(scheme => {
                 const isActive = colorScheme === scheme.id;
                 const hsl = scheme.light['--primary'];
@@ -161,16 +137,15 @@ export default function Account() {
                   <button
                     key={scheme.id}
                     onClick={() => handleColorSchemeChange(scheme.id)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
                       isActive ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/30'
                     }`}
                   >
                     <div
-                      className="w-10 h-10 rounded-full border-2 border-background shadow-sm"
+                      className="w-8 h-8 rounded-full border-2 border-background shadow-sm"
                       style={{ backgroundColor: `hsl(${hsl})` }}
                     />
-                    <span className="text-xs font-medium">{scheme.emoji}</span>
-                    <span className="text-xs">{scheme.name}</span>
+                    <span className="text-[10px]">{scheme.emoji}</span>
                   </button>
                 );
               })}
@@ -178,48 +153,34 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Password */}
+        {/* Password - compact */}
         <Card className="shadow-card">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5" /> Změna hesla</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <Input type="password" placeholder="Nové heslo (min. 6 znaků)" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-            <Button onClick={handleChangePassword} disabled={loading} variant="outline">
-              Změnit heslo
-            </Button>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> Změna hesla</div>
+            <div className="flex gap-2">
+              <Input type="password" placeholder="Nové heslo (min. 6 znaků)" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="flex-1" />
+              <Button onClick={handleChangePassword} disabled={loading} variant="outline" size="sm">
+                Změnit
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Delete account */}
+        {/* Delete account - compact */}
         <Card className="shadow-card border-destructive/30">
-          <CardHeader><CardTitle className="flex items-center gap-2 text-destructive"><Trash2 className="h-5 w-5" /> Smazání účtu</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Smazání účtu je nevratné. Všechna vaše data budou odstraněna.
-            </p>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Smazání účtu</div>
             {!showDeleteConfirm ? (
-              <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setShowDeleteConfirm(true)}>
-                <Trash2 className="mr-1 h-4 w-4" /> Smazat účet
+              <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setShowDeleteConfirm(true)}>
+                Smazat účet
               </Button>
             ) : (
-              <div className="space-y-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                <p className="text-sm font-medium text-destructive">Pro potvrzení napište „SMAZAT":</p>
-                <Input
-                  value={deleteConfirmText}
-                  onChange={e => setDeleteConfirmText(e.target.value)}
-                  placeholder="SMAZAT"
-                  className="border-destructive/30"
-                />
+              <div className="space-y-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                <p className="text-xs font-medium text-destructive">Pro potvrzení napište „SMAZAT":</p>
+                <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="SMAZAT" className="border-destructive/30 h-8 text-sm" />
                 <div className="flex gap-2">
-                  <Button
-                    variant="destructive"
-                    disabled={deleteConfirmText !== 'SMAZAT'}
-                    onClick={handleDeleteAccount}
-                  >
-                    Potvrdit smazání
-                  </Button>
-                  <Button variant="outline" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>
-                    Zrušit
-                  </Button>
+                  <Button variant="destructive" size="sm" disabled={deleteConfirmText !== 'SMAZAT'} onClick={handleDeleteAccount}>Potvrdit</Button>
+                  <Button variant="outline" size="sm" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>Zrušit</Button>
                 </div>
               </div>
             )}

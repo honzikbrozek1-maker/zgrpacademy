@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
@@ -13,6 +12,10 @@ interface Question {
   id: string;
   question_text: string;
   back_text: string | null;
+  option_1: string | null;
+  option_2: string | null;
+  option_3: string | null;
+  option_4: string | null;
 }
 
 interface Props {
@@ -28,14 +31,21 @@ function extractBlank(text: string): { before: string; answer: string; after: st
   return null;
 }
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function FillInBlankModule({ questions, onComplete }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState('');
+  const [selected, setSelected] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [feedback, setFeedback] = useState('');
-  const [checking, setChecking] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [milestone, setMilestone] = useState<number | null>(null);
@@ -45,78 +55,58 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
 
   const blankData = question?.back_text ? extractBlank(question.back_text) : null;
   const correctAnswer = blankData?.answer || question?.back_text || '';
-  const sentence = blankData
-    ? `${blankData.before}___${blankData.after}`
-    : question?.question_text || '';
 
-  const handleCheck = async () => {
-    if (showResult || checking || !userAnswer.trim()) return;
-    setChecking(true);
+  // Build options from option_1-4 or generate from answer
+  const options = useMemo(() => {
+    const opts: string[] = [];
+    if (question?.option_1) opts.push(question.option_1);
+    if (question?.option_2) opts.push(question.option_2);
+    if (question?.option_3) opts.push(question.option_3);
+    if (question?.option_4) opts.push(question.option_4);
+    if (opts.length >= 2) return shuffleArray(opts);
+    // Fallback: just show the correct answer with some placeholders
+    return shuffleArray([correctAnswer, 'žádná odpověď', 'neutrální', 'jiná možnost']);
+  }, [question, correctAnswer]);
 
-    try {
-      const response = await supabase.functions.invoke('check-answer', {
-        body: {
-          userAnswer: userAnswer.trim(),
-          correctAnswer: correctAnswer.trim(),
-          sentence,
-        },
-      });
+  const handleSelect = async (option: string) => {
+    if (showResult) return;
+    setSelected(option);
+    const correct = option.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    setIsCorrect(correct);
+    setShowResult(true);
 
-      if (response.error) throw response.error;
-
-      const result = response.data;
-      setIsCorrect(result.correct);
-      setFeedback(result.feedback || '');
-
-      if (result.correct) {
-        setCorrectCount(c => c + 1);
-        playCorrectSound();
-        // Award points
-        if (user) {
-          const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
-          if (prof) {
-            const oldPts = prof.total_points;
-            const newPts = oldPts + 10;
-            await supabase.from('profiles').update({ total_points: newPts }).eq('user_id', user.id);
-            const m = checkMilestone(oldPts, newPts);
-            if (m) setMilestone(m);
-          }
-        }
-      } else {
-        playIncorrectSound();
-        if (user) {
-          await supabase.from('review_items').upsert({
-            user_id: user.id,
-            question_id: question.id,
-            confidence: 'unknown',
-            source: 'fill_blank',
-          }, { onConflict: 'user_id,question_id' });
+    if (correct) {
+      setCorrectCount(c => c + 1);
+      playCorrectSound();
+      if (user) {
+        const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
+        if (prof) {
+          const oldPts = prof.total_points;
+          const newPts = oldPts + 10;
+          await supabase.from('profiles').update({ total_points: newPts }).eq('user_id', user.id);
+          const m = checkMilestone(oldPts, newPts);
+          if (m) setMilestone(m);
         }
       }
-    } catch {
-      // Fallback to exact match
-      const exact = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
-      setIsCorrect(exact);
-      setFeedback('');
-      if (exact) {
-        playCorrectSound();
-        setCorrectCount(c => c + 1);
-      } else {
-        playIncorrectSound();
+    } else {
+      playIncorrectSound();
+      if (user) {
+        await supabase.from('review_items').upsert({
+          user_id: user.id,
+          question_id: question.id,
+          confidence: 'unknown',
+          source: 'fill_blank',
+        }, { onConflict: 'user_id,question_id' });
       }
     }
-
-    setShowResult(true);
-    setChecking(false);
   };
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(i => i + 1);
-      setUserAnswer('');
+      setSelected(null);
       setShowResult(false);
       setIsCorrect(false);
-      setFeedback('');
     } else {
       setFinished(true);
       refreshProfile();
@@ -126,10 +116,9 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
   const handlePrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(i => i - 1);
-      setUserAnswer('');
+      setSelected(null);
       setShowResult(false);
       setIsCorrect(false);
-      setFeedback('');
     }
   };
 
@@ -163,63 +152,60 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
 
       <Card className="shadow-card">
         <CardContent className="p-6 space-y-6">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Doplňte chybějící slovo</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Vyberte správné slovo</p>
 
           {blankData ? (
             <div className="text-lg leading-relaxed">
               <span>{blankData.before}</span>
-              {showResult ? (
-                <span className={`font-bold px-2 py-0.5 rounded ${isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}>
-                  {isCorrect ? userAnswer : correctAnswer}
-                </span>
-              ) : (
-                <Input
-                  value={userAnswer}
-                  onChange={e => setUserAnswer(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                  className="inline-block w-40 mx-1 border-b-2 border-primary"
-                  placeholder="..."
-                  autoFocus
-                  disabled={checking}
-                />
-              )}
+              <span className={`font-bold px-2 py-0.5 rounded ${
+                showResult
+                  ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                  : 'bg-primary/10 text-primary'
+              }`}>
+                {showResult ? (isCorrect ? selected : correctAnswer) : '______'}
+              </span>
               <span>{blankData.after}</span>
             </div>
           ) : (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">{question.question_text}</h3>
-              <Input
-                value={userAnswer}
-                onChange={e => setUserAnswer(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                placeholder="Napište odpověď..."
-                className="flex-1"
-                autoFocus
-                disabled={showResult || checking}
-              />
-            </div>
+            <h3 className="text-lg font-semibold">{question.question_text}</h3>
           )}
 
+          <div className="grid grid-cols-2 gap-3">
+            {options.map((option, idx) => {
+              const isThis = selected === option;
+              const isAnswer = option.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+              let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
+              if (!showResult) {
+                cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
+              } else if (isAnswer) {
+                cls += 'border-success bg-success/10 text-success';
+              } else if (isThis && !isCorrect) {
+                cls += 'border-destructive bg-destructive/10 text-destructive';
+              } else {
+                cls += 'border-border opacity-50';
+              }
+              return (
+                <button key={idx} className={cls} onClick={() => handleSelect(option)} disabled={showResult}>
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+
           {showResult && (
-            <div className={`flex items-start gap-2 p-3 rounded-lg ${isCorrect ? 'bg-success/10' : 'bg-destructive/10'}`}>
+            <div className={`flex items-center gap-2 p-3 rounded-lg ${isCorrect ? 'bg-success/10' : 'bg-destructive/10'}`}>
               {isCorrect ? (
-                <div className="flex items-center gap-2">
+                <>
                   <CheckCircle className="h-5 w-5 text-success shrink-0" />
-                  <div>
-                    <span className="font-medium text-success">Správně!</span>
-                    {feedback && <p className="text-sm text-muted-foreground mt-0.5">{feedback}</p>}
-                  </div>
-                </div>
+                  <span className="font-medium text-success">Správně!</span>
+                </>
               ) : (
-                <div className="flex items-start gap-2">
-                  <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-destructive">
-                      Správná odpověď: <span className="font-bold">{correctAnswer}</span>
-                    </span>
-                    {feedback && <p className="text-sm text-muted-foreground mt-0.5">{feedback}</p>}
-                  </div>
-                </div>
+                <>
+                  <XCircle className="h-5 w-5 text-destructive shrink-0" />
+                  <span className="text-destructive">
+                    Správná odpověď: <span className="font-bold">{correctAnswer}</span>
+                  </span>
+                </>
               )}
             </div>
           )}
@@ -230,11 +216,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
-        {!showResult ? (
-          <Button onClick={handleCheck} disabled={!userAnswer.trim() || checking} className="gradient-primary text-primary-foreground">
-            {checking ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Kontroluji...</> : 'Zkontrolovat'}
-          </Button>
-        ) : (
+        {showResult && (
           <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
             {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
