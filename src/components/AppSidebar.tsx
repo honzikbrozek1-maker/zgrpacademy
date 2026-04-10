@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, ArrowLeftRight } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -27,14 +27,14 @@ export function AppSidebar() {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
 
   const isActive = (path: string) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    path === '/products' ? location.pathname === '/products' : location.pathname.startsWith(path);
 
   const closeMobileIfNeeded = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   const topItems = [
-    { to: '/', icon: Home, label: 'Dashboard' },
+    { to: '/products', icon: Home, label: 'Dashboard' },
     { to: '/levels', icon: Layers, label: 'Levely' },
     { to: '/share', icon: Share2, label: 'Sdílet aplikaci' },
     { to: '/admin', icon: Shield, label: 'Admin panel' },
@@ -60,6 +60,16 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Path switcher */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/" onClick={closeMobileIfNeeded} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                    <ArrowLeftRight className="h-4 w-4" />
+                    {!collapsed && <span>Změnit sekci</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {topItems.map(item => {
                 const active = isActive(item.to);
                 return (
