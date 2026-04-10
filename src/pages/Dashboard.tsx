@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   // Color scheme per path
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
-  const accentBadge = isBackoffice ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : '';
+  
 
   return (
     <AppLayout>
