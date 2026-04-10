@@ -2,66 +2,40 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Star, BookOpen, Lock, CheckCircle, ArrowRight, RotateCcw } from 'lucide-react';
+import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-
-interface Level {
-  id: string;
-  title: string;
-  description: string | null;
-  order_index: number;
-  passing_score: number;
-}
-
-interface UserProgressRow {
-  level_id: string;
-  completed: boolean;
-  test_score: number | null;
-}
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [progress, setProgress] = useState<UserProgressRow[]>([]);
+  const [levelCount, setLevelCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-    
     const fetchData = async () => {
       const [levelsRes, progressRes, reviewRes] = await Promise.all([
-        supabase.from('levels').select('*').order('order_index'),
-        supabase.from('user_progress').select('*').eq('user_id', user.id),
+        supabase.from('levels').select('id', { count: 'exact' }),
+        supabase.from('user_progress').select('id', { count: 'exact' }).eq('user_id', user.id).eq('completed', true),
         supabase.from('review_items').select('id', { count: 'exact' }).eq('user_id', user.id).in('confidence', ['partial', 'unknown']),
       ]);
-      if (levelsRes.data) setLevels(levelsRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
+      setLevelCount(levelsRes.count || 0);
+      setCompletedCount(progressRes.count || 0);
       setReviewCount(reviewRes.count || 0);
     };
     fetchData();
   }, [user]);
 
-  const isLevelUnlocked = (level: Level) => {
-    if (level.order_index === 1) return true;
-    const prevLevel = levels.find(l => l.order_index === level.order_index - 1);
-    if (!prevLevel) return true;
-    return progress.some(p => p.level_id === prevLevel.id && p.completed);
-  };
-
-  const getLevelProgress = (levelId: string) => {
-    return progress.find(p => p.level_id === levelId);
-  };
-
-  const completedLevels = progress.filter(p => p.completed).length;
-  const progressPercent = levels.length > 0 ? (completedLevels / levels.length) * 100 : 0;
+  const progressPercent = levelCount > 0 ? (completedCount / levelCount) * 100 : 0;
 
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
+        <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="shadow-card">
@@ -93,21 +67,19 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Dokončeno</p>
-                <p className="text-lg font-bold">{completedLevels}/{levels.length}</p>
+                <p className="text-lg font-bold">{completedCount}/{levelCount}</p>
               </div>
             </CardContent>
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <Link to="/review" className="flex items-center gap-3 w-full">
-                <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center">
-                  <RotateCcw className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">K procvičení</p>
-                  <p className="text-lg font-bold">{reviewCount}</p>
-                </div>
-              </Link>
+              <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center">
+                <RotateCcw className="h-5 w-5 text-warning" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">K procvičení</p>
+                <p className="text-lg font-bold">{reviewCount}</p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -123,59 +95,38 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Levels */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Levely</h2>
-          <div className="space-y-3">
-            {levels.map((level) => {
-              const unlocked = isLevelUnlocked(level);
-              const prog = getLevelProgress(level.id);
-              return (
-                <Card key={level.id} className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prog?.completed ? 'bg-success/20' : unlocked ? 'gradient-primary' : 'bg-muted'}`}>
-                          {prog?.completed ? (
-                            <CheckCircle className="h-5 w-5 text-success" />
-                          ) : unlocked ? (
-                            <span className="text-primary-foreground font-bold">{level.order_index}</span>
-                          ) : (
-                            <Lock className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{level.title}</h3>
-                          {level.description && <p className="text-sm text-muted-foreground">{level.description}</p>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {prog?.completed && (
-                          <Badge variant="secondary" className="bg-success/10 text-success">
-                            {prog.test_score}%
-                          </Badge>
-                        )}
-                        {unlocked && (
-                          <Link to={`/level/${level.id}`}>
-                            <Button size="sm" variant={prog?.completed ? 'outline' : 'default'} className={!prog?.completed ? 'gradient-primary text-primary-foreground' : ''}>
-                              {prog?.completed ? 'Opakovat' : 'Začít'} <ArrowRight className="ml-1 h-4 w-4" />
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
+        {/* Quick actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link to="/levels">
+            <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Layers className="h-6 w-6 text-primary" />
+                  <div>
+                    <h3 className="font-semibold">Pokračovat v učení</h3>
+                    <p className="text-sm text-muted-foreground">Otevřít levely</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+          {reviewCount > 0 && (
+            <Link to="/review">
+              <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer">
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <RotateCcw className="h-6 w-6 text-warning" />
+                    <div>
+                      <h3 className="font-semibold">Procvičování</h3>
+                      <p className="text-sm text-muted-foreground">{reviewCount} položek k opakování</p>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-            {levels.length === 0 && (
-              <Card className="shadow-card">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  Zatím nejsou k dispozici žádné levely.
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
                 </CardContent>
               </Card>
-            )}
-          </div>
+            </Link>
+          )}
         </div>
       </div>
     </AppLayout>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Share2, GraduationCap } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -42,30 +41,24 @@ interface UserProfile {
   total_points: number;
   current_level: number;
   created_at: string;
-  email?: string;
 }
 
 export default function AdminPanel() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [levels, setLevels] = useState<Level[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
 
-  // Level form
   const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
-  // Question form
   const [qForm, setQForm] = useState({
     type: 'quiz' as string,
     question_text: '',
-    option_1: '',
-    option_2: '',
-    option_3: '',
-    option_4: '',
+    option_1: '', option_2: '', option_3: '', option_4: '',
     correct_answer: 1,
     back_text: '',
     order_index: 0,
@@ -74,9 +67,11 @@ export default function AdminPanel() {
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
 
   useEffect(() => {
-    fetchLevels();
-    fetchUsers();
-  }, []);
+    if (isAdmin) {
+      fetchLevels();
+      fetchUsers();
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     if (selectedLevel) fetchQuestions(selectedLevel);
@@ -138,7 +133,6 @@ export default function AdminPanel() {
       correct_answer: qForm.type === 'quiz' ? qForm.correct_answer : null,
       back_text: qForm.type === 'flashcard' ? qForm.back_text : null,
     };
-
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
     } else {
@@ -161,10 +155,8 @@ export default function AdminPanel() {
     setQForm({
       type: q.type,
       question_text: q.question_text,
-      option_1: q.option_1 || '',
-      option_2: q.option_2 || '',
-      option_3: q.option_3 || '',
-      option_4: q.option_4 || '',
+      option_1: q.option_1 || '', option_2: q.option_2 || '',
+      option_3: q.option_3 || '', option_4: q.option_4 || '',
       correct_answer: q.correct_answer || 1,
       back_text: q.back_text || '',
       order_index: q.order_index,
@@ -186,19 +178,41 @@ export default function AdminPanel() {
     toast({ title: isCurrentlyAdmin ? 'Admin role odebrána' : 'Admin role přidělena' });
   };
 
+  // Non-admin view: request admin access
+  if (!isAdmin) {
+    return (
+      <AppLayout>
+        <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-6 animate-slide-up">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" /> Admin panel
+          </h1>
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Nemáte administrátorská oprávnění</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Pokud potřebujete administrátorský přístup, kontaktujte stávajícího administrátora
+                nebo požádejte o pozvánku s admin rolí v záložce "Sdílet aplikaci".
+              </p>
+              <Button variant="outline" className="flex items-center gap-2" onClick={() => {
+                toast({ title: 'Žádost odeslána', description: 'Administrátor bude informován o vaší žádosti.' });
+              }}>
+                <Send className="h-4 w-4" /> Požádat o admin přístup
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up pb-20">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" /> Administrace
-          </h1>
-          <Link to="/admin/share">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Share2 className="h-4 w-4" /> Sdílení & Pozvánky
-            </Button>
-          </Link>
-        </div>
+      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Shield className="h-6 w-6 text-primary" /> Administrace
+        </h1>
 
         <Tabs defaultValue="content">
           <TabsList>
@@ -207,7 +221,6 @@ export default function AdminPanel() {
           </TabsList>
 
           <TabsContent value="content" className="mt-6 space-y-6">
-            {/* Levels */}
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Levely</h2>
               <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
@@ -254,7 +267,6 @@ export default function AdminPanel() {
               ))}
             </div>
 
-            {/* Questions */}
             {selectedLevel && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
