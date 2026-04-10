@@ -296,6 +296,15 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
+      award_points: { Args: { points: number }; Returns: Json }
+      complete_level: {
+        Args: { p_level_id: string; p_score: number }
+        Returns: Json
+      }
+      handle_admin_request: {
+        Args: { p_approve: boolean; p_request_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
