@@ -51,12 +51,10 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
   const correctAnswerIndex = question?.correct_answer || 1;
   const correctAnswerText = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || '';
 
-  // Build display sentence from back_text with ______ placeholder
   const sentenceData = useMemo(() => {
     if (!question?.back_text) return null;
     const blankIdx = question.back_text.indexOf('______');
     if (blankIdx === -1) {
-      // Fallback: try to find the correct answer word in the sentence
       const word = correctAnswerText;
       if (!word) return null;
       const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
@@ -72,7 +70,6 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
     };
   }, [question, correctAnswerText]);
 
-  // Build options from option_1-4
   const options = useMemo(() => {
     const opts: { text: string; index: number }[] = [];
     if (question?.option_1) opts.push({ text: question.option_1, index: 1 });
@@ -101,16 +98,22 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
           const m = checkMilestone(oldPts, newPts);
           if (m) setMilestone(m);
         }
+        // Remove from review if previously failed
+        await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
+        onReviewItemsChange?.();
       }
     } else {
       playIncorrectSound();
       if (user) {
-        await supabase.from('review_items').upsert({
+        const { error } = await supabase.from('review_items').upsert({
           user_id: user.id,
           question_id: question.id,
           confidence: 'unknown',
           source: 'fill_blank',
         }, { onConflict: 'user_id,question_id' });
+        if (error) {
+          console.error('Failed to save review item:', error);
+        }
         onReviewItemsChange?.();
       }
     }

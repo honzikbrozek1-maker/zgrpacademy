@@ -48,6 +48,7 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
       setCorrectCount(c => c + 1);
       playCorrectSound();
       if (user) {
+        // Award points
         const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
         if (prof) {
           const oldPts = prof.total_points;
@@ -56,6 +57,9 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
           const m = checkMilestone(oldPts, newPts);
           if (m) setMilestone(m);
         }
+        // Remove from review if previously failed
+        await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
+        onReviewItemsChange?.();
       }
     } else {
       playIncorrectSound();
