@@ -11,6 +11,7 @@ import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
+import Achievements from "./pages/Achievements";
 import AdminPanel from "./pages/AdminPanel";
 import AdminShare from "./pages/AdminShare";
 import InvitePage from "./pages/InvitePage";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+              <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
               <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
               <Route path="/admin/share" element={<Navigate to="/share" replace />} />

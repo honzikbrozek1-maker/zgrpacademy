@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppSidebar() {
-  const { isAdmin, profile, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { state, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
@@ -80,21 +80,17 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
-          {/* Theme toggle + Sound toggle row */}
           <SidebarMenuItem>
-            <div className="flex items-center gap-1 px-2">
-              <SidebarMenuButton onClick={toggleTheme} className="flex-1">
-                {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
-              </SidebarMenuButton>
-              <button
-                onClick={handleToggleSound}
-                className="p-2 rounded-md hover:bg-muted transition-colors shrink-0"
-                title={soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky'}
-              >
-                {soundOn ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
-              </button>
-            </div>
+            <SidebarMenuButton onClick={handleToggleSound}>
+              {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              {!collapsed && <span>{soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky'}</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={toggleTheme}>
+              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
+            </SidebarMenuButton>
           </SidebarMenuItem>
           {/* Account */}
           <SidebarMenuItem>

@@ -15,9 +15,10 @@ interface Question {
 interface Props {
   questions: Question[];
   onComplete: () => void;
+  onReviewItemsChange?: () => void;
 }
 
-export default function FlashcardModule({ questions, onComplete }: Props) {
+export default function FlashcardModule({ questions, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -38,11 +39,13 @@ export default function FlashcardModule({ questions, onComplete }: Props) {
           confidence,
           source: 'flashcard',
         }, { onConflict: 'user_id,question_id' });
+        onReviewItemsChange?.();
       } else {
         // If user now knows it, remove from review items
         await supabase.from('review_items').delete()
           .eq('user_id', user.id)
           .eq('question_id', question.id);
+        onReviewItemsChange?.();
       }
     }
 

@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { UserCog } from 'lucide-react';
+import { Home, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -10,6 +10,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isOnAccount = location.pathname === '/account';
+  const isOnDashboard = location.pathname === '/';
 
   const handleAccountClick = () => {
     if (isOnAccount) {
@@ -27,12 +28,24 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <header className="h-12 flex items-center justify-between border-b bg-card/80 backdrop-blur-md sticky top-0 z-50 px-3">
             <SidebarTrigger />
             {isMobile && (
-              <button
-                onClick={handleAccountClick}
-                className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
-              >
-                <UserCog className="h-6 w-6 text-muted-foreground" />
-              </button>
+              <div className="flex items-center gap-1">
+                {!isOnDashboard && (
+                  <button
+                    onClick={() => navigate('/')}
+                    className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                    aria-label="Dashboard"
+                  >
+                    <Home className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                )}
+                <button
+                  onClick={handleAccountClick}
+                  className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                  aria-label="Nastavení účtu"
+                >
+                  <UserCog className="h-6 w-6 text-muted-foreground" />
+                </button>
+              </div>
             )}
           </header>
           <main className="flex-1">

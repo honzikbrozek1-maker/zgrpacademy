@@ -6,7 +6,8 @@ import { ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
-import MilestoneDialog, { checkMilestone } from '@/components/MilestoneDialog';
+import MilestoneDialog from '@/components/MilestoneDialog';
+import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
@@ -22,6 +23,7 @@ interface Question {
 interface Props {
   questions: Question[];
   onComplete: () => void;
+  onReviewItemsChange?: () => void;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -33,7 +35,7 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function FillInBlankModule({ questions, onComplete }: Props) {
+export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -109,6 +111,7 @@ export default function FillInBlankModule({ questions, onComplete }: Props) {
           confidence: 'unknown',
           source: 'fill_blank',
         }, { onConflict: 'user_id,question_id' });
+        onReviewItemsChange?.();
       }
     }
   };
