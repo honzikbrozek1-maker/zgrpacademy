@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ interface Level {
   description: string | null;
   order_index: number;
   passing_score: number;
+  category: string;
 }
 
 interface Question {
@@ -53,6 +55,7 @@ interface AdminRequest {
 
 export default function AdminPanel() {
   const { user, isAdmin } = useAuth();
+  const { category } = useAppPath();
   const { toast } = useToast();
   const [levels, setLevels] = useState<Level[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -64,8 +67,10 @@ export default function AdminPanel() {
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
+  const [adminList, setAdminList] = useState<{ user_id: string; display_name: string }[]>([]);
+  const [selectedTargetAdmin, setSelectedTargetAdmin] = useState<string | null>(null);
 
-  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
+  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70, category });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
@@ -96,16 +101,22 @@ export default function AdminPanel() {
       fetchInvitedUsers();
     } else if (user) {
       fetchMyRequest();
+      fetchAdminList();
     }
-  }, [isAdmin, user]);
+  }, [isAdmin, user, category]);
 
   useEffect(() => {
     if (selectedLevel) fetchQuestions(selectedLevel.id);
   }, [selectedLevel]);
 
   const fetchLevels = async () => {
-    const { data } = await supabase.from('levels').select('*').order('order_index');
+    const { data } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
     if (data) setLevels(data);
+  };
+
+  const fetchAdminList = async () => {
+    const { data } = await supabase.rpc('list_admins');
+    if (data) setAdminList(data);
   };
 
   const fetchQuestions = async (levelId: string) => {
@@ -136,8 +147,11 @@ export default function AdminPanel() {
   };
 
   const sendAdminRequest = async () => {
-    if (!user) return;
-    const { error } = await supabase.from('admin_requests').insert({ user_id: user.id });
+    if (!user || !selectedTargetAdmin) {
+      toast({ title: 'Chyba', description: 'Vyberte admina, kterému chcete poslat žádost.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('admin_requests').insert({ user_id: user.id, target_admin_id: selectedTargetAdmin });
     if (error) {
       toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
     } else {
@@ -162,14 +176,15 @@ export default function AdminPanel() {
   };
 
   const saveLevel = async () => {
+    const payload = { ...levelForm, category };
     if (editingLevel) {
-      await supabase.from('levels').update(levelForm).eq('id', editingLevel);
+      await supabase.from('levels').update(payload).eq('id', editingLevel);
     } else {
-      await supabase.from('levels').insert(levelForm);
+      await supabase.from('levels').insert(payload);
     }
     setShowLevelDialog(false);
     setEditingLevel(null);
-    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 });
+    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category });
     fetchLevels();
     toast({ title: 'Uloženo' });
   };
@@ -182,7 +197,7 @@ export default function AdminPanel() {
   };
 
   const editLevel = (level: Level) => {
-    setLevelForm({ title: level.title, description: level.description || '', order_index: level.order_index, passing_score: level.passing_score });
+    setLevelForm({ title: level.title, description: level.description || '', order_index: level.order_index, passing_score: level.passing_score, category: level.category });
     setEditingLevel(level.id);
     setShowLevelDialog(true);
   };
@@ -324,9 +339,22 @@ export default function AdminPanel() {
                   {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">Žádost byla zamítnuta.</span></>}
                 </div>
               ) : (
-                <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest}>
-                  <Send className="h-4 w-4" /> Požádat o admin přístup
-                </Button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Vyberte admina, kterému chcete žádost poslat:</label>
+                    <Select value={selectedTargetAdmin || ''} onValueChange={v => setSelectedTargetAdmin(v)}>
+                      <SelectTrigger><SelectValue placeholder="Vyberte admina..." /></SelectTrigger>
+                      <SelectContent>
+                        {adminList.map(a => (
+                          <SelectItem key={a.user_id} value={a.user_id}>{a.display_name || 'Admin'}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest} disabled={!selectedTargetAdmin}>
+                    <Send className="h-4 w-4" /> Požádat o admin přístup
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -696,7 +724,7 @@ export default function AdminPanel() {
                   <h2 className="text-lg font-semibold">Levely</h2>
                   <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 }); }}>
+                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category }); }}>
                         <Plus className="mr-1 h-4 w-4" /> Přidat level
                       </Button>
                     </DialogTrigger>

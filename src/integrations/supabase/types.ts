@@ -20,6 +20,7 @@ export type Database = {
           id: string
           reviewed_by: string | null
           status: string
+          target_admin_id: string | null
           updated_at: string
           user_id: string
         }
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           reviewed_by?: string | null
           status?: string
+          target_admin_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -36,6 +38,7 @@ export type Database = {
           id?: string
           reviewed_by?: string | null
           status?: string
+          target_admin_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -299,6 +302,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      list_admins: {
+        Args: never
+        Returns: {
+          display_name: string
+          user_id: string
+        }[]
       }
       lookup_invite: {
         Args: { invite_code: string }
