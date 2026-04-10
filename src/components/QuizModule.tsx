@@ -48,13 +48,11 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
       setCorrectCount(c => c + 1);
       playCorrectSound();
       if (user) {
-        // Award points
-        const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).single();
-        if (prof) {
-          const oldPts = prof.total_points;
-          const newPts = oldPts + 10;
-          await supabase.from('profiles').update({ total_points: newPts }).eq('user_id', user.id);
-          const m = checkMilestone(oldPts, newPts);
+        // Award points via secure RPC
+        const { data: result } = await supabase.rpc('award_points', { points: 10 });
+        if (result) {
+          const r = result as unknown as { old_points: number; new_points: number };
+          const m = checkMilestone(r.old_points, r.new_points);
           if (m) setMilestone(m);
         }
         // Remove from review if previously failed

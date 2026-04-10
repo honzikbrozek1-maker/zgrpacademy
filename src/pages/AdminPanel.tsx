@@ -160,16 +160,12 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAdminRequest = async (requestId: string, userId: string, approve: boolean) => {
+  const handleAdminRequest = async (requestId: string, _userId: string, approve: boolean) => {
     if (!user) return;
-    await supabase.from('admin_requests').update({
-      status: approve ? 'approved' : 'rejected',
-      reviewed_by: user.id,
-      updated_at: new Date().toISOString(),
-    }).eq('id', requestId);
-
-    if (approve) {
-      await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+    const { error } = await supabase.rpc('handle_admin_request', { p_request_id: requestId, p_approve: approve });
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
     }
     toast({ title: approve ? 'Žádost schválena' : 'Žádost zamítnuta' });
     fetchAdminRequests();

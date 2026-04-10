@@ -69,23 +69,8 @@ export default function LevelTest({ questions, levelId, passingScore, onPassedWi
     const passed = score >= passingScore;
 
     if (user) {
-      await supabase.from('user_progress').upsert({
-        user_id: user.id,
-        level_id: levelId,
-        completed: passed,
-        test_score: score,
-        completed_at: passed ? new Date().toISOString() : null,
-      }, { onConflict: 'user_id,level_id' });
-
-      if (passed) {
-        const { data: profile } = await supabase.from('profiles').select('total_points, current_level').eq('user_id', user.id).single();
-        if (profile) {
-          await supabase.from('profiles').update({
-            total_points: profile.total_points + 50,
-            current_level: profile.current_level + 1,
-          }).eq('user_id', user.id);
-        }
-      }
+      // Use secure RPC to complete level (handles progress, points, level advancement)
+      await supabase.rpc('complete_level', { p_level_id: levelId, p_score: score });
       await refreshProfile();
     }
 
