@@ -29,7 +29,7 @@ function extractBlank(text: string): { before: string; answer: string; after: st
 }
 
 export default function FillInBlankModule({ questions, onComplete }: Props) {
-  const { user, refreshProfile, profile } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);

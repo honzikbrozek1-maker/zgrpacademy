@@ -60,6 +60,7 @@ export default function LevelDetail() {
 
   const quizQuestions = questions.filter(q => q.type === 'quiz');
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
+  const fillBlankQuestions = questions.filter(q => q.type === 'fill_blank');
   const isCompleted = progress?.completed === true;
 
   // Prevent switching to test tab when not completed
@@ -247,8 +248,8 @@ export default function LevelDetail() {
           </TabsContent>
 
           <TabsContent value="fillin" className="mt-6">
-            {flashcardQuestions.length > 0 ? (
-              <FillInBlankModule questions={flashcardQuestions} onComplete={() => setActiveTab('overview')} />
+            {fillBlankQuestions.length > 0 ? (
+              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => setActiveTab('overview')} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
