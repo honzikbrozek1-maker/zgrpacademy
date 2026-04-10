@@ -5,10 +5,11 @@ import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle, PenLine, Lock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QuizModule from '@/components/QuizModule';
 import FlashcardModule from '@/components/FlashcardModule';
+import FillInBlankModule from '@/components/FillInBlankModule';
 import LevelTest from '@/components/LevelTest';
 import LevelDiploma from '@/components/LevelDiploma';
 
@@ -61,6 +62,12 @@ export default function LevelDetail() {
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
   const isCompleted = progress?.completed === true;
 
+  // Prevent switching to test tab when not completed
+  const handleTabChange = (value: string) => {
+    if (value === 'test' && !isCompleted) return;
+    setActiveTab(value);
+  };
+
   if (!level) return (
     <AppLayout>
       <div className="p-8 text-center text-muted-foreground">Načítání...</div>
@@ -101,8 +108,8 @@ export default function LevelDetail() {
           )}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-1.5">
               <span className="hidden sm:inline">Přehled</span>
               <span className="sm:hidden text-xs">📋</span>
@@ -117,7 +124,16 @@ export default function LevelDetail() {
               <span className="hidden sm:inline">Kartičky</span>
               <span className="text-xs">({flashcardQuestions.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="test" className="flex items-center gap-1.5">
+            <TabsTrigger value="fillin" className="flex items-center gap-1.5">
+              <PenLine className="h-4 w-4" />
+              <span className="hidden sm:inline">Doplňování</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="test"
+              disabled={!isCompleted}
+              className={`flex items-center gap-1.5 ${!isCompleted ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {!isCompleted && <Lock className="h-3 w-3" />}
               <ClipboardCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Test</span>
             </TabsTrigger>
@@ -150,9 +166,22 @@ export default function LevelDetail() {
                 </CardContent>
               </Card>
 
+              <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => setActiveTab('fillin')}>
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                    <PenLine className="h-6 w-6 text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Doplňování</h3>
+                    <p className="text-sm text-muted-foreground">Doplňte chybějící slova</p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className={`shadow-card transition-all ${isCompleted ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'}`} onClick={() => isCompleted ? setActiveTab('test') : null}>
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompleted ? 'bg-success/20' : 'bg-muted'}`}>
+                    {!isCompleted && <Lock className="h-4 w-4 text-muted-foreground absolute" />}
                     <ClipboardCheck className={`h-6 w-6 ${isCompleted ? 'text-success' : 'text-muted-foreground'}`} />
                   </div>
                   <div>
@@ -214,6 +243,14 @@ export default function LevelDetail() {
               <FlashcardModule questions={flashcardQuestions} onComplete={() => setActiveTab('overview')} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kartičky v tomto levelu.</CardContent></Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="fillin" className="mt-6">
+            {flashcardQuestions.length > 0 ? (
+              <FillInBlankModule questions={flashcardQuestions} onComplete={() => setActiveTab('overview')} />
+            ) : (
+              <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
           </TabsContent>
 
