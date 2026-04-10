@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle, PenLine, Lock } from 'lucide-react';
+import { ArrowLeft, BookOpen, Brain, ClipboardCheck, RotateCcw, Trophy, AlertTriangle, PenLine, Lock, CheckCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QuizModule from '@/components/QuizModule';
 import FlashcardModule from '@/components/FlashcardModule';
@@ -34,36 +34,76 @@ interface UserProgressRow {
 
 export default function LevelDetail() {
   const { levelId } = useParams();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number } | null>(null);
+  const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [showDiploma, setShowDiploma] = useState(false);
+  const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
 
-  const fetchData = async () => {
-    if (!levelId || !user) return;
-    const [levelRes, questionsRes, progressRes, reviewRes] = await Promise.all([
-      supabase.from('levels').select('*').eq('id', levelId).single(),
-      supabase.from('questions').select('*').eq('level_id', levelId).order('order_index'),
-      supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', levelId).maybeSingle(),
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+    // levelId could be a UUID or an order_index number
+    let levelQuery;
+    const isUuid = levelId && levelId.includes('-');
+    if (isUuid) {
+      levelQuery = supabase.from('levels').select('*').eq('id', levelId).single();
+    } else {
+      levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).single();
+    }
+    const levelRes = await levelQuery;
+    if (!levelRes.data) return;
+    const lvl = levelRes.data;
+    setLevel(lvl);
+
+    const [questionsRes, progressRes, reviewRes] = await Promise.all([
+      supabase.from('questions').select('*').eq('level_id', lvl.id).order('order_index'),
+      supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
       supabase.from('review_items').select('id', { count: 'exact' }).eq('user_id', user.id).in('confidence', ['partial', 'unknown']),
     ]);
-    if (levelRes.data) setLevel(levelRes.data);
     if (questionsRes.data) setQuestions(questionsRes.data);
     if (progressRes.data) setProgress(progressRes.data);
     setReviewCount(reviewRes.count || 0);
-  };
+  }, [levelId, user]);
 
-  useEffect(() => { fetchData(); }, [levelId, user]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const quizQuestions = questions.filter(q => q.type === 'quiz');
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
   const fillBlankQuestions = questions.filter(q => q.type === 'fill_blank');
-  const isCompleted = progress?.completed === true;
 
-  // Prevent switching to test tab when not completed
+  // Check which module types exist
+  const availableModules = new Set<string>();
+  if (quizQuestions.length > 0) availableModules.add('quiz');
+  if (flashcardQuestions.length > 0) availableModules.add('flashcards');
+  if (fillBlankQuestions.length > 0) availableModules.add('fillin');
+
+  // All modules completed = test unlocked
+  const allModulesDone = availableModules.size > 0 && [...availableModules].every(m => completedModules.has(m));
+  const isCompleted = progress?.completed === true || allModulesDone;
+
+  const markModuleComplete = async (module: string) => {
+    const newSet = new Set(completedModules);
+    newSet.add(module);
+    setCompletedModules(newSet);
+
+    // Check if all modules are now done
+    const allDone = [...availableModules].every(m => newSet.has(m));
+    if (allDone && user && level) {
+      // Save progress so test is unlocked even on refresh
+      await supabase.from('user_progress').upsert({
+        user_id: user.id,
+        level_id: level.id,
+        completed: true,
+      }, { onConflict: 'user_id,level_id' });
+      setProgress(prev => prev ? { ...prev, completed: true } : { completed: true, test_score: null, completed_at: null });
+    }
+    setActiveTab('overview');
+  };
+
   const handleTabChange = (value: string) => {
     if (value === 'test' && !isCompleted) return;
     setActiveTab(value);
@@ -95,14 +135,14 @@ export default function LevelDetail() {
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <div className="flex items-center gap-3">
-          <Link to="/levels">
-            <Button variant="ghost" size="icon"><ArrowLeft className="h-5 w-5" /></Button>
-          </Link>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{level.title}</h1>
             {level.description && <p className="text-muted-foreground">{level.description}</p>}
           </div>
-          {isCompleted && (
+          {progress?.test_score && (
             <Button variant="outline" size="sm" onClick={() => setShowDiploma(true)}>
               <Trophy className="mr-1 h-4 w-4" /> Diplom
             </Button>
@@ -143,39 +183,42 @@ export default function LevelDetail() {
           {/* Overview tab */}
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-4 md:grid-cols-2">
-              <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => setActiveTab('quiz')}>
+              <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('quiz') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('quiz')}>
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
                     <Brain className="h-6 w-6 text-primary-foreground" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold">Kvíz</h3>
                     <p className="text-sm text-muted-foreground">{quizQuestions.length} otázek</p>
                   </div>
+                  {completedModules.has('quiz') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => setActiveTab('flashcards')}>
+              <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('flashcards') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('flashcards')}>
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center">
                     <BookOpen className="h-6 w-6 text-accent-foreground" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold">Kartičky</h3>
                     <p className="text-sm text-muted-foreground">{flashcardQuestions.length} kartiček</p>
                   </div>
+                  {completedModules.has('flashcards') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => setActiveTab('fillin')}>
+              <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('fillin') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('fillin')}>
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                     <PenLine className="h-6 w-6 text-secondary-foreground" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold">Doplňování</h3>
-                    <p className="text-sm text-muted-foreground">Doplňte chybějící slova</p>
+                    <p className="text-sm text-muted-foreground">Vyberte chybějící slovo</p>
                   </div>
+                  {completedModules.has('fillin') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
@@ -189,7 +232,7 @@ export default function LevelDetail() {
                     <h3 className="font-semibold">Závěrečný test</h3>
                     {!isCompleted ? (
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> Dokončete kvíz a kartičky
+                        <AlertTriangle className="h-3 w-3" /> Dokončete všechny moduly
                       </p>
                     ) : (
                       <p className="text-sm text-success">
@@ -217,7 +260,7 @@ export default function LevelDetail() {
               )}
             </div>
 
-            {isCompleted && progress?.test_score && (
+            {progress?.test_score && (
               <Card className="shadow-elevated mt-4 border-success/30">
                 <CardContent className="p-6 text-center space-y-3">
                   <Trophy className="h-8 w-8 mx-auto text-success" />
@@ -232,30 +275,50 @@ export default function LevelDetail() {
           </TabsContent>
 
           <TabsContent value="quiz" className="mt-6">
+            <div className="mb-4">
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
+                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+              </Button>
+            </div>
             {quizQuestions.length > 0 ? (
-              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => setActiveTab('overview')} />
+              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => markModuleComplete('quiz')} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
             )}
           </TabsContent>
 
           <TabsContent value="flashcards" className="mt-6">
+            <div className="mb-4">
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
+                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+              </Button>
+            </div>
             {flashcardQuestions.length > 0 ? (
-              <FlashcardModule questions={flashcardQuestions} onComplete={() => setActiveTab('overview')} />
+              <FlashcardModule questions={flashcardQuestions} onComplete={() => markModuleComplete('flashcards')} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kartičky v tomto levelu.</CardContent></Card>
             )}
           </TabsContent>
 
           <TabsContent value="fillin" className="mt-6">
+            <div className="mb-4">
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
+                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+              </Button>
+            </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => setActiveTab('overview')} />
+              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => markModuleComplete('fillin')} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
           </TabsContent>
 
           <TabsContent value="test" className="mt-6">
+            <div className="mb-4">
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
+                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+              </Button>
+            </div>
             <LevelTest
               questions={quizQuestions}
               levelId={level.id}

@@ -45,7 +45,7 @@ export default function Dashboard() {
     fetchData();
   }, [user]);
 
-  const completedCount = progress.filter(p => p.completed).length;
+  const completedCount = progress.filter(p => p.completed && p.test_score).length;
   const progressPercent = levels.length > 0 ? (completedCount / levels.length) * 100 : 0;
 
   const isLevelUnlocked = (level: Level) => {
@@ -57,12 +57,19 @@ export default function Dashboard() {
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
+  const getProgressPercent = (prog: UserProgressRow | undefined) => {
+    if (!prog) return 0;
+    if (prog.completed && prog.test_score) return 100;
+    if (prog.completed) return 75;
+    return 0;
+  };
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
         <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
 
-        {/* Stats - fixed colors, not theme-dependent */}
+        {/* Stats - fixed colors */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="shadow-card relative">
             <Dialog>
@@ -78,7 +85,7 @@ export default function Dashboard() {
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
-                  <p className="text-muted-foreground">Body získáváte za aktivitu v aplikaci. Slouží jako motivace a přehled vašeho pokroku.</p>
+                  <p className="text-muted-foreground">Body získáváte za aktivitu v aplikaci.</p>
                   <div className="space-y-2">
                     <h4 className="font-semibold">Jak získat body:</h4>
                     <div className="space-y-1.5">
@@ -191,17 +198,18 @@ export default function Dashboard() {
             {levels.map((level) => {
               const unlocked = isLevelUnlocked(level);
               const prog = getLevelProgress(level.id);
+              const percent = getProgressPercent(prog);
               return (
                 <Card
                   key={level.id}
                   className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                  onClick={() => unlocked && navigate(`/level/${level.id}`)}
+                  onClick={() => unlocked && navigate(`/level/${level.order_index}`)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${prog?.completed ? 'bg-success/20' : unlocked ? 'bg-primary/15 text-primary' : 'bg-muted'}`}>
-                          {prog?.completed ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${prog?.completed && prog.test_score ? 'bg-success/20' : unlocked ? 'bg-primary/15 text-primary' : 'bg-muted'}`}>
+                          {prog?.completed && prog.test_score ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div>
                           <h3 className="font-medium text-sm">{level.title}</h3>
@@ -209,7 +217,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {prog?.completed && (
+                        {prog?.test_score && (
                           <Badge variant="secondary" className="bg-success/10 text-success text-xs">
                             {prog.test_score}%
                           </Badge>
@@ -219,6 +227,18 @@ export default function Dashboard() {
                         )}
                       </div>
                     </div>
+                    {/* Progress bar with % */}
+                    {unlocked && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary/60 transition-all"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground w-7 text-right">{percent}%</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
