@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ interface Level {
   description: string | null;
   order_index: number;
   passing_score: number;
+  category: string;
 }
 
 interface Question {
@@ -53,6 +55,7 @@ interface AdminRequest {
 
 export default function AdminPanel() {
   const { user, isAdmin } = useAuth();
+  const { category, pathLabel } = useAppPath();
   const { toast } = useToast();
   const [levels, setLevels] = useState<Level[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -64,8 +67,11 @@ export default function AdminPanel() {
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
+  const [adminList, setAdminList] = useState<{ user_id: string; display_name: string }[]>([]);
+  const [targetAdminSearch, setTargetAdminSearch] = useState('');
+  const [selectedTargetAdmin, setSelectedTargetAdmin] = useState<string | null>(null);
 
-  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
+  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70, category });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
@@ -96,16 +102,26 @@ export default function AdminPanel() {
       fetchInvitedUsers();
     } else if (user) {
       fetchMyRequest();
+      fetchAdminList();
     }
-  }, [isAdmin, user]);
+  }, [isAdmin, user, category]);
 
   useEffect(() => {
     if (selectedLevel) fetchQuestions(selectedLevel.id);
   }, [selectedLevel]);
 
   const fetchLevels = async () => {
-    const { data } = await supabase.from('levels').select('*').order('order_index');
+    const { data } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
     if (data) setLevels(data);
+  };
+
+  const fetchAdminList = async () => {
+    const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
+    if (roles && roles.length > 0) {
+      const adminIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase.from('profiles').select('user_id, display_name').in('user_id', adminIds);
+      if (profiles) setAdminList(profiles);
+    }
   };
 
   const fetchQuestions = async (levelId: string) => {
@@ -136,8 +152,11 @@ export default function AdminPanel() {
   };
 
   const sendAdminRequest = async () => {
-    if (!user) return;
-    const { error } = await supabase.from('admin_requests').insert({ user_id: user.id });
+    if (!user || !selectedTargetAdmin) {
+      toast({ title: 'Chyba', description: 'Vyberte admina, kterému chcete poslat žádost.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('admin_requests').insert({ user_id: user.id, target_admin_id: selectedTargetAdmin });
     if (error) {
       toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
     } else {
@@ -162,14 +181,15 @@ export default function AdminPanel() {
   };
 
   const saveLevel = async () => {
+    const payload = { ...levelForm, category };
     if (editingLevel) {
-      await supabase.from('levels').update(levelForm).eq('id', editingLevel);
+      await supabase.from('levels').update(payload).eq('id', editingLevel);
     } else {
-      await supabase.from('levels').insert(levelForm);
+      await supabase.from('levels').insert(payload);
     }
     setShowLevelDialog(false);
     setEditingLevel(null);
-    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70 });
+    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category });
     fetchLevels();
     toast({ title: 'Uloženo' });
   };
@@ -182,7 +202,7 @@ export default function AdminPanel() {
   };
 
   const editLevel = (level: Level) => {
-    setLevelForm({ title: level.title, description: level.description || '', order_index: level.order_index, passing_score: level.passing_score });
+    setLevelForm({ title: level.title, description: level.description || '', order_index: level.order_index, passing_score: level.passing_score, category: level.category });
     setEditingLevel(level.id);
     setShowLevelDialog(true);
   };
