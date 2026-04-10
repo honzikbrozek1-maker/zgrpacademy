@@ -32,6 +32,8 @@ interface UserProgressRow {
   completed_at: string | null;
 }
 
+const COMPLETED_MODULES_KEY = 'zinzino_completed_modules_';
+
 export default function LevelDetail() {
   const { levelId } = useParams();
   const navigate = useNavigate();
@@ -46,7 +48,6 @@ export default function LevelDetail() {
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    // levelId could be a UUID or an order_index number
     let levelQuery;
     const isUuid = levelId && levelId.includes('-');
     if (isUuid) {
@@ -67,6 +68,22 @@ export default function LevelDetail() {
     if (questionsRes.data) setQuestions(questionsRes.data);
     if (progressRes.data) setProgress(progressRes.data);
     setReviewCount(reviewRes.count || 0);
+
+    // Restore completed modules from localStorage
+    const saved = localStorage.getItem(COMPLETED_MODULES_KEY + lvl.id);
+    if (saved) {
+      setCompletedModules(new Set(JSON.parse(saved)));
+    }
+    // If progress is completed, mark all modules done
+    if (progressRes.data?.completed) {
+      const qs = questionsRes.data || [];
+      const allMods = new Set<string>();
+      if (qs.some(q => q.type === 'quiz')) allMods.add('quiz');
+      if (qs.some(q => q.type === 'flashcard')) allMods.add('flashcards');
+      if (qs.some(q => q.type === 'fill_blank')) allMods.add('fillin');
+      setCompletedModules(allMods);
+      localStorage.setItem(COMPLETED_MODULES_KEY + lvl.id, JSON.stringify([...allMods]));
+    }
   }, [levelId, user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -75,13 +92,11 @@ export default function LevelDetail() {
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
   const fillBlankQuestions = questions.filter(q => q.type === 'fill_blank');
 
-  // Check which module types exist
   const availableModules = new Set<string>();
   if (quizQuestions.length > 0) availableModules.add('quiz');
   if (flashcardQuestions.length > 0) availableModules.add('flashcards');
   if (fillBlankQuestions.length > 0) availableModules.add('fillin');
 
-  // All modules completed = test unlocked
   const allModulesDone = availableModules.size > 0 && [...availableModules].every(m => completedModules.has(m));
   const isCompleted = progress?.completed === true || allModulesDone;
 
@@ -90,10 +105,13 @@ export default function LevelDetail() {
     newSet.add(module);
     setCompletedModules(newSet);
 
-    // Check if all modules are now done
+    // Persist to localStorage
+    if (level) {
+      localStorage.setItem(COMPLETED_MODULES_KEY + level.id, JSON.stringify([...newSet]));
+    }
+
     const allDone = [...availableModules].every(m => newSet.has(m));
     if (allDone && user && level) {
-      // Save progress so test is unlocked even on refresh
       await supabase.from('user_progress').upsert({
         user_id: user.id,
         level_id: level.id,
@@ -156,17 +174,15 @@ export default function LevelDetail() {
               <span className="sm:hidden text-xs">📋</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center gap-1.5">
-              <Brain className="h-4 w-4" />
+              {completedModules.has('quiz') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <Brain className="h-4 w-4" />}
               <span className="hidden sm:inline">Kvíz</span>
-              <span className="text-xs">({quizQuestions.length})</span>
             </TabsTrigger>
             <TabsTrigger value="flashcards" className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
+              {completedModules.has('flashcards') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <BookOpen className="h-4 w-4" />}
               <span className="hidden sm:inline">Kartičky</span>
-              <span className="text-xs">({flashcardQuestions.length})</span>
             </TabsTrigger>
             <TabsTrigger value="fillin" className="flex items-center gap-1.5">
-              <PenLine className="h-4 w-4" />
+              {completedModules.has('fillin') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <PenLine className="h-4 w-4" />}
               <span className="hidden sm:inline">Doplňování</span>
             </TabsTrigger>
             <TabsTrigger
@@ -180,7 +196,6 @@ export default function LevelDetail() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview tab */}
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-4 md:grid-cols-2">
               <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('quiz') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('quiz')}>

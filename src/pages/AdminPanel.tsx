@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +69,6 @@ export default function AdminPanel() {
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
-  // Two-step add: first pick type, then edit
   const [addStep, setAddStep] = useState<'pick_type' | 'edit'>('pick_type');
   const [qForm, setQForm] = useState({
     type: 'quiz' as string,
@@ -82,7 +81,10 @@ export default function AdminPanel() {
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
 
-  // Drag & drop state
+  // Fill-blank: cursor position for blank insertion
+  const sentenceRef = useRef<HTMLTextAreaElement>(null);
+  const [blankInserted, setBlankInserted] = useState(false);
+
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
@@ -206,6 +208,7 @@ export default function AdminPanel() {
     setShowQuestionDialog(false);
     setEditingQuestion(null);
     setAddStep('pick_type');
+    setBlankInserted(false);
     resetQForm();
     fetchQuestions(selectedLevel.id);
     toast({ title: 'Uloženo' });
@@ -229,11 +232,13 @@ export default function AdminPanel() {
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
+    setBlankInserted(q.type === 'fill_blank' && (q.back_text || '').includes('______'));
     setShowQuestionDialog(true);
   };
 
   const resetQForm = () => {
     setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', order_index: questions.length });
+    setBlankInserted(false);
   };
 
   const toggleAdmin = async (userId: string, isCurrentlyAdmin: boolean) => {
@@ -255,6 +260,18 @@ export default function AdminPanel() {
     toast({ title: 'Uživatel smazán' });
   };
 
+  // Insert blank at cursor position
+  const handleInsertBlank = () => {
+    const textarea = sentenceRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = qForm.back_text;
+    const newText = text.substring(0, start) + '______' + text.substring(end);
+    setQForm({ ...qForm, back_text: newText });
+    setBlankInserted(true);
+  };
+
   // Drag & drop reorder
   const handleDragStart = (id: string) => setDraggedId(id);
   const handleDragOver = (e: React.DragEvent, id: string) => { e.preventDefault(); setDragOverId(id); };
@@ -270,7 +287,6 @@ export default function AdminPanel() {
     const [moved] = reordered.splice(dragIdx, 1);
     reordered.splice(dropIdx, 0, moved);
 
-    // Update order_index for all reordered items
     const updates = reordered.map((q, i) => supabase.from('questions').update({ order_index: i }).eq('id', q.id));
     await Promise.all(updates);
     fetchQuestions(selectedLevel.id);
@@ -278,7 +294,6 @@ export default function AdminPanel() {
     setDragOverId(null);
   };
 
-  // Filter users
   const filteredUsers = users.filter(u => {
     if (!userSearch) return true;
     const search = userSearch.toLowerCase();
@@ -357,10 +372,10 @@ export default function AdminPanel() {
 
   const renderQuestionForm = () => (
     <div className="space-y-4">
-      {/* Type selector - always visible */}
+      {/* Type selector */}
       <div>
         <label className="text-sm font-medium mb-1 block">Typ</label>
-        <Select value={qForm.type} onValueChange={v => setQForm({ ...qForm, type: v })}>
+        <Select value={qForm.type} onValueChange={v => { setQForm({ ...qForm, type: v }); setBlankInserted(false); }}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="quiz">🧠 Kvíz</SelectItem>
@@ -370,16 +385,19 @@ export default function AdminPanel() {
         </Select>
       </div>
 
-      <div>
-        <label className="text-sm font-medium mb-1 block">
-          {qForm.type === 'flashcard' ? 'Přední strana kartičky (otázka)' : 'Text otázky'}
-        </label>
-        <Textarea
-          placeholder={qForm.type === 'flashcard' ? 'Co se zobrazí na přední straně kartičky?' : 'Napište otázku...'}
-          value={qForm.question_text}
-          onChange={e => setQForm({ ...qForm, question_text: e.target.value })}
-        />
-      </div>
+      {/* Common question text for quiz and flashcard */}
+      {qForm.type !== 'fill_blank' && (
+        <div>
+          <label className="text-sm font-medium mb-1 block">
+            {qForm.type === 'flashcard' ? 'Přední strana kartičky (otázka)' : 'Text otázky'}
+          </label>
+          <Textarea
+            placeholder={qForm.type === 'flashcard' ? 'Co se zobrazí na přední straně kartičky?' : 'Napište otázku...'}
+            value={qForm.question_text}
+            onChange={e => setQForm({ ...qForm, question_text: e.target.value })}
+          />
+        </div>
+      )}
 
       {qForm.type === 'quiz' && (
         <>
@@ -417,37 +435,129 @@ export default function AdminPanel() {
       )}
 
       {qForm.type === 'fill_blank' && (
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Step 1: Write the sentence */}
           <div>
-            <label className="text-sm font-medium mb-1 block">Věta s vynechaným slovem</label>
+            <label className="text-sm font-medium mb-1 block">1. Napište celou větu</label>
             <Textarea
-              placeholder={'Napište celou větu. Chybějící slovo napište do pole „Správná odpověď" níže.'}
+              ref={sentenceRef}
+              placeholder="Napište větu, ze které bude jedno slovo vynecháno..."
               value={qForm.back_text}
-              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+              onChange={e => { setQForm({ ...qForm, back_text: e.target.value }); if (!e.target.value.includes('______')) setBlankInserted(false); }}
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Napište větu tak, jak má vypadat. Správné slovo, které bude vynecháno, zadejte jako „Možnost 1" níže.
-            </p>
           </div>
+
+          {/* Step 2: Insert blank button */}
+          <div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleInsertBlank}
+              disabled={!qForm.back_text || blankInserted}
+            >
+              {blankInserted ? '✅ Mezera vložena' : '📍 Vložit mezeru na pozici kurzoru'}
+            </Button>
+            {!blankInserted && qForm.back_text && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Umístěte kurzor do věty tam, kde chcete vynechat slovo, a klikněte na tlačítko.
+              </p>
+            )}
+            {blankInserted && (
+              <p className="text-xs text-success mt-1">Mezera je označena jako „______" ve větě.</p>
+            )}
+          </div>
+
+          {/* Preview */}
+          {blankInserted && qForm.back_text.includes('______') && (
+            <div className="p-3 rounded-lg bg-muted/50 border">
+              <p className="text-xs text-muted-foreground mb-1">Náhled:</p>
+              <p className="text-sm">
+                {qForm.back_text.split('______').map((part, i, arr) => (
+                  <span key={i}>
+                    {part}
+                    {i < arr.length - 1 && <span className="font-bold text-primary px-1 bg-primary/10 rounded">______</span>}
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
+
+          {/* Hidden question_text = same as back_text for display */}
+          <input type="hidden" value={qForm.back_text} />
+
+          {/* Step 3: Answer options */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">4 možnosti na výběr</label>
+            <label className="text-sm font-medium">3. Možnosti odpovědí (min. 2, max. 4)</label>
             <div className="relative">
               <Input
-                placeholder="Možnost 1 — toto je správná odpověď"
+                placeholder="Možnost 1"
                 value={qForm.option_1}
                 onChange={e => setQForm({ ...qForm, option_1: e.target.value })}
-                className="border-success/50 pr-20"
+                className="pr-20"
               />
-              <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+              {qForm.correct_answer === 1 && (
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+              )}
             </div>
-            <Input placeholder="Možnost 2 (špatná)" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
-            <Input placeholder="Možnost 3 (špatná)" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
-            <Input placeholder="Možnost 4 (špatná)" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+            <div className="relative">
+              <Input
+                placeholder="Možnost 2"
+                value={qForm.option_2}
+                onChange={e => setQForm({ ...qForm, option_2: e.target.value })}
+                className="pr-20"
+              />
+              {qForm.correct_answer === 2 && (
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+              )}
+            </div>
+            <div className="relative">
+              <Input
+                placeholder="Možnost 3 (volitelná)"
+                value={qForm.option_3}
+                onChange={e => setQForm({ ...qForm, option_3: e.target.value })}
+                className="pr-20"
+              />
+              {qForm.correct_answer === 3 && (
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+              )}
+            </div>
+            <div className="relative">
+              <Input
+                placeholder="Možnost 4 (volitelná)"
+                value={qForm.option_4}
+                onChange={e => setQForm({ ...qForm, option_4: e.target.value })}
+                className="pr-20"
+              />
+              {qForm.correct_answer === 4 && (
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Step 4: Select correct answer */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">4. Která možnost je správná?</label>
+            <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Možnost 1</SelectItem>
+                <SelectItem value="2">Možnost 2</SelectItem>
+                {qForm.option_3 && <SelectItem value="3">Možnost 3</SelectItem>}
+                {qForm.option_4 && <SelectItem value="4">Možnost 4</SelectItem>}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}
 
-      <Button onClick={saveQuestion} className="w-full">Uložit</Button>
+      <Button onClick={() => {
+        // For fill_blank, auto-set question_text from back_text
+        if (qForm.type === 'fill_blank') {
+          qForm.question_text = qForm.back_text;
+        }
+        saveQuestion();
+      }} className="w-full">Uložit</Button>
     </div>
   );
 
@@ -486,7 +596,7 @@ export default function AdminPanel() {
                   </p>
                   <Dialog open={showQuestionDialog} onOpenChange={(open) => {
                     setShowQuestionDialog(open);
-                    if (!open) { setAddStep('pick_type'); setEditingQuestion(null); }
+                    if (!open) { setAddStep('pick_type'); setEditingQuestion(null); setBlankInserted(false); }
                   }}>
                     <DialogTrigger asChild>
                       <Button size="sm" onClick={() => { setEditingQuestion(null); resetQForm(); setAddStep('pick_type'); }}>
@@ -526,52 +636,54 @@ export default function AdminPanel() {
                   </Dialog>
                 </div>
 
-                {/* Questions grouped by type - collapsible */}
+                {/* Questions grouped by type - collapsible with visual distinction */}
                 {(['quiz', 'flashcard', 'fill_blank'] as const).map(type => {
                   const typeQuestions = questions.filter(q => q.type === type);
                   if (typeQuestions.length === 0) return null;
                   const label = type === 'quiz' ? '🧠 Kvíz' : type === 'flashcard' ? '📖 Kartičky' : '✏️ Doplňování';
                   const isOpen = openSections[type] !== false;
                   return (
-                    <Collapsible key={type} open={isOpen} onOpenChange={v => setOpenSections(s => ({ ...s, [type]: v }))}>
-                      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-muted/50 rounded-lg transition-colors">
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{label} ({typeQuestions.length})</h3>
-                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-2 mt-2">
-                        {typeQuestions.map(q => (
-                          <Card
-                            key={q.id}
-                            className={`shadow-card transition-all ${dragOverId === q.id ? 'ring-2 ring-primary' : ''} ${draggedId === q.id ? 'opacity-50' : ''}`}
-                            draggable
-                            onDragStart={() => handleDragStart(q.id)}
-                            onDragOver={(e) => handleDragOver(e, q.id)}
-                            onDragEnd={handleDragEnd}
-                            onDrop={() => handleDrop(q.id, type)}
-                          >
-                            <CardContent className="p-3 flex items-center gap-2">
-                              <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">{q.question_text}</p>
-                                {q.type === 'quiz' && (
-                                  <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
-                                )}
-                                {q.type === 'fill_blank' && q.option_1 && (
-                                  <p className="text-xs text-success mt-0.5">Správně: {q.option_1}</p>
-                                )}
-                                {q.type === 'flashcard' && q.back_text && (
-                                  <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
-                                )}
+                    <Card key={type} className="shadow-card overflow-hidden">
+                      <Collapsible open={isOpen} onOpenChange={v => setOpenSections(s => ({ ...s, [type]: v }))}>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-muted/50 transition-colors">
+                          <h3 className="text-sm font-semibold uppercase tracking-wide">{label} ({typeQuestions.length})</h3>
+                          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="px-4 pb-4 space-y-2">
+                            {typeQuestions.map(q => (
+                              <div
+                                key={q.id}
+                                className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${dragOverId === q.id ? 'ring-2 ring-primary' : ''} ${draggedId === q.id ? 'opacity-50' : 'bg-muted/30'}`}
+                                draggable
+                                onDragStart={() => handleDragStart(q.id)}
+                                onDragOver={(e) => handleDragOver(e, q.id)}
+                                onDragEnd={handleDragEnd}
+                                onDrop={() => handleDrop(q.id, type)}
+                              >
+                                <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                  {q.type === 'quiz' && (
+                                    <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                                  )}
+                                  {q.type === 'fill_blank' && q.option_1 && (
+                                    <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                                  )}
+                                  {q.type === 'flashcard' && q.back_text && (
+                                    <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                  )}
+                                </div>
+                                <div className="flex gap-1 shrink-0">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
+                                </div>
                               </div>
-                              <div className="flex gap-1 shrink-0">
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </Card>
                   );
                 })}
                 {questions.length === 0 && (
