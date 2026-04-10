@@ -115,12 +115,8 @@ export default function AdminPanel() {
   };
 
   const fetchAdminList = async () => {
-    const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
-    if (roles && roles.length > 0) {
-      const adminIds = roles.map(r => r.user_id);
-      const { data: profiles } = await supabase.from('profiles').select('user_id, display_name').in('user_id', adminIds);
-      if (profiles) setAdminList(profiles);
-    }
+    const { data } = await supabase.rpc('list_admins');
+    if (data) setAdminList(data);
   };
 
   const fetchQuestions = async (levelId: string) => {
