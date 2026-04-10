@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -62,11 +63,14 @@ export default function AdminPanel() {
   const [userSearch, setUserSearch] = useState('');
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
 
   const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70 });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
+  // Two-step add: first pick type, then edit
+  const [addStep, setAddStep] = useState<'pick_type' | 'edit'>('pick_type');
   const [qForm, setQForm] = useState({
     type: 'quiz' as string,
     question_text: '',
@@ -77,6 +81,10 @@ export default function AdminPanel() {
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+
+  // Drag & drop state
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLevels();
@@ -187,7 +195,7 @@ export default function AdminPanel() {
       option_2: needsOptions ? qForm.option_2 : null,
       option_3: needsOptions ? qForm.option_3 : null,
       option_4: needsOptions ? qForm.option_4 : null,
-      correct_answer: qForm.type === 'quiz' ? qForm.correct_answer : (qForm.type === 'fill_blank' ? qForm.correct_answer : null),
+      correct_answer: (qForm.type === 'quiz' || qForm.type === 'fill_blank') ? qForm.correct_answer : null,
       back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
     };
     if (editingQuestion) {
@@ -197,6 +205,7 @@ export default function AdminPanel() {
     }
     setShowQuestionDialog(false);
     setEditingQuestion(null);
+    setAddStep('pick_type');
     resetQForm();
     fetchQuestions(selectedLevel.id);
     toast({ title: 'Uloženo' });
@@ -219,6 +228,7 @@ export default function AdminPanel() {
       order_index: q.order_index,
     });
     setEditingQuestion(q.id);
+    setAddStep('edit');
     setShowQuestionDialog(true);
   };
 
@@ -243,6 +253,29 @@ export default function AdminPanel() {
     setShowDeleteUser(null);
     fetchUsers();
     toast({ title: 'Uživatel smazán' });
+  };
+
+  // Drag & drop reorder
+  const handleDragStart = (id: string) => setDraggedId(id);
+  const handleDragOver = (e: React.DragEvent, id: string) => { e.preventDefault(); setDragOverId(id); };
+  const handleDragEnd = () => { setDraggedId(null); setDragOverId(null); };
+  const handleDrop = async (targetId: string, type: string) => {
+    if (!draggedId || draggedId === targetId || !selectedLevel) return;
+    const typeQuestions = questions.filter(q => q.type === type);
+    const dragIdx = typeQuestions.findIndex(q => q.id === draggedId);
+    const dropIdx = typeQuestions.findIndex(q => q.id === targetId);
+    if (dragIdx === -1 || dropIdx === -1) return;
+
+    const reordered = [...typeQuestions];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(dropIdx, 0, moved);
+
+    // Update order_index for all reordered items
+    const updates = reordered.map((q, i) => supabase.from('questions').update({ order_index: i }).eq('id', q.id));
+    await Promise.all(updates);
+    fetchQuestions(selectedLevel.id);
+    setDraggedId(null);
+    setDragOverId(null);
   };
 
   // Filter users
@@ -322,6 +355,102 @@ export default function AdminPanel() {
     </Card>
   );
 
+  const renderQuestionForm = () => (
+    <div className="space-y-4">
+      {/* Type selector - always visible */}
+      <div>
+        <label className="text-sm font-medium mb-1 block">Typ</label>
+        <Select value={qForm.type} onValueChange={v => setQForm({ ...qForm, type: v })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="quiz">🧠 Kvíz</SelectItem>
+            <SelectItem value="flashcard">📖 Kartička</SelectItem>
+            <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium mb-1 block">
+          {qForm.type === 'flashcard' ? 'Přední strana kartičky (otázka)' : 'Text otázky'}
+        </label>
+        <Textarea
+          placeholder={qForm.type === 'flashcard' ? 'Co se zobrazí na přední straně kartičky?' : 'Napište otázku...'}
+          value={qForm.question_text}
+          onChange={e => setQForm({ ...qForm, question_text: e.target.value })}
+        />
+      </div>
+
+      {qForm.type === 'quiz' && (
+        <>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Možnosti odpovědí</label>
+            <Input placeholder="Možnost 1" value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
+            <Input placeholder="Možnost 2" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
+            <Input placeholder="Možnost 3" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
+            <Input placeholder="Možnost 4" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Která možnost je správná?</label>
+            <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Možnost 1</SelectItem>
+                <SelectItem value="2">Možnost 2</SelectItem>
+                <SelectItem value="3">Možnost 3</SelectItem>
+                <SelectItem value="4">Možnost 4</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {qForm.type === 'flashcard' && (
+        <div>
+          <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (odpověď)</label>
+          <Textarea
+            placeholder="Co se zobrazí po otočení kartičky?"
+            value={qForm.back_text}
+            onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+          />
+        </div>
+      )}
+
+      {qForm.type === 'fill_blank' && (
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium mb-1 block">Věta s vynechaným slovem</label>
+            <Textarea
+              placeholder="Napište celou větu. Chybějící slovo napište do pole „Správná odpověď" níže."
+              value={qForm.back_text}
+              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Napište větu tak, jak má vypadat. Správné slovo, které bude vynecháno, zadejte jako „Možnost 1" níže.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">4 možnosti na výběr</label>
+            <div className="relative">
+              <Input
+                placeholder="Možnost 1 — toto je správná odpověď"
+                value={qForm.option_1}
+                onChange={e => setQForm({ ...qForm, option_1: e.target.value })}
+                className="border-success/50 pr-20"
+              />
+              <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+            </div>
+            <Input placeholder="Možnost 2 (špatná)" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
+            <Input placeholder="Možnost 3 (špatná)" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
+            <Input placeholder="Možnost 4 (špatná)" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+          </div>
+        </div>
+      )}
+
+      <Button onClick={saveQuestion} className="w-full">Uložit</Button>
+    </div>
+  );
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up">
@@ -355,110 +484,94 @@ export default function AdminPanel() {
                   <p className="text-sm text-muted-foreground">
                     {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček, {questions.filter(q => q.type === 'fill_blank').length} doplňování
                   </p>
-                  <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
+                  <Dialog open={showQuestionDialog} onOpenChange={(open) => {
+                    setShowQuestionDialog(open);
+                    if (!open) { setAddStep('pick_type'); setEditingQuestion(null); }
+                  }}>
                     <DialogTrigger asChild>
-                      <Button size="sm" onClick={() => { setEditingQuestion(null); resetQForm(); }}>
+                      <Button size="sm" onClick={() => { setEditingQuestion(null); resetQForm(); setAddStep('pick_type'); }}>
                         <Plus className="mr-1 h-4 w-4" /> Přidat
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
-                      <DialogHeader><DialogTitle>{editingQuestion ? 'Upravit' : 'Nová otázka/kartička'}</DialogTitle></DialogHeader>
-                      <div className="space-y-4">
-                        {/* Type selector - always first */}
-                        <div>
-                          <label className="text-sm font-medium mb-1 block">Typ</label>
-                          <Select value={qForm.type} onValueChange={v => setQForm({ ...qForm, type: v })}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="quiz">🧠 Kvíz</SelectItem>
-                              <SelectItem value="flashcard">📖 Kartička</SelectItem>
-                              <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingQuestion ? 'Upravit otázku' : addStep === 'pick_type' ? 'Vyberte typ' : 'Nová otázka'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      {!editingQuestion && addStep === 'pick_type' ? (
+                        <div className="grid gap-3">
+                          {[
+                            { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
+                            { type: 'flashcard', icon: '📖', label: 'Kartička', desc: 'Přední a zadní strana k učení' },
+                            { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                          ].map(opt => (
+                            <button
+                              key={opt.type}
+                              className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
+                              onClick={() => { setQForm({ ...qForm, type: opt.type }); setAddStep('edit'); }}
+                            >
+                              <span className="text-2xl">{opt.icon}</span>
+                              <div>
+                                <p className="font-medium">{opt.label}</p>
+                                <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                        <Textarea placeholder="Text otázky" value={qForm.question_text} onChange={e => setQForm({ ...qForm, question_text: e.target.value })} />
-                        {qForm.type === 'quiz' && (
-                          <>
-                            <Input placeholder="Možnost 1" value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
-                            <Input placeholder="Možnost 2" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
-                            <Input placeholder="Možnost 3" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
-                            <Input placeholder="Možnost 4" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
-                            <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
-                              <SelectTrigger><SelectValue placeholder="Správná odpověď" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">Možnost 1</SelectItem>
-                                <SelectItem value="2">Možnost 2</SelectItem>
-                                <SelectItem value="3">Možnost 3</SelectItem>
-                                <SelectItem value="4">Možnost 4</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </>
-                        )}
-                        {qForm.type === 'flashcard' && (
-                          <Textarea placeholder="Text zadní strany" value={qForm.back_text} onChange={e => setQForm({ ...qForm, back_text: e.target.value })} />
-                        )}
-                        {qForm.type === 'fill_blank' && (
-                          <div className="space-y-3">
-                            <Textarea
-                              placeholder="Věta s vynechaným slovem v [hranatých závorkách], např: Zinzino je [síťová] marketingová společnost"
-                              value={qForm.back_text}
-                              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Slovo v [hranatých závorkách] bude vynecháno. Níže zadejte 4 možnosti na výběr.
-                            </p>
-                            <Input placeholder="Možnost 1 (správná)" value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
-                            <Input placeholder="Možnost 2" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
-                            <Input placeholder="Možnost 3" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
-                            <Input placeholder="Možnost 4" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
-                            <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
-                              <SelectTrigger><SelectValue placeholder="Správná odpověď" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">Možnost 1</SelectItem>
-                                <SelectItem value="2">Možnost 2</SelectItem>
-                                <SelectItem value="3">Možnost 3</SelectItem>
-                                <SelectItem value="4">Možnost 4</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                        <Button onClick={saveQuestion} className="w-full">Uložit</Button>
-                      </div>
+                      ) : (
+                        renderQuestionForm()
+                      )}
                     </DialogContent>
                   </Dialog>
                 </div>
 
-                {/* Questions grouped by type */}
+                {/* Questions grouped by type - collapsible */}
                 {(['quiz', 'flashcard', 'fill_blank'] as const).map(type => {
                   const typeQuestions = questions.filter(q => q.type === type);
                   if (typeQuestions.length === 0) return null;
                   const label = type === 'quiz' ? '🧠 Kvíz' : type === 'flashcard' ? '📖 Kartičky' : '✏️ Doplňování';
+                  const isOpen = openSections[type] !== false;
                   return (
-                    <div key={type} className="space-y-2">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{label} ({typeQuestions.length})</h3>
-                      {typeQuestions.map(q => (
-                        <Card key={q.id} className="shadow-card">
-                          <CardContent className="p-3 flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">{q.question_text}</p>
-                              {q.type === 'quiz' && (
-                                <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
-                              )}
-                              {q.type === 'fill_blank' && q.back_text && (
-                                <p className="text-xs text-muted-foreground mt-0.5 truncate">{q.back_text}</p>
-                              )}
-                              {q.type === 'flashcard' && q.back_text && (
-                                <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
-                              )}
-                            </div>
-                            <div className="flex gap-1 shrink-0">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <Collapsible key={type} open={isOpen} onOpenChange={v => setOpenSections(s => ({ ...s, [type]: v }))}>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-muted/50 rounded-lg transition-colors">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{label} ({typeQuestions.length})</h3>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-2 mt-2">
+                        {typeQuestions.map(q => (
+                          <Card
+                            key={q.id}
+                            className={`shadow-card transition-all ${dragOverId === q.id ? 'ring-2 ring-primary' : ''} ${draggedId === q.id ? 'opacity-50' : ''}`}
+                            draggable
+                            onDragStart={() => handleDragStart(q.id)}
+                            onDragOver={(e) => handleDragOver(e, q.id)}
+                            onDragEnd={handleDragEnd}
+                            onDrop={() => handleDrop(q.id, type)}
+                          >
+                            <CardContent className="p-3 flex items-center gap-2">
+                              <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                {q.type === 'quiz' && (
+                                  <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                                )}
+                                {q.type === 'fill_blank' && q.option_1 && (
+                                  <p className="text-xs text-success mt-0.5">Správně: {q.option_1}</p>
+                                )}
+                                {q.type === 'flashcard' && q.back_text && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-1 shrink-0">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   );
                 })}
                 {questions.length === 0 && (
