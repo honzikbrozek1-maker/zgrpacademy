@@ -232,6 +232,13 @@ export type Database = {
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_items_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       section_profiles: {
@@ -328,13 +335,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      questions_safe: {
+        Row: {
+          back_text: string | null
+          created_at: string | null
+          id: string | null
+          level_id: string | null
+          option_1: string | null
+          option_2: string | null
+          option_3: string | null
+          option_4: string | null
+          order_index: number | null
+          question_text: string | null
+          type: string | null
+        }
+        Insert: {
+          back_text?: string | null
+          created_at?: string | null
+          id?: string | null
+          level_id?: string | null
+          option_1?: string | null
+          option_2?: string | null
+          option_3?: string | null
+          option_4?: string | null
+          order_index?: number | null
+          question_text?: string | null
+          type?: string | null
+        }
+        Update: {
+          back_text?: string | null
+          created_at?: string | null
+          id?: string | null
+          level_id?: string | null
+          option_1?: string | null
+          option_2?: string | null
+          option_3?: string | null
+          option_4?: string | null
+          order_index?: number | null
+          question_text?: string | null
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
       award_points:
         | { Args: { points: number }; Returns: Json }
         | { Args: { p_category?: string; points: number }; Returns: Json }
+      check_quiz_answer: {
+        Args: { p_answer: number; p_question_id: string }
+        Returns: Json
+      }
       complete_level: {
         Args: { p_level_id: string; p_score: number }
         Returns: Json
@@ -365,6 +425,7 @@ export type Database = {
           used_by: string
         }[]
       }
+      submit_quiz_test: { Args: { p_question_answers: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
