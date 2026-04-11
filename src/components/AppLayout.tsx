@@ -15,7 +15,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { basePath, category } = useAppPath();
   const { sectionProfile } = useSectionProfile(category);
   const { setColorScheme } = useTheme();
-  const isOnAccount = location.pathname === '/account';
+  const accountPath = `${basePath}/account`;
+  const isOnAccount = location.pathname === accountPath;
   const isOnDashboard = location.pathname === basePath;
 
   // Apply per-category color scheme
@@ -29,7 +30,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     if (isOnAccount) {
       navigate(-1);
     } else {
-      navigate('/account');
+      navigate(accountPath);
     }
   };
 

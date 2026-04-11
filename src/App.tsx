@@ -57,7 +57,9 @@ const App = () => (
                 <Route path="/backoffice/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
 
                 {/* Shared */}
-                <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/products/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/backoffice/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/account" element={<Navigate to="/products/account" replace />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
                 <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
                 <Route path="/admin/share" element={<Navigate to="/share" replace />} />

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Lock, CheckCircle, ArrowRight } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
 
 interface Level {
   id: string;
@@ -20,6 +21,7 @@ interface UserProgressRow {
   level_id: string;
   completed: boolean;
   test_score: number | null;
+  completed_modules: string[];
 }
 
 export default function Levels() {
@@ -28,18 +30,47 @@ export default function Levels() {
   const { category, basePath, currentPath } = useAppPath();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
+  const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
 
   const isBackoffice = currentPath === 'backoffice';
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [levelsRes, progressRes] = await Promise.all([
-        supabase.from('levels').select('*').eq('category', category).order('order_index'),
-        supabase.from('user_progress').select('*').eq('user_id', user.id),
-      ]);
+      const levelsRes = await supabase.from('levels').select('*').eq('category', category).order('order_index');
       if (levelsRes.data) setLevels(levelsRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
+
+      if (!levelsRes.data || levelsRes.data.length === 0) {
+        setProgress([]);
+        setLevelQuestionTypes({});
+        return;
+      }
+
+      const levelIds = levelsRes.data.map((level) => level.id);
+      const [progressRes, questionsRes] = await Promise.all([
+        supabase.from('user_progress').select('*').eq('user_id', user.id),
+        supabase.from('questions').select('level_id, type').in('level_id', levelIds),
+      ]);
+
+      if (progressRes.data) {
+        const levelIdSet = new Set(levelIds);
+        setProgress(progressRes.data
+          .filter((item) => levelIdSet.has(item.level_id))
+          .map((item) => ({
+            ...item,
+            completed_modules: Array.isArray(item.completed_modules) ? item.completed_modules as string[] : [],
+          })));
+      } else {
+        setProgress([]);
+      }
+
+      const questionTypesMap = Object.fromEntries(levelIds.map((id) => [id, [] as string[]]));
+      if (questionsRes.data) {
+        for (const question of questionsRes.data) {
+          questionTypesMap[question.level_id]?.push(question.type);
+        }
+      }
+      setLevelQuestionTypes(questionTypesMap);
     };
     fetchData();
   }, [user, category]);
@@ -54,12 +85,11 @@ export default function Levels() {
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
-  const getProgressPercent = (prog: UserProgressRow | undefined) => {
-    if (!prog) return 0;
-    if (prog.completed && prog.test_score) return 100;
-    if (prog.completed) return 75;
-    return 0;
-  };
+  const getProgressPercent = (levelId: string, prog: UserProgressRow | undefined) => getLevelProgressPercent(
+    getAvailableModulesFromQuestionTypes(levelQuestionTypes[levelId]),
+    prog?.completed_modules,
+    Boolean(prog?.completed && prog?.test_score !== null),
+  );
 
   return (
     <AppLayout>
@@ -69,7 +99,7 @@ export default function Levels() {
           {levels.map((level) => {
             const unlocked = isLevelUnlocked(level);
             const prog = getLevelProgress(level.id);
-            const percent = getProgressPercent(prog);
+            const percent = getProgressPercent(level.id, prog);
             return (
               <Card
                 key={level.id}

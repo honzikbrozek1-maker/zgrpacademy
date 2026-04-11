@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { POINT_ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
+import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
 
 interface Level {
   id: string;
@@ -24,6 +25,7 @@ interface UserProgressRow {
   level_id: string;
   completed: boolean;
   test_score: number | null;
+  completed_modules: string[];
 }
 
 export default function Dashboard() {
@@ -33,6 +35,7 @@ export default function Dashboard() {
   const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
+  const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
   const [reviewCount, setReviewCount] = useState(0);
 
   const isBackoffice = currentPath === 'backoffice';
@@ -40,42 +43,69 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      // Get levels for this category
       const { data: levelsData } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
-      if (levelsData) setLevels(levelsData);
+      setLevels(levelsData || []);
 
-      // Get progress only for levels in this category
-      const { data: progressData } = await supabase.from('user_progress').select('*').eq('user_id', user.id);
-      if (progressData && levelsData) {
-        const levelIds = new Set(levelsData.map(l => l.id));
-        setProgress(progressData.filter(p => levelIds.has(p.level_id)));
+      if (!levelsData || levelsData.length === 0) {
+        setProgress([]);
+        setLevelQuestionTypes({});
+        setReviewCount(0);
+        return;
       }
 
-      // Get review items only for questions in this category's levels
-      if (levelsData && levelsData.length > 0) {
-        const levelIds = levelsData.map(l => l.id);
-        const { data: questionIds } = await supabase.from('questions').select('id').in('level_id', levelIds);
-        if (questionIds && questionIds.length > 0) {
-          const qIds = questionIds.map(q => q.id);
+      const levelIds = levelsData.map((level) => level.id);
+      const [{ data: progressData }, { data: questionsData }] = await Promise.all([
+        supabase.from('user_progress').select('*').eq('user_id', user.id),
+        supabase.from('questions').select('id, level_id, type').in('level_id', levelIds),
+      ]);
+
+      const questionTypesMap = Object.fromEntries(levelIds.map((id) => [id, [] as string[]]));
+      if (questionsData) {
+        for (const question of questionsData) {
+          questionTypesMap[question.level_id]?.push(question.type);
+        }
+      }
+      setLevelQuestionTypes(questionTypesMap);
+
+      if (progressData) {
+        const levelIdSet = new Set(levelIds);
+        setProgress(progressData
+          .filter((item) => levelIdSet.has(item.level_id))
+          .map((item) => ({
+            ...item,
+            completed_modules: Array.isArray(item.completed_modules) ? item.completed_modules as string[] : [],
+          })));
+      } else {
+        setProgress([]);
+      }
+
+      if (questionsData && questionsData.length > 0) {
+        const qIds = questionsData.map((question) => question.id);
           const { count } = await supabase
             .from('review_items')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .in('question_id', qIds)
             .in('confidence', ['partial', 'unknown']);
-          setReviewCount(count || 0);
-        } else {
-          setReviewCount(0);
-        }
+        setReviewCount(count || 0);
+      } else {
+        setReviewCount(0);
       }
     };
     fetchData();
     refreshSectionProfile();
-  }, [user, category]);
+  }, [user, category, refreshSectionProfile]);
 
   // Level is completed only when test is passed (test_score exists and completed=true)
   const completedCount = progress.filter(p => p.completed && p.test_score && levels.some(l => l.id === p.level_id)).length;
-  const progressPercent = levels.length > 0 ? (completedCount / levels.length) * 100 : 0;
+  const getProgressPercent = (levelId: string, prog: UserProgressRow | undefined) => getLevelProgressPercent(
+    getAvailableModulesFromQuestionTypes(levelQuestionTypes[levelId]),
+    prog?.completed_modules,
+    Boolean(prog?.completed && prog?.test_score !== null),
+  );
+  const progressPercent = levels.length > 0
+    ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
+    : 0;
   const totalPoints = sectionProfile?.total_points || 0;
   const unlockedAchievements = getUnlockedAchievements(totalPoints);
 
@@ -88,13 +118,6 @@ export default function Dashboard() {
   };
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
-
-  const getProgressPercent = (prog: UserProgressRow | undefined) => {
-    if (!prog) return 0;
-    if (prog.completed && prog.test_score) return 100;
-    if (prog.completed) return 75;
-    return 0;
-  };
 
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
 
@@ -237,7 +260,7 @@ export default function Dashboard() {
             {levels.map((level) => {
               const unlocked = isLevelUnlocked(level);
               const prog = getLevelProgress(level.id);
-              const percent = getProgressPercent(prog);
+              const percent = getProgressPercent(level.id, prog);
               return (
                 <Card
                   key={level.id}
