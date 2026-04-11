@@ -26,17 +26,18 @@ export default function Account() {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [selectedSchemeId, setSelectedSchemeId] = useState(sectionProfile?.color_scheme || 'teal');
 
   useEffect(() => {
     if (profile?.display_name) setDisplayName(profile.display_name);
   }, [profile]);
 
-  // Apply the color scheme for current category
   useEffect(() => {
-    if (sectionProfile?.color_scheme) {
-      setColorScheme(sectionProfile.color_scheme);
-    }
-  }, [sectionProfile?.color_scheme]);
+    if (!sectionProfile?.color_scheme) return;
+
+    setSelectedSchemeId(sectionProfile.color_scheme);
+    setColorScheme(sectionProfile.color_scheme);
+  }, [sectionProfile?.color_scheme, setColorScheme]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -68,12 +69,34 @@ export default function Account() {
   };
 
   const handleColorSchemeChange = async (schemeId: string) => {
+    const previousSchemeId = selectedSchemeId;
+
+    setSelectedSchemeId(schemeId);
     setColorScheme(schemeId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`section-color-scheme:${category}`, schemeId);
+    }
+
     if (user) {
-      // Save per-category color scheme
-      await supabase.from('section_profiles').update({ color_scheme: schemeId }).eq('user_id', user.id).eq('category', category);
+      const { error } = await supabase
+        .from('section_profiles')
+        .update({ color_scheme: schemeId })
+        .eq('user_id', user.id)
+        .eq('category', category);
+
+      if (error) {
+        setSelectedSchemeId(previousSchemeId);
+        setColorScheme(previousSchemeId);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`section-color-scheme:${category}`, previousSchemeId);
+        }
+        toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+        return;
+      }
+
       refreshSectionProfile();
     }
+
     toast({ title: 'Barevné schéma změněno' });
   };
 
@@ -95,7 +118,7 @@ export default function Account() {
     await signOut();
   };
 
-  const currentSchemeId = sectionProfile?.color_scheme || 'teal';
+  const currentSchemeId = selectedSchemeId;
 
   return (
     <AppLayout>

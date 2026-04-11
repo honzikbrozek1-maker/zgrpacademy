@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { applyColorScheme } from './colorSchemes';
 
 type Theme = 'light' | 'dark';
@@ -20,12 +20,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return 'light';
   });
 
-  const [colorScheme, setColorSchemeState] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('colorScheme') || 'teal';
-    }
-    return 'teal';
-  });
+  const [colorScheme, setColorSchemeState] = useState('teal');
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -33,14 +28,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyColorScheme(colorScheme, theme);
   }, [theme, colorScheme]);
 
-  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+  const toggleTheme = useCallback(() => {
+    setTheme((currentTheme) => currentTheme === 'light' ? 'dark' : 'light');
+  }, []);
 
-  const setColorScheme = (id: string) => {
+  const setColorScheme = useCallback((id: string) => {
     setColorSchemeState(id);
-    localStorage.setItem('colorScheme', id);
-    // Apply immediately so UI updates without waiting for useEffect
     applyColorScheme(id, theme);
-  };
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, colorScheme, setColorScheme }}>
