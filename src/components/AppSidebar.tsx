@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, ArrowLeftRight, Package, Briefcase } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, Package, Briefcase } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';

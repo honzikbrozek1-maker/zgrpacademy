@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -113,19 +113,22 @@ export default function LevelDetail() {
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
   const fillBlankQuestions = questions.filter(q => q.type === 'fill_blank');
 
-  const availableModules: ModuleKey[] = [];
-  if (quizQuestions.length > 0) availableModules.push('quiz');
-  if (flashcardQuestions.length > 0) availableModules.push('flashcards');
-  if (fillBlankQuestions.length > 0) availableModules.push('fillin');
+  const availableModules = useMemo(() => {
+    const modules: ModuleKey[] = [];
+    if (quizQuestions.length > 0) modules.push('quiz');
+    if (flashcardQuestions.length > 0) modules.push('flashcards');
+    if (fillBlankQuestions.length > 0) modules.push('fillin');
+    return modules;
+  }, [quizQuestions.length, flashcardQuestions.length, fillBlankQuestions.length]);
 
   const completedModules = new Set(getCompletedModules(moduleMarkers));
-  const moduleQuestionIds: Record<ModuleKey, string[]> = {
+  const moduleQuestionIds = useMemo<Record<ModuleKey, string[]>>(() => ({
     quiz: quizQuestions.map((question) => question.id),
     flashcards: flashcardQuestions.map((question) => question.id),
     fillin: fillBlankQuestions.map((question) => question.id),
-  };
+  }), [quizQuestions, flashcardQuestions, fillBlankQuestions]);
 
-  const allModulesDone = availableModules.length === 0 || availableModules.every((module) => completedModules.has(module));
+  const allModulesDone = availableModules.every((module) => completedModules.has(module));
   const testUnlocked = allModulesDone;
 
   const persistModuleMarkers = useCallback(async (nextMarkers: string[]) => {
