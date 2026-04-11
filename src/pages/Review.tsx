@@ -21,7 +21,6 @@ interface ReviewItem {
     option_2: string | null;
     option_3: string | null;
     option_4: string | null;
-    correct_answer: number | null;
     type: string;
   };
 }
