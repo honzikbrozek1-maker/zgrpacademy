@@ -36,6 +36,8 @@ export default function Review() {
   const [flipped, setFlipped] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
+  const [checking, setChecking] = useState(false);
 
   const fetchItems = useCallback(async () => {
     if (!user) return;
