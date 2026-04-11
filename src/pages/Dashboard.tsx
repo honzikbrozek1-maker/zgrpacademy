@@ -96,7 +96,8 @@ export default function Dashboard() {
     refreshSectionProfile();
   }, [user, category, refreshSectionProfile]);
 
-  // Level is completed only when test is passed (test_score exists and completed=true)
+  const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
+
   const completedCount = progress.filter(p => p.completed && p.test_score && levels.some(l => l.id === p.level_id)).length;
   const getProgressPercent = (levelId: string, prog: UserProgressRow | undefined) => getLevelProgressPercent(
     getAvailableModulesFromQuestionTypes(levelQuestionTypes[levelId]),
@@ -116,8 +117,6 @@ export default function Dashboard() {
     if (!prevLevel) return true;
     return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
   };
-
-  const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
 
