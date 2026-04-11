@@ -234,10 +234,44 @@ export type Database = {
           },
         ]
       }
+      section_profiles: {
+        Row: {
+          category: string
+          color_scheme: string
+          created_at: string
+          current_level: number
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          color_scheme?: string
+          created_at?: string
+          current_level?: number
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          color_scheme?: string
+          created_at?: string
+          current_level?: number
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed: boolean
           completed_at: string | null
+          completed_modules: Json
           created_at: string
           id: string
           level_id: string
@@ -247,6 +281,7 @@ export type Database = {
         Insert: {
           completed?: boolean
           completed_at?: string | null
+          completed_modules?: Json
           created_at?: string
           id?: string
           level_id: string
@@ -256,6 +291,7 @@ export type Database = {
         Update: {
           completed?: boolean
           completed_at?: string | null
+          completed_modules?: Json
           created_at?: string
           id?: string
           level_id?: string
@@ -296,7 +332,9 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
-      award_points: { Args: { points: number }; Returns: Json }
+      award_points:
+        | { Args: { points: number }; Returns: Json }
+        | { Args: { p_category?: string; points: number }; Returns: Json }
       complete_level: {
         Args: { p_level_id: string; p_score: number }
         Returns: Json
