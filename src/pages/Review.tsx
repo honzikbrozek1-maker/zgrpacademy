@@ -50,17 +50,18 @@ export default function Review() {
     }
     const levelIds = levelsData.map(l => l.id);
     // Get questions for these levels
-    const { data: questionIds } = await supabase.from('questions_safe' as any).select('id').in('level_id', levelIds);
+    const { data: questionIds } = await supabase.from('questions_safe' as any).select('id, question_text, back_text, option_1, option_2, option_3, option_4, type').in('level_id', levelIds);
     if (!questionIds || questionIds.length === 0) {
       setItems([]);
       setLoading(false);
       return;
     }
-    const qIds = questionIds.map(q => q.id);
+    const questionsMap = new Map((questionIds as any[]).map((q: any) => [q.id, q]));
+    const qIds = [...questionsMap.keys()];
     
     const { data } = await supabase
       .from('review_items')
-      .select('*, questions!inner(question_text, back_text, option_1, option_2, option_3, option_4, type)')
+      .select('*')
       .eq('user_id', user.id)
       .in('question_id', qIds)
       .in('confidence', ['partial', 'unknown'])
@@ -69,7 +70,7 @@ export default function Review() {
     if (data) {
       setItems(data.map(item => ({
         ...item,
-        question: (item as any).questions,
+        question: questionsMap.get(item.question_id),
       })));
     }
     setLoading(false);
