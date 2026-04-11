@@ -60,7 +60,7 @@ export default function LevelDetail() {
       return;
     }
 
-    const qIds = levelQuestionIds.map(q => q.id);
+    const qIds = (levelQuestionIds as any[]).map((q: any) => q.id);
     const { count } = await supabase
       .from('review_items')
       .select('id', { count: 'exact', head: true })
