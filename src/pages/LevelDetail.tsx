@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -13,6 +13,7 @@ import FlashcardModule from '@/components/FlashcardModule';
 import FillInBlankModule from '@/components/FillInBlankModule';
 import LevelTest from '@/components/LevelTest';
 import LevelDiploma from '@/components/LevelDiploma';
+import { type ModuleKey, getCompletedModules, getStartedModuleMarker } from '@/lib/levelProgress';
 
 interface Question {
   id: string;
@@ -45,7 +46,7 @@ export default function LevelDetail() {
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [showDiploma, setShowDiploma] = useState(false);
-  const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
+  const [moduleMarkers, setModuleMarkers] = useState<string[]>([]);
 
   const refreshReviewCount = useCallback(async () => {
     if (!user || !level) return;
@@ -76,12 +77,15 @@ export default function LevelDetail() {
     let levelQuery;
     const isUuid = levelId && levelId.includes('-');
     if (isUuid) {
-      levelQuery = supabase.from('levels').select('*').eq('id', levelId).single();
+      levelQuery = supabase.from('levels').select('*').eq('id', levelId).eq('category', category).single();
     } else {
       levelQuery = supabase.from('levels').select('*').eq('order_index', parseInt(levelId || '1')).eq('category', category).single();
     }
     const levelRes = await levelQuery;
-    if (!levelRes.data) return;
+    if (!levelRes.data) {
+      navigate(`${basePath}/levels`, { replace: true });
+      return;
+    }
     const lvl = levelRes.data;
     setLevel(lvl);
 
@@ -95,9 +99,12 @@ export default function LevelDetail() {
       const prog = progressRes.data;
       const modules = Array.isArray(prog.completed_modules) ? prog.completed_modules as string[] : [];
       setProgress({ ...prog, completed_modules: modules });
-      setCompletedModules(new Set(modules));
+      setModuleMarkers(modules);
+    } else {
+      setProgress(null);
+      setModuleMarkers([]);
     }
-  }, [levelId, user, category]);
+  }, [levelId, user, category, navigate, basePath]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { if (level) refreshReviewCount(); }, [level, refreshReviewCount]);
@@ -106,31 +113,91 @@ export default function LevelDetail() {
   const flashcardQuestions = questions.filter(q => q.type === 'flashcard');
   const fillBlankQuestions = questions.filter(q => q.type === 'fill_blank');
 
-  const availableModules = new Set<string>();
-  if (quizQuestions.length > 0) availableModules.add('quiz');
-  if (flashcardQuestions.length > 0) availableModules.add('flashcards');
-  if (fillBlankQuestions.length > 0) availableModules.add('fillin');
+  const availableModules = useMemo(() => {
+    const modules: ModuleKey[] = [];
+    if (quizQuestions.length > 0) modules.push('quiz');
+    if (flashcardQuestions.length > 0) modules.push('flashcards');
+    if (fillBlankQuestions.length > 0) modules.push('fillin');
+    return modules;
+  }, [quizQuestions.length, flashcardQuestions.length, fillBlankQuestions.length]);
 
-  const allModulesDone = availableModules.size > 0 && [...availableModules].every(m => completedModules.has(m));
-  // Test is unlocked only when all practice modules are done
+  const completedModules = new Set(getCompletedModules(moduleMarkers));
+  const moduleQuestionIds = useMemo<Record<ModuleKey, string[]>>(() => ({
+    quiz: quizQuestions.map((question) => question.id),
+    flashcards: flashcardQuestions.map((question) => question.id),
+    fillin: fillBlankQuestions.map((question) => question.id),
+  }), [quizQuestions, flashcardQuestions, fillBlankQuestions]);
+
+  const allModulesDone = availableModules.every((module) => completedModules.has(module));
   const testUnlocked = allModulesDone;
 
-  const markModuleComplete = async (module: string) => {
-    const newSet = new Set(completedModules);
-    newSet.add(module);
-    setCompletedModules(newSet);
+  const persistModuleMarkers = useCallback(async (nextMarkers: string[]) => {
+    setModuleMarkers(nextMarkers);
+    setProgress((current) => current
+      ? { ...current, completed_modules: nextMarkers }
+      : { completed: false, test_score: null, completed_at: null, completed_modules: nextMarkers });
 
-    // Persist completed modules to DB (never removes, only adds)
-    if (user && level) {
-      const modulesArray = [...newSet];
-      await supabase.from('user_progress').upsert({
-        user_id: user.id,
-        level_id: level.id,
-        completed_modules: modulesArray,
-      }, { onConflict: 'user_id,level_id' });
+    if (!user || !level) return;
+
+    await supabase.from('user_progress').upsert({
+      user_id: user.id,
+      level_id: level.id,
+      completed_modules: nextMarkers,
+    }, { onConflict: 'user_id,level_id' });
+  }, [user, level]);
+
+  const getPendingReviewCountForModule = useCallback(async (module: ModuleKey) => {
+    const questionIds = moduleQuestionIds[module];
+
+    if (!user || questionIds.length === 0) return 0;
+
+    const { count } = await supabase
+      .from('review_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('question_id', questionIds)
+      .in('confidence', ['partial', 'unknown']);
+
+    return count || 0;
+  }, [user, moduleQuestionIds]);
+
+  const finalizeModule = useCallback(async (module: ModuleKey) => {
+    const nextMarkers = new Set(moduleMarkers);
+    nextMarkers.add(getStartedModuleMarker(module));
+
+    const pendingCount = await getPendingReviewCountForModule(module);
+    if (pendingCount === 0) {
+      nextMarkers.add(module);
     }
+
+    await persistModuleMarkers([...nextMarkers]);
     setActiveTab('overview');
-  };
+  }, [moduleMarkers, getPendingReviewCountForModule, persistModuleMarkers]);
+
+  const syncCompletedModules = useCallback(async () => {
+    if (!user || !level || availableModules.length === 0) return;
+
+    const nextMarkers = new Set(moduleMarkers);
+    let changed = false;
+
+    for (const module of availableModules) {
+      if (nextMarkers.has(module) || !nextMarkers.has(getStartedModuleMarker(module))) continue;
+
+      const pendingCount = await getPendingReviewCountForModule(module);
+      if (pendingCount === 0) {
+        nextMarkers.add(module);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await persistModuleMarkers([...nextMarkers]);
+    }
+  }, [user, level, availableModules, moduleMarkers, getPendingReviewCountForModule, persistModuleMarkers]);
+
+  useEffect(() => {
+    void syncCompletedModules();
+  }, [syncCompletedModules]);
 
   const handleTabChange = (value: string) => {
     if (value === 'test' && !testUnlocked) return;
@@ -306,7 +373,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {quizQuestions.length > 0 ? (
-              <QuizModule questions={quizQuestions} levelId={level.id} category={category} onComplete={() => markModuleComplete('quiz')} onReviewItemsChange={refreshReviewCount} />
+              <QuizModule questions={quizQuestions} levelId={level.id} category={category} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
             )}
@@ -319,7 +386,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {flashcardQuestions.length > 0 ? (
-              <FlashcardModule questions={flashcardQuestions} onComplete={() => markModuleComplete('flashcards')} onReviewItemsChange={refreshReviewCount} />
+              <FlashcardModule questions={flashcardQuestions} onComplete={() => finalizeModule('flashcards')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kartičky v tomto levelu.</CardContent></Card>
             )}
@@ -332,7 +399,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} category={category} onComplete={() => markModuleComplete('fillin')} onReviewItemsChange={refreshReviewCount} />
+              <FillInBlankModule questions={fillBlankQuestions} category={category} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
@@ -350,7 +417,7 @@ export default function LevelDetail() {
               passingScore={level.passing_score}
               basePath={basePath}
               onPassedWithDiploma={(score) => {
-                setProgress({ completed: true, test_score: score, completed_at: new Date().toISOString(), completed_modules: [...completedModules] });
+                setProgress({ completed: true, test_score: score, completed_at: new Date().toISOString(), completed_modules: moduleMarkers });
                 setShowDiploma(true);
               }}
             />

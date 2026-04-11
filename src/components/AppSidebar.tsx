@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, ArrowLeftRight, Package, Briefcase } from 'lucide-react';
+import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, Package, Briefcase } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,6 +23,7 @@ export function AppSidebar() {
   const { theme, toggleTheme } = useTheme();
   const { state, setOpenMobile } = useSidebar();
   const { currentPath, basePath, pathLabel } = useAppPath();
+  const accountPath = `${basePath}/account`;
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -116,8 +117,8 @@ export function AppSidebar() {
           </SidebarMenuItem>
           {/* Account */}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/account')} className="text-base py-5 min-h-[52px]">
-              <Link to="/account" onClick={closeMobileIfNeeded} className="flex items-center gap-2">
+            <SidebarMenuButton asChild isActive={isActive(accountPath)} className="text-base py-5 min-h-[52px]">
+              <Link to={accountPath} onClick={closeMobileIfNeeded} className="flex items-center gap-2">
                 <div className="relative">
                   <UserCog className="h-5 w-5" />
                   <Settings className="h-2.5 w-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground" />
