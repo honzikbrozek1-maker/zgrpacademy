@@ -56,13 +56,19 @@ const App = () => (
                 <Route path="/backoffice/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
                 <Route path="/backoffice/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
 
-                {/* Shared */}
+                {/* Shared - per section */}
                 <Route path="/products/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/backoffice/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/products/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                <Route path="/backoffice/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                <Route path="/products/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
+                <Route path="/backoffice/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
+                
+                {/* Legacy redirects */}
                 <Route path="/account" element={<Navigate to="/products/account" replace />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-                <Route path="/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
-                <Route path="/admin/share" element={<Navigate to="/share" replace />} />
+                <Route path="/admin" element={<Navigate to="/products/admin" replace />} />
+                <Route path="/share" element={<Navigate to="/products/share" replace />} />
+                <Route path="/admin/share" element={<Navigate to="/products/share" replace />} />
                 
                 {/* Legacy redirects */}
                 <Route path="/levels" element={<Navigate to="/products/levels" replace />} />
