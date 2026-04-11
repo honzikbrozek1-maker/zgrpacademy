@@ -43,8 +43,8 @@ export function AppSidebar() {
   const topItems = [
     { to: basePath, icon: Home, label: 'Dashboard' },
     { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
-    { to: '/share', icon: Share2, label: 'Sdílet aplikaci' },
-    { to: '/admin', icon: Shield, label: 'Admin panel' },
+    { to: `${basePath}/share`, icon: Share2, label: 'Sdílet aplikaci' },
+    { to: `${basePath}/admin`, icon: Shield, label: 'Admin panel' },
   ];
 
   const handleToggleSound = () => {
