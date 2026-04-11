@@ -22,11 +22,12 @@ interface Question {
 interface Props {
   questions: Question[];
   levelId: string;
+  category: string;
   onComplete: () => void;
   onReviewItemsChange?: () => void;
 }
 
-export default function QuizModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function QuizModule({ questions, onComplete, onReviewItemsChange, category }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -48,14 +49,12 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
       setCorrectCount(c => c + 1);
       playCorrectSound();
       if (user) {
-        // Award points via secure RPC
-        const { data: result } = await supabase.rpc('award_points', { points: 10 });
+        const { data: result } = await supabase.rpc('award_points', { points: 10, p_category: category });
         if (result) {
           const r = result as unknown as { old_points: number; new_points: number };
           const m = checkMilestone(r.old_points, r.new_points);
           if (m) setMilestone(m);
         }
-        // Remove from review if previously failed
         await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
         onReviewItemsChange?.();
       }
