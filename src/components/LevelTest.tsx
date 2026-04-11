@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -14,7 +14,6 @@ interface Question {
   option_2: string | null;
   option_3: string | null;
   option_4: string | null;
-  correct_answer: number | null;
 }
 
 interface Props {
@@ -32,6 +31,9 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [finished, setFinished] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [testScore, setTestScore] = useState<number | null>(null);
+  const [testPassed, setTestPassed] = useState(false);
 
   const question = questions[currentIndex];
   const options = question ? [question.option_1, question.option_2, question.option_3, question.option_4].filter(Boolean) : [];
@@ -50,34 +52,50 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
   };
 
   const handleSubmit = async () => {
-    let correct = 0;
-    for (let i = 0; i < questions.length; i++) {
-      if (answers[i] === questions[i].correct_answer) {
-        correct++;
-      } else {
-        if (user) {
-          await supabase.from('review_items').upsert({
-            user_id: user.id,
-            question_id: questions[i].id,
-            confidence: 'unknown',
-            source: 'failed_quiz',
-          }, { onConflict: 'user_id,question_id' });
+    setSubmitting(true);
+    try {
+      // Build answers array for server-side validation
+      const questionAnswers = questions.map((q, i) => ({
+        question_id: q.id,
+        answer: answers[i] || 0,
+      }));
+
+      const { data } = await supabase.rpc('submit_quiz_test', {
+        p_question_answers: questionAnswers,
+      });
+
+      const results = data as unknown as Array<{ question_id: string; correct: boolean; correct_answer: number }>;
+      const correctCount = results.filter(r => r.correct).length;
+      const score = Math.round((correctCount / questions.length) * 100);
+      const passed = score >= passingScore;
+
+      setTestScore(score);
+      setTestPassed(passed);
+
+      // Add failed questions to review
+      if (user) {
+        for (const result of results) {
+          if (!result.correct) {
+            await supabase.from('review_items').upsert({
+              user_id: user.id,
+              question_id: result.question_id,
+              confidence: 'unknown',
+              source: 'failed_quiz',
+            }, { onConflict: 'user_id,question_id' });
+          }
         }
+
+        await supabase.rpc('complete_level', { p_level_id: levelId, p_score: score });
+        await refreshProfile();
       }
-    }
 
-    const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= passingScore;
+      setFinished(true);
 
-    if (user) {
-      await supabase.rpc('complete_level', { p_level_id: levelId, p_score: score });
-      await refreshProfile();
-    }
-
-    setFinished(true);
-
-    if (passed && onPassedWithDiploma) {
-      setTimeout(() => onPassedWithDiploma(score), 1500);
+      if (passed && onPassedWithDiploma) {
+        setTimeout(() => onPassedWithDiploma(score), 1500);
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -101,31 +119,24 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
     );
   }
 
-  if (finished) {
-    let correct = 0;
-    for (let i = 0; i < questions.length; i++) {
-      if (answers[i] === questions[i].correct_answer) correct++;
-    }
-    const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= passingScore;
-
+  if (finished && testScore !== null) {
     return (
       <Card className="shadow-elevated">
         <CardContent className="p-8 text-center space-y-4">
-          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
-            {passed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
+          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
+            {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
           </div>
-          <h3 className="text-xl font-bold">{passed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
-          <p className="text-2xl font-bold">{score}%</p>
+          <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
+          <p className="text-2xl font-bold">{testScore}%</p>
           <p className="text-muted-foreground">
-            {passed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+            {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
               Zpět na levely
             </Button>
-            {!passed && (
-              <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); }} className="gradient-primary text-primary-foreground">
+            {!testPassed && (
+              <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }} className="gradient-primary text-primary-foreground">
                 Zkusit znovu
               </Button>
             )}
@@ -179,8 +190,8 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
               Další <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={Object.keys(answers).length < questions.length} className="gradient-primary text-primary-foreground">
-              Odevzdat test
+            <Button onClick={handleSubmit} disabled={Object.keys(answers).length < questions.length || submitting} className="gradient-primary text-primary-foreground">
+              {submitting ? 'Odesílání...' : 'Odevzdat test'}
             </Button>
           )}
         </div>

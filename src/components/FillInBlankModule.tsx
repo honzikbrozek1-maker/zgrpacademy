@@ -17,7 +17,6 @@ interface Question {
   option_2: string | null;
   option_3: string | null;
   option_4: string | null;
-  correct_answer: number | null;
 }
 
 interface Props {
@@ -42,18 +41,21 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [milestone, setMilestone] = useState<number | null>(null);
+  const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  const correctAnswerIndex = question?.correct_answer || 1;
-  const correctAnswerText = [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || '';
+  const correctAnswerText = correctAnswerIndex
+    ? [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || ''
+    : '';
 
   const sentenceData = useMemo(() => {
-    if (!question?.back_text) return null;
+    if (!question?.back_text || !showResult || !correctAnswerText) return null;
     const blankIdx = question.back_text.indexOf('______');
     if (blankIdx === -1) {
       const word = correctAnswerText;
@@ -69,7 +71,21 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       before: question.back_text.substring(0, blankIdx),
       after: question.back_text.substring(blankIdx + 6),
     };
-  }, [question, correctAnswerText]);
+  }, [question, correctAnswerText, showResult]);
+
+  const blankSentenceData = useMemo(() => {
+    if (!question?.back_text || showResult) return null;
+    const blankIdx = question.back_text.indexOf('______');
+    if (blankIdx >= 0) {
+      return {
+        before: question.back_text.substring(0, blankIdx),
+        after: question.back_text.substring(blankIdx + 6),
+      };
+    }
+    return null;
+  }, [question, showResult]);
+
+  const displaySentence = showResult ? sentenceData : blankSentenceData;
 
   const options = useMemo(() => {
     const opts: { text: string; index: number }[] = [];
@@ -81,36 +97,49 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
   }, [question]);
 
   const handleSelect = async (optIndex: number) => {
-    if (showResult) return;
+    if (showResult || checking) return;
     setSelected(optIndex);
-    const correct = optIndex === correctAnswerIndex;
-    setIsCorrect(correct);
-    setShowResult(true);
+    setChecking(true);
 
-    if (correct) {
-      setCorrectCount(c => c + 1);
-      playCorrectSound();
-      if (user) {
-        const { data: result } = await supabase.rpc('award_points', { points: 10, p_category: category });
-        if (result) {
-          const r = result as unknown as { old_points: number; new_points: number };
-          const m = checkMilestone(r.old_points, r.new_points);
-          if (m) setMilestone(m);
+    try {
+      const { data } = await supabase.rpc('check_quiz_answer', {
+        p_question_id: question.id,
+        p_answer: optIndex,
+      });
+
+      const result = data as unknown as { correct: boolean; correct_answer: number };
+      const correct = result.correct;
+      setCorrectAnswerIndex(result.correct_answer);
+      setIsCorrect(correct);
+      setShowResult(true);
+
+      if (correct) {
+        setCorrectCount(c => c + 1);
+        playCorrectSound();
+        if (user) {
+          const { data: pointsResult } = await supabase.rpc('award_points', { points: 10, p_category: category });
+          if (pointsResult) {
+            const r = pointsResult as unknown as { old_points: number; new_points: number };
+            const m = checkMilestone(r.old_points, r.new_points);
+            if (m) setMilestone(m);
+          }
+          await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
+          onReviewItemsChange?.();
         }
-        await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
-        onReviewItemsChange?.();
+      } else {
+        playIncorrectSound();
+        if (user) {
+          await supabase.from('review_items').upsert({
+            user_id: user.id,
+            question_id: question.id,
+            confidence: 'unknown',
+            source: 'fill_blank',
+          }, { onConflict: 'user_id,question_id' });
+          onReviewItemsChange?.();
+        }
       }
-    } else {
-      playIncorrectSound();
-      if (user) {
-        await supabase.from('review_items').upsert({
-          user_id: user.id,
-          question_id: question.id,
-          confidence: 'unknown',
-          source: 'fill_blank',
-        }, { onConflict: 'user_id,question_id' });
-        onReviewItemsChange?.();
-      }
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -120,6 +149,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setSelected(null);
       setShowResult(false);
       setIsCorrect(false);
+      setCorrectAnswerIndex(null);
     } else {
       setFinished(true);
       refreshProfile();
@@ -132,6 +162,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setSelected(null);
       setShowResult(false);
       setIsCorrect(false);
+      setCorrectAnswerIndex(null);
     }
   };
 
@@ -167,9 +198,9 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         <CardContent className="p-6 space-y-6">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Vyberte správné slovo</p>
 
-          {sentenceData ? (
+          {displaySentence ? (
             <div className="text-lg leading-relaxed">
-              <span>{sentenceData.before}</span>
+              <span>{displaySentence.before}</span>
               <span className={`font-bold px-2 py-0.5 rounded ${
                 showResult
                   ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
@@ -177,7 +208,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
               }`}>
                 {showResult ? correctAnswerText : '______'}
               </span>
-              <span>{sentenceData.after}</span>
+              <span>{displaySentence.after}</span>
             </div>
           ) : (
             <h3 className="text-lg font-semibold">{question.question_text}</h3>
@@ -186,7 +217,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
           <div className="grid grid-cols-2 gap-3">
             {options.map((opt) => {
               const isThis = selected === opt.index;
-              const isAnswer = opt.index === correctAnswerIndex;
+              const isAnswer = correctAnswerIndex !== null && opt.index === correctAnswerIndex;
               let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
@@ -198,7 +229,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
                 cls += 'border-border opacity-50';
               }
               return (
-                <button key={opt.index} className={cls} onClick={() => handleSelect(opt.index)} disabled={showResult}>
+                <button key={opt.index} className={cls} onClick={() => handleSelect(opt.index)} disabled={showResult || checking}>
                   {opt.text}
                 </button>
               );
