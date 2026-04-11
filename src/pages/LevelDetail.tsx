@@ -51,7 +51,7 @@ export default function LevelDetail() {
     if (!user || !level) return;
     // Count review items only for questions in this level's category
     const { data: levelQuestionIds } = await supabase
-      .from('questions')
+      .from('questions_safe' as any)
       .select('id')
       .eq('level_id', level.id);
     
