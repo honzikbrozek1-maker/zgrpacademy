@@ -309,9 +309,7 @@ export default function Review() {
 
   if (mode === 'fillin' && currentItem) {
     const q = currentItem.question;
-    const correctAnswerIndex = q?.correct_answer || 1;
-    const correctAnswerText = [q?.option_1, q?.option_2, q?.option_3, q?.option_4][correctAnswerIndex - 1] || '';
-    const options = [
+    const fillinOptions = [
       q?.option_1 ? { text: q.option_1, index: 1 } : null,
       q?.option_2 ? { text: q.option_2, index: 2 } : null,
       q?.option_3 ? { text: q.option_3, index: 3 } : null,
@@ -320,17 +318,40 @@ export default function Review() {
 
     const backText = q?.back_text || '';
     const blankIndex = backText.indexOf('______');
-    const fallbackIndex = correctAnswerText ? backText.toLowerCase().indexOf(correctAnswerText.toLowerCase()) : -1;
-    const sentenceData = blankIndex >= 0
+    const blankSentence = blankIndex >= 0
       ? { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) }
-      : fallbackIndex >= 0
-        ? { before: backText.slice(0, fallbackIndex), after: backText.slice(fallbackIndex + correctAnswerText.length) }
-        : null;
+      : null;
 
-    const handleSelect = (optIndex: number) => {
-      if (showResult) return;
+    const fillinCorrectText = correctAnswer !== null
+      ? [q?.option_1, q?.option_2, q?.option_3, q?.option_4][correctAnswer - 1] || ''
+      : '';
+
+    const fillinSentence = showResult && correctAnswer !== null && backText
+      ? (() => {
+          if (blankIndex >= 0) return { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) };
+          if (fillinCorrectText) {
+            const idx = backText.toLowerCase().indexOf(fillinCorrectText.toLowerCase());
+            if (idx >= 0) return { before: backText.slice(0, idx), after: backText.slice(idx + fillinCorrectText.length) };
+          }
+          return null;
+        })()
+      : blankSentence;
+
+    const handleSelectFillin = async (optIndex: number) => {
+      if (showResult || checking) return;
       setSelected(optIndex);
-      setShowResult(true);
+      setChecking(true);
+      try {
+        const { data } = await supabase.rpc('check_quiz_answer', {
+          p_question_id: currentItem.question_id,
+          p_answer: optIndex,
+        });
+        const result = data as unknown as { correct: boolean; correct_answer: number };
+        setCorrectAnswer(result.correct_answer);
+        setShowResult(true);
+      } finally {
+        setChecking(false);
+      }
     };
 
     return (
@@ -348,31 +369,31 @@ export default function Review() {
           </div>
           <Card className="shadow-card">
             <CardContent className="p-6 space-y-6">
-              {sentenceData ? (
+              {fillinSentence ? (
                 <div className="text-lg leading-relaxed">
-                  <span>{sentenceData.before}</span>
+                  <span>{fillinSentence.before}</span>
                   <span className={`font-bold px-2 py-0.5 rounded ${
                     showResult
-                      ? selected === correctAnswerIndex ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
+                      ? selected === correctAnswer ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
                       : 'bg-primary/10 text-primary'
                   }`}>
-                    {showResult ? correctAnswerText : '______'}
+                    {showResult ? fillinCorrectText : '______'}
                   </span>
-                  <span>{sentenceData.after}</span>
+                  <span>{fillinSentence.after}</span>
                 </div>
               ) : (
                 <h3 className="text-lg font-semibold">{q?.question_text}</h3>
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                {options.map((option) => {
+                {fillinOptions.map((option) => {
                   const isSelected = selected === option.index;
-                  const isCorrect = option.index === correctAnswerIndex;
+                  const isAnswerCorrect = correctAnswer !== null && option.index === correctAnswer;
                   let className = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm '; 
 
                   if (!showResult) {
                     className += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
-                  } else if (isCorrect) {
+                  } else if (isAnswerCorrect) {
                     className += 'border-success bg-success/10 text-success';
                   } else if (isSelected) {
                     className += 'border-destructive bg-destructive/10 text-destructive';
@@ -381,7 +402,7 @@ export default function Review() {
                   }
 
                   return (
-                    <button key={option.index} className={className} onClick={() => handleSelect(option.index)} disabled={showResult}>
+                    <button key={option.index} className={className} onClick={() => handleSelectFillin(option.index)} disabled={showResult || checking}>
                       {option.text}
                     </button>
                   );
@@ -394,7 +415,7 @@ export default function Review() {
               <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
             </Button>
             {showResult && (
-              <Button onClick={() => advanceReviewItem(selected === correctAnswerIndex ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
+              <Button onClick={() => advanceReviewItem(selected === correctAnswer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
                 {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
