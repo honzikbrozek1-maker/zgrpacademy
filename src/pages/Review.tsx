@@ -98,6 +98,8 @@ export default function Review() {
     setFlipped(false);
     setSelected(null);
     setShowResult(false);
+    setCorrectAnswer(null);
+    setChecking(false);
 
     if (confidence === 'know') {
       if (totalItems === 1) {
