@@ -23,7 +23,6 @@ interface Question {
   option_2: string | null;
   option_3: string | null;
   option_4: string | null;
-  correct_answer: number | null;
   back_text: string | null;
   order_index: number;
 }
@@ -90,7 +89,7 @@ export default function LevelDetail() {
     setLevel(lvl);
 
     const [questionsRes, progressRes] = await Promise.all([
-      supabase.from('questions').select('*').eq('level_id', lvl.id).order('order_index'),
+      supabase.from('questions_safe' as any).select('*').eq('level_id', lvl.id).order('order_index'),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
     if (questionsRes.data) setQuestions(questionsRes.data);
