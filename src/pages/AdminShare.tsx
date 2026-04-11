@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Mail, Send } from 'lucide-react';
+import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Mail, Send, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface InviteLink {
@@ -33,18 +33,20 @@ export default function AdminShare() {
 
   const fetchInvites = async () => {
     if (!user) return;
-    // Only show own invites, exclude used ones
+
     const { data } = await supabase
       .from('invite_links')
       .select('*')
       .eq('created_by', user.id)
       .is('used_by', null)
       .order('created_at', { ascending: false });
+
     if (data) setInvites(data);
   };
 
   const createInvite = async () => {
     if (!user) return;
+
     const { data, error } = await supabase.from('invite_links').insert({
       created_by: user.id,
       role: newRole as 'admin' | 'user',
@@ -68,6 +70,25 @@ export default function AdminShare() {
     } else {
       toast({ title: 'Pozvánka vytvořena' });
     }
+  };
+
+  const deleteInvite = async (inviteId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('invite_links')
+      .delete()
+      .eq('id', inviteId)
+      .eq('created_by', user.id)
+      .is('used_by', null);
+
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    setInvites((currentInvites) => currentInvites.filter((invite) => invite.id !== inviteId));
+    toast({ title: 'Pozvánka smazána' });
   };
 
   const copyLink = (code: string) => {
@@ -133,7 +154,7 @@ export default function AdminShare() {
                 <div className="space-y-2">
                   {invites.map(inv => (
                     <Card key={inv.id} className="shadow-card">
-                      <CardContent className="p-4 flex items-center justify-between">
+                      <CardContent className="p-4 flex items-center justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
                             <Badge variant={inv.role === 'admin' ? 'default' : 'secondary'}>
@@ -145,9 +166,14 @@ export default function AdminShare() {
                             Vytvořena: {new Date(inv.created_at).toLocaleDateString('cs')} • Vyprší: {new Date(inv.expires_at).toLocaleDateString('cs')}
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => copyLink(inv.code)}>
-                          <Copy className="mr-1 h-3 w-3" /> Kopírovat
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => copyLink(inv.code)}>
+                            <Copy className="mr-1 h-3 w-3" /> Kopírovat
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => deleteInvite(inv.id)}>
+                            <Trash2 className="mr-1 h-3 w-3" /> Smazat
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

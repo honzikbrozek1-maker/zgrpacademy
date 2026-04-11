@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useLayoutEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -18,13 +18,24 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const accountPath = `${basePath}/account`;
   const isOnAccount = location.pathname === accountPath;
   const isOnDashboard = location.pathname === basePath;
+  const colorStorageKey = `section-color-scheme:${category}`;
 
-  // Apply per-category color scheme
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const cachedColorScheme = localStorage.getItem(colorStorageKey) || 'teal';
+    setColorScheme(cachedColorScheme);
+  }, [colorStorageKey, setColorScheme]);
+
   useEffect(() => {
-    if (sectionProfile?.color_scheme) {
-      setColorScheme(sectionProfile.color_scheme);
+    if (!sectionProfile?.color_scheme) return;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(colorStorageKey, sectionProfile.color_scheme);
     }
-  }, [sectionProfile?.color_scheme, setColorScheme]);
+
+    setColorScheme(sectionProfile.color_scheme);
+  }, [colorStorageKey, sectionProfile?.color_scheme, setColorScheme]);
 
   const handleAccountClick = () => {
     if (isOnAccount) {
