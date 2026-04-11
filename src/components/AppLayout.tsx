@@ -1,18 +1,29 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Home, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
+import { useSectionProfile } from '@/hooks/useSectionProfile';
+import { useTheme } from '@/lib/theme';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
-  const { basePath } = useAppPath();
+  const { basePath, category } = useAppPath();
+  const { sectionProfile } = useSectionProfile(category);
+  const { setColorScheme } = useTheme();
   const isOnAccount = location.pathname === '/account';
   const isOnDashboard = location.pathname === basePath;
+
+  // Apply per-category color scheme
+  useEffect(() => {
+    if (sectionProfile?.color_scheme) {
+      setColorScheme(sectionProfile.color_scheme);
+    }
+  }, [sectionProfile?.color_scheme, setColorScheme]);
 
   const handleAccountClick = () => {
     if (isOnAccount) {

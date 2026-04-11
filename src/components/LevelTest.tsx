@@ -21,10 +21,11 @@ interface Props {
   questions: Question[];
   levelId: string;
   passingScore: number;
+  basePath: string;
   onPassedWithDiploma?: (score: number) => void;
 }
 
-export default function LevelTest({ questions, levelId, passingScore, onPassedWithDiploma }: Props) {
+export default function LevelTest({ questions, levelId, passingScore, basePath, onPassedWithDiploma }: Props) {
   const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [started, setStarted] = useState(false);
@@ -69,7 +70,6 @@ export default function LevelTest({ questions, levelId, passingScore, onPassedWi
     const passed = score >= passingScore;
 
     if (user) {
-      // Use secure RPC to complete level (handles progress, points, level advancement)
       await supabase.rpc('complete_level', { p_level_id: levelId, p_score: score });
       await refreshProfile();
     }
@@ -77,7 +77,6 @@ export default function LevelTest({ questions, levelId, passingScore, onPassedWi
     setFinished(true);
 
     if (passed && onPassedWithDiploma) {
-      // Small delay so user sees the result
       setTimeout(() => onPassedWithDiploma(score), 1500);
     }
   };
@@ -122,7 +121,7 @@ export default function LevelTest({ questions, levelId, passingScore, onPassedWi
             {passed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
           </p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate('/levels')}>
+            <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
               Zpět na levely
             </Button>
             {!passed && (

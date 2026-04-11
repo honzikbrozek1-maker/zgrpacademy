@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useAppPath } from '@/lib/pathContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -27,6 +28,7 @@ interface ReviewItem {
 
 export default function Review() {
   const { user } = useAuth();
+  const { category } = useAppPath();
   const navigate = useNavigate();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,10 +40,28 @@ export default function Review() {
 
   const fetchItems = useCallback(async () => {
     if (!user) return;
+    // Get levels for this category
+    const { data: levelsData } = await supabase.from('levels').select('id').eq('category', category);
+    if (!levelsData || levelsData.length === 0) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+    const levelIds = levelsData.map(l => l.id);
+    // Get questions for these levels
+    const { data: questionIds } = await supabase.from('questions').select('id').in('level_id', levelIds);
+    if (!questionIds || questionIds.length === 0) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+    const qIds = questionIds.map(q => q.id);
+    
     const { data } = await supabase
       .from('review_items')
       .select('*, questions(*)')
       .eq('user_id', user.id)
+      .in('question_id', qIds)
       .in('confidence', ['partial', 'unknown'])
       .order('updated_at', { ascending: false });
     
@@ -52,7 +72,7 @@ export default function Review() {
       })));
     }
     setLoading(false);
-  }, [user]);
+  }, [user, category]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 

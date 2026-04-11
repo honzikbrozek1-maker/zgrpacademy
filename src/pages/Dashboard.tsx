@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useSectionProfile } from '@/hooks/useSectionProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -26,9 +27,10 @@ interface UserProgressRow {
 }
 
 export default function Dashboard() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { currentPath, category, basePath, pathLabel } = useAppPath();
+  const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [reviewCount, setReviewCount] = useState(0);
@@ -38,28 +40,51 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [levelsRes, progressRes, reviewRes] = await Promise.all([
-        supabase.from('levels').select('*').eq('category', category).order('order_index'),
-        supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('review_items').select('id', { count: 'exact' }).eq('user_id', user.id).in('confidence', ['partial', 'unknown']),
-      ]);
-      if (levelsRes.data) setLevels(levelsRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
-      setReviewCount(reviewRes.count || 0);
+      // Get levels for this category
+      const { data: levelsData } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
+      if (levelsData) setLevels(levelsData);
+
+      // Get progress only for levels in this category
+      const { data: progressData } = await supabase.from('user_progress').select('*').eq('user_id', user.id);
+      if (progressData && levelsData) {
+        const levelIds = new Set(levelsData.map(l => l.id));
+        setProgress(progressData.filter(p => levelIds.has(p.level_id)));
+      }
+
+      // Get review items only for questions in this category's levels
+      if (levelsData && levelsData.length > 0) {
+        const levelIds = levelsData.map(l => l.id);
+        const { data: questionIds } = await supabase.from('questions').select('id').in('level_id', levelIds);
+        if (questionIds && questionIds.length > 0) {
+          const qIds = questionIds.map(q => q.id);
+          const { count } = await supabase
+            .from('review_items')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .in('question_id', qIds)
+            .in('confidence', ['partial', 'unknown']);
+          setReviewCount(count || 0);
+        } else {
+          setReviewCount(0);
+        }
+      }
     };
     fetchData();
+    refreshSectionProfile();
   }, [user, category]);
 
+  // Level is completed only when test is passed (test_score exists and completed=true)
   const completedCount = progress.filter(p => p.completed && p.test_score && levels.some(l => l.id === p.level_id)).length;
   const progressPercent = levels.length > 0 ? (completedCount / levels.length) * 100 : 0;
-  const totalPoints = profile?.total_points || 0;
+  const totalPoints = sectionProfile?.total_points || 0;
   const unlockedAchievements = getUnlockedAchievements(totalPoints);
 
+  // Next level unlocked only after test passed on previous
   const isLevelUnlocked = (level: Level) => {
     if (level.order_index === 1) return true;
     const prevLevel = levels.find(l => l.order_index === level.order_index - 1);
     if (!prevLevel) return true;
-    return progress.some(p => p.level_id === prevLevel.id && p.completed);
+    return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
   };
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
@@ -71,14 +96,11 @@ export default function Dashboard() {
     return 0;
   };
 
-  // Color scheme per path
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
-  
 
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
-        {/* Path header */}
         <div className="flex items-center gap-3">
           {headerIcon}
           <div>
@@ -89,7 +111,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/achievements`)}>
             <Dialog>
@@ -148,7 +169,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
-                <p className="text-lg font-bold">{profile?.current_level || 1}</p>
+                <p className="text-lg font-bold">{sectionProfile?.current_level || 1}</p>
               </div>
             </CardContent>
           </Card>
@@ -176,7 +197,6 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Overall progress */}
         <Card className="shadow-card">
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
@@ -187,7 +207,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick actions */}
         {reviewCount > 0 && (
           <Link to={`${basePath}/review`}>
             <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer">
@@ -205,7 +224,6 @@ export default function Dashboard() {
           </Link>
         )}
 
-        {/* Levels list */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">

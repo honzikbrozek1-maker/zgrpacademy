@@ -17,6 +17,7 @@ interface InviteLink {
   used_by: string | null;
   expires_at: string;
   created_at: string;
+  created_by: string;
 }
 
 export default function AdminShare() {
@@ -27,11 +28,18 @@ export default function AdminShare() {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    if (isAdmin) fetchInvites();
-  }, [isAdmin]);
+    if (user) fetchInvites();
+  }, [user]);
 
   const fetchInvites = async () => {
-    const { data } = await supabase.from('invite_links').select('*').order('created_at', { ascending: false });
+    if (!user) return;
+    // Only show own invites, exclude used ones
+    const { data } = await supabase
+      .from('invite_links')
+      .select('*')
+      .eq('created_by', user.id)
+      .is('used_by', null)
+      .order('created_at', { ascending: false });
     if (data) setInvites(data);
   };
 
@@ -51,7 +59,6 @@ export default function AdminShare() {
 
     if (email && data) {
       const url = `${window.location.origin}/invite/${data.code}`;
-      // Copy to clipboard with email context
       await navigator.clipboard.writeText(url);
       toast({
         title: 'Pozvánka vytvořena',
@@ -78,7 +85,6 @@ export default function AdminShare() {
           <Share2 className="h-6 w-6 text-primary" /> Sdílet aplikaci
         </h1>
 
-        {/* Direct share */}
         <Card className="shadow-card">
           <CardHeader><CardTitle className="text-lg flex items-center gap-2"><LinkIcon className="h-5 w-5" /> Odkaz na aplikaci</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -92,7 +98,6 @@ export default function AdminShare() {
           </CardContent>
         </Card>
 
-        {/* Create invite - only for admins */}
         {isAdmin && (
           <>
             <Card className="shadow-card">
@@ -122,34 +127,33 @@ export default function AdminShare() {
               </CardContent>
             </Card>
 
-            <div>
-              <h2 className="text-lg font-semibold mb-3">Existující pozvánky</h2>
-              <div className="space-y-2">
-                {invites.map(inv => (
-                  <Card key={inv.id} className="shadow-card">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={inv.role === 'admin' ? 'default' : 'secondary'}>
-                            {inv.role === 'admin' ? 'Admin' : 'Uživatel'}
-                          </Badge>
-                          {inv.used_by ? <Badge variant="outline">Použita</Badge> : <Badge variant="outline" className="text-success">Aktivní</Badge>}
+            {invites.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold mb-3">Vaše aktivní pozvánky</h2>
+                <div className="space-y-2">
+                  {invites.map(inv => (
+                    <Card key={inv.id} className="shadow-card">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={inv.role === 'admin' ? 'default' : 'secondary'}>
+                              {inv.role === 'admin' ? 'Admin' : 'Uživatel'}
+                            </Badge>
+                            <Badge variant="outline" className="text-success">Aktivní</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Vytvořena: {new Date(inv.created_at).toLocaleDateString('cs')} • Vyprší: {new Date(inv.expires_at).toLocaleDateString('cs')}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Vytvořena: {new Date(inv.created_at).toLocaleDateString('cs')} • Vyprší: {new Date(inv.expires_at).toLocaleDateString('cs')}
-                        </p>
-                      </div>
-                      {!inv.used_by && (
                         <Button variant="outline" size="sm" onClick={() => copyLink(inv.code)}>
                           <Copy className="mr-1 h-3 w-3" /> Kopírovat
                         </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-                {invites.length === 0 && <p className="text-muted-foreground text-center py-4">Žádné pozvánky.</p>}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>

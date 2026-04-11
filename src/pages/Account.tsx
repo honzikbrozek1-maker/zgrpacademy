@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
+import { useAppPath } from '@/lib/pathContext';
+import { useSectionProfile } from '@/hooks/useSectionProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-
 import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2 } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
@@ -15,7 +16,9 @@ import AppLayout from '@/components/AppLayout';
 
 export default function Account() {
   const { user, profile, refreshProfile, signOut } = useAuth();
-  const { colorScheme, setColorScheme } = useTheme();
+  const { setColorScheme } = useTheme();
+  const { category } = useAppPath();
+  const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [newPassword, setNewPassword] = useState('');
@@ -27,6 +30,13 @@ export default function Account() {
   useEffect(() => {
     if (profile?.display_name) setDisplayName(profile.display_name);
   }, [profile]);
+
+  // Apply the color scheme for current category
+  useEffect(() => {
+    if (sectionProfile?.color_scheme) {
+      setColorScheme(sectionProfile.color_scheme);
+    }
+  }, [sectionProfile?.color_scheme]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -60,7 +70,9 @@ export default function Account() {
   const handleColorSchemeChange = async (schemeId: string) => {
     setColorScheme(schemeId);
     if (user) {
-      await supabase.from('profiles').update({ color_scheme: schemeId }).eq('user_id', user.id);
+      // Save per-category color scheme
+      await supabase.from('section_profiles').update({ color_scheme: schemeId }).eq('user_id', user.id).eq('category', category);
+      refreshSectionProfile();
     }
     toast({ title: 'Barevné schéma změněno' });
   };
@@ -72,10 +84,10 @@ export default function Account() {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'SMAZAT') return;
-    // Delete user data then sign out
     if (user) {
       await supabase.from('review_items').delete().eq('user_id', user.id);
       await supabase.from('user_progress').delete().eq('user_id', user.id);
+      await supabase.from('section_profiles').delete().eq('user_id', user.id);
       await supabase.from('profiles').delete().eq('user_id', user.id);
       await supabase.from('user_roles').delete().eq('user_id', user.id);
     }
@@ -83,25 +95,25 @@ export default function Account() {
     await signOut();
   };
 
+  const currentSchemeId = sectionProfile?.color_scheme || 'teal';
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4 animate-slide-up pb-20">
         <h1 className="text-2xl font-bold">Nastavení účtu</h1>
 
-        {/* Stats - compact inline */}
         <div className="flex gap-3">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
             <Trophy className="h-4 w-4 text-amber-500" />
-            <span className="font-bold text-sm">{profile?.total_points || 0}</span>
-            <span className="text-xs text-muted-foreground">bodů</span>
+            <span className="font-bold text-sm">{sectionProfile?.total_points || 0}</span>
+            <span className="text-xs text-muted-foreground">bodů ({category})</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
             <Star className="h-4 w-4 text-violet-500" />
-            <span className="font-bold text-sm">Level {profile?.current_level || 1}</span>
+            <span className="font-bold text-sm">Level {sectionProfile?.current_level || 1}</span>
           </div>
         </div>
 
-        {/* Profile + Sound in one card */}
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> Profil</div>
@@ -125,13 +137,12 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Color scheme - compact */}
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> Barevné schéma</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> Barevné schéma ({category === 'products' ? 'Produkty' : 'Backoffice'})</div>
             <div className="grid grid-cols-6 gap-2">
               {colorSchemes.map(scheme => {
-                const isActive = colorScheme === scheme.id;
+                const isActive = currentSchemeId === scheme.id;
                 const hsl = scheme.light['--primary'];
                 return (
                   <button
@@ -153,7 +164,6 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Password - compact */}
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> Změna hesla</div>
@@ -166,7 +176,6 @@ export default function Account() {
           </CardContent>
         </Card>
 
-        {/* Delete account - compact */}
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Smazání účtu</div>

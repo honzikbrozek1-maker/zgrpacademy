@@ -32,13 +32,17 @@ export default function Auth() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin },
     });
     if (error) {
       toast({ title: 'Chyba registrace', description: error.message, variant: 'destructive' });
+    } else if (data.session) {
+      // Auto-confirmed, user is logged in
+      toast({ title: 'Registrace úspěšná', description: 'Vítejte!' });
+      navigate('/');
     } else {
       toast({ title: 'Registrace úspěšná', description: 'Zkontrolujte svůj e-mail pro potvrzení.' });
     }

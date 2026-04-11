@@ -44,11 +44,12 @@ export default function Levels() {
     fetchData();
   }, [user, category]);
 
+  // Next level unlocked only when previous level's test is passed
   const isLevelUnlocked = (level: Level) => {
     if (level.order_index === 1) return true;
     const prevLevel = levels.find(l => l.order_index === level.order_index - 1);
     if (!prevLevel) return true;
-    return progress.some(p => p.level_id === prevLevel.id && p.completed);
+    return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
   };
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);

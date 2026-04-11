@@ -22,6 +22,7 @@ interface Question {
 
 interface Props {
   questions: Question[];
+  category: string;
   onComplete: () => void;
   onReviewItemsChange?: () => void;
 }
@@ -35,7 +36,7 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange, category }: Props) {
   const { user, refreshProfile } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -90,28 +91,24 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setCorrectCount(c => c + 1);
       playCorrectSound();
       if (user) {
-        const { data: result } = await supabase.rpc('award_points', { points: 10 });
+        const { data: result } = await supabase.rpc('award_points', { points: 10, p_category: category });
         if (result) {
           const r = result as unknown as { old_points: number; new_points: number };
           const m = checkMilestone(r.old_points, r.new_points);
           if (m) setMilestone(m);
         }
-        // Remove from review if previously failed
         await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
         onReviewItemsChange?.();
       }
     } else {
       playIncorrectSound();
       if (user) {
-        const { error } = await supabase.from('review_items').upsert({
+        await supabase.from('review_items').upsert({
           user_id: user.id,
           question_id: question.id,
           confidence: 'unknown',
           source: 'fill_blank',
         }, { onConflict: 'user_id,question_id' });
-        if (error) {
-          console.error('Failed to save review item:', error);
-        }
         onReviewItemsChange?.();
       }
     }
