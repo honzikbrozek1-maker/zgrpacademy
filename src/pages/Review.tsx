@@ -135,18 +135,6 @@ export default function Review() {
   const currentItem = activeItems[currentIndex];
   const progressVal = activeItems.length > 0 ? ((currentIndex + 1) / activeItems.length) * 100 : 0;
 
-  const handleNext = () => {
-    if (currentIndex < activeItems.length - 1) {
-      setCurrentIndex(i => i + 1);
-      setFlipped(false);
-      setSelected(null);
-      setShowResult(false);
-    } else {
-      setMode('menu');
-      setCurrentIndex(0);
-      fetchItems();
-    }
-  };
 
   const handlePrev = () => {
     if (currentIndex > 0) {
