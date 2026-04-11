@@ -12,9 +12,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
-  const { basePath } = useAppPath();
+  const { basePath, category } = useAppPath();
+  const { sectionProfile } = useSectionProfile(category);
+  const { setColorScheme } = useTheme();
   const isOnAccount = location.pathname === '/account';
   const isOnDashboard = location.pathname === basePath;
+
+  // Apply per-category color scheme
+  useEffect(() => {
+    if (sectionProfile?.color_scheme) {
+      setColorScheme(sectionProfile.color_scheme);
+    }
+  }, [sectionProfile?.color_scheme, setColorScheme]);
 
   const handleAccountClick = () => {
     if (isOnAccount) {
