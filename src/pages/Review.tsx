@@ -232,10 +232,21 @@ export default function Review() {
     const q = currentItem.question;
     const options = [q?.option_1, q?.option_2, q?.option_3, q?.option_4].filter(Boolean);
 
-    const handleSelect = (optIndex: number) => {
-      if (showResult) return;
+    const handleSelectQuiz = async (optIndex: number) => {
+      if (showResult || checking) return;
       setSelected(optIndex);
-      setShowResult(true);
+      setChecking(true);
+      try {
+        const { data } = await supabase.rpc('check_quiz_answer', {
+          p_question_id: currentItem.question_id,
+          p_answer: optIndex,
+        });
+        const result = data as unknown as { correct: boolean; correct_answer: number };
+        setCorrectAnswer(result.correct_answer);
+        setShowResult(true);
+      } finally {
+        setChecking(false);
+      }
     };
 
     return (
@@ -259,21 +270,21 @@ export default function Review() {
                   const optNum = i + 1;
                   let cls = 'border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full';
                   if (showResult) {
-                    if (optNum === q?.correct_answer) cls += ' border-success bg-success/10';
+                    if (optNum === correctAnswer) cls += ' border-success bg-success/10';
                     else if (optNum === selected) cls += ' border-destructive bg-destructive/10';
                     else cls += ' border-border opacity-50';
                   } else {
                     cls += ' border-border hover:border-primary/50';
                   }
                   return (
-                    <button key={i} className={cls} onClick={() => handleSelect(optNum)} disabled={showResult}>
+                    <button key={i} className={cls} onClick={() => handleSelectQuiz(optNum)} disabled={showResult || checking}>
                       <div className="flex items-center gap-3">
                         <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-sm font-medium">
                           {String.fromCharCode(65 + i)}
                         </span>
                         <span className="flex-1">{opt}</span>
-                        {showResult && optNum === q?.correct_answer && <CheckCircle className="h-5 w-5 text-success" />}
-                        {showResult && optNum === selected && optNum !== q?.correct_answer && <XCircle className="h-5 w-5 text-destructive" />}
+                        {showResult && optNum === correctAnswer && <CheckCircle className="h-5 w-5 text-success" />}
+                        {showResult && optNum === selected && optNum !== correctAnswer && <XCircle className="h-5 w-5 text-destructive" />}
                       </div>
                     </button>
                   );
@@ -286,7 +297,7 @@ export default function Review() {
               <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
             </Button>
             {showResult && (
-              <Button onClick={() => advanceReviewItem(selected === q?.correct_answer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
+              <Button onClick={() => advanceReviewItem(selected === correctAnswer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
                 {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
