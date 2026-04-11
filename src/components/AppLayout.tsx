@@ -1,10 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Home, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
+import { useSectionProfile } from '@/hooks/useSectionProfile';
+import { useTheme } from '@/lib/theme';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
