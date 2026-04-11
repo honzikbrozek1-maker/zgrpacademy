@@ -38,6 +38,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setColorScheme = (id: string) => {
     setColorSchemeState(id);
     localStorage.setItem('colorScheme', id);
+    // Apply immediately so UI updates without waiting for useEffect
+    applyColorScheme(id, theme);
   };
 
   return (
