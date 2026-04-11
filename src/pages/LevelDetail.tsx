@@ -23,7 +23,6 @@ interface Question {
   option_2: string | null;
   option_3: string | null;
   option_4: string | null;
-  correct_answer: number | null;
   back_text: string | null;
   order_index: number;
 }
@@ -52,7 +51,7 @@ export default function LevelDetail() {
     if (!user || !level) return;
     // Count review items only for questions in this level's category
     const { data: levelQuestionIds } = await supabase
-      .from('questions')
+      .from('questions_safe' as any)
       .select('id')
       .eq('level_id', level.id);
     
@@ -61,7 +60,7 @@ export default function LevelDetail() {
       return;
     }
 
-    const qIds = levelQuestionIds.map(q => q.id);
+    const qIds = (levelQuestionIds as any[]).map((q: any) => q.id);
     const { count } = await supabase
       .from('review_items')
       .select('id', { count: 'exact', head: true })
@@ -90,10 +89,10 @@ export default function LevelDetail() {
     setLevel(lvl);
 
     const [questionsRes, progressRes] = await Promise.all([
-      supabase.from('questions').select('*').eq('level_id', lvl.id).order('order_index'),
+      supabase.from('questions_safe' as any).select('id, level_id, type, question_text, option_1, option_2, option_3, option_4, back_text, order_index').eq('level_id', lvl.id).order('order_index'),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
-    if (questionsRes.data) setQuestions(questionsRes.data);
+    if (questionsRes.data) setQuestions(questionsRes.data as unknown as Question[]);
     
     if (progressRes.data) {
       const prog = progressRes.data;
