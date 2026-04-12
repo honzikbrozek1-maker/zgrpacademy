@@ -27,12 +27,10 @@ interface UserProgressRow {
 export default function Levels() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { category, basePath, currentPath } = useAppPath();
+  const { category, basePath } = useAppPath();
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
-
-  const isBackoffice = currentPath === 'backoffice';
 
   useEffect(() => {
     if (!user) return;
@@ -49,7 +47,7 @@ export default function Levels() {
       const levelIds = levelsRes.data.map((level) => level.id);
       const [progressRes, questionsRes] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('questions').select('level_id, type').in('level_id', levelIds),
+        supabase.from('questions_safe').select('level_id, type').in('level_id', levelIds),
       ]);
 
       if (progressRes.data) {
@@ -112,13 +110,13 @@ export default function Levels() {
                       <div className="relative">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                           prog?.completed && prog.test_score ? 'bg-success/20' 
-                          : unlocked ? (isBackoffice ? 'bg-indigo-500/15' : 'bg-primary/15') 
+                          : unlocked ? 'bg-primary/15' 
                           : 'bg-muted'
                         }`}>
                           {prog?.completed && prog.test_score ? (
                             <CheckCircle className="h-5 w-5 text-success" />
                           ) : unlocked ? (
-                            <span className={`font-bold ${isBackoffice ? 'text-indigo-600 dark:text-indigo-400' : 'text-primary'}`}>{level.order_index}</span>
+                            <span className="font-bold text-primary">{level.order_index}</span>
                           ) : (
                             <Lock className="h-5 w-5 text-muted-foreground" />
                           )}
@@ -144,7 +142,7 @@ export default function Levels() {
                     <div className="mt-3 flex items-center gap-2">
                       <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${isBackoffice ? 'bg-indigo-500/60' : 'bg-primary/60'}`}
+                          className="h-full rounded-full transition-all bg-primary/60"
                           style={{ width: `${percent}%` }}
                         />
                       </div>

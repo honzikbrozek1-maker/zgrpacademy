@@ -56,7 +56,7 @@ export default function Dashboard() {
       const levelIds = levelsData.map((level) => level.id);
       const [{ data: progressData }, { data: questionsData }] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('questions').select('id, level_id, type').in('level_id', levelIds),
+        supabase.from('questions_safe').select('id, level_id, type').in('level_id', levelIds),
       ]);
 
       const questionTypesMap = Object.fromEntries(levelIds.map((id) => [id, [] as string[]]));
@@ -118,7 +118,7 @@ export default function Dashboard() {
     return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
   };
 
-  const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-indigo-500" /> : <Package className="h-6 w-6 text-primary" />;
+  const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-primary" /> : <Package className="h-6 w-6 text-primary" />;
 
   return (
     <AppLayout>
@@ -186,8 +186,8 @@ export default function Dashboard() {
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isBackoffice ? 'bg-indigo-500/15' : 'bg-violet-500/15'}`}>
-                <Star className={`h-5 w-5 ${isBackoffice ? 'text-indigo-500' : 'text-violet-500'}`} />
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Star className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Level</p>
@@ -249,7 +249,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Layers className={`h-5 w-5 ${isBackoffice ? 'text-indigo-500' : 'text-primary'}`} /> Levely
+              <Layers className="h-5 w-5 text-primary" /> Levely
             </h2>
             <Link to={`${basePath}/levels`}>
               <Button variant="ghost" size="sm">Zobrazit vše <ArrowRight className="ml-1 h-4 w-4" /></Button>
@@ -271,7 +271,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${
                           prog?.completed && prog.test_score ? 'bg-success/20' 
-                          : unlocked ? (isBackoffice ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : 'bg-primary/15 text-primary') 
+                          : unlocked ? 'bg-primary/15 text-primary' 
                           : 'bg-muted'
                         }`}>
                           {prog?.completed && prog.test_score ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
@@ -296,7 +296,7 @@ export default function Dashboard() {
                       <div className="mt-2 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${isBackoffice ? 'bg-indigo-500/60' : 'bg-primary/60'}`}
+                            className="h-full rounded-full transition-all bg-primary/60"
                             style={{ width: `${percent}%` }}
                           />
                         </div>
