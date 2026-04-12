@@ -313,6 +313,66 @@ export default function AdminPanel() {
     setDragOverId(null);
   };
 
+  const generateWithAi = async () => {
+    if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
+    setAiLoading(true);
+    setAiResults(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-questions', {
+        body: { text: aiText, level_id: selectedLevel.id, types: aiTypes },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiResults(data.questions || []);
+      setAiSelected(new Set((data.questions || []).map((_: any, i: number) => i)));
+    } catch (e: any) {
+      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const saveAiQuestions = async () => {
+    if (!selectedLevel || !aiResults) return;
+    const toInsert = aiResults
+      .filter((_, i) => aiSelected.has(i))
+      .map((q, i) => ({
+        level_id: selectedLevel.id,
+        type: q.type,
+        question_text: q.question_text,
+        option_1: q.option_1 || null,
+        option_2: q.option_2 || null,
+        option_3: q.option_3 || null,
+        option_4: q.option_4 || null,
+        correct_answer: q.correct_answer || null,
+        back_text: q.back_text || null,
+        order_index: questions.length + i,
+      }));
+    if (toInsert.length === 0) return;
+    const { error } = await supabase.from('questions').insert(toInsert);
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: `${toInsert.length} otázek přidáno` });
+    setShowAiDialog(false);
+    setAiResults(null);
+    setAiText('');
+    fetchQuestions(selectedLevel.id);
+  };
+
+  const toggleAiType = (type: string) => {
+    setAiTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
+  const toggleAiSelected = (index: number) => {
+    setAiSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index); else next.add(index);
+      return next;
+    });
+  };
+
   const filteredUsers = users.filter(u => {
     if (!userSearch) return true;
     const search = userSearch.toLowerCase();
