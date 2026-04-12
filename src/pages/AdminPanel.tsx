@@ -93,6 +93,14 @@ export default function AdminPanel() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
+  // AI generation state
+  const [showAiDialog, setShowAiDialog] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'flashcard', 'fill_blank']);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResults, setAiResults] = useState<any[] | null>(null);
+  const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
+
   useEffect(() => {
     fetchLevels();
     if (isAdmin) {
