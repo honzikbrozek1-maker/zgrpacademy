@@ -56,7 +56,7 @@ export default function Dashboard() {
       const levelIds = levelsData.map((level) => level.id);
       const [{ data: progressData }, { data: questionsData }] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('questions').select('id, level_id, type').in('level_id', levelIds),
+        supabase.from('questions_safe').select('id, level_id, type').in('level_id', levelIds),
       ]);
 
       const questionTypesMap = Object.fromEntries(levelIds.map((id) => [id, [] as string[]]));

@@ -27,12 +27,7 @@ interface UserProgressRow {
 export default function Levels() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { category, basePath, currentPath } = useAppPath();
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [progress, setProgress] = useState<UserProgressRow[]>([]);
-  const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
-
-  const isBackoffice = currentPath === 'backoffice';
+  const { category, basePath } = useAppPath();
 
   useEffect(() => {
     if (!user) return;
@@ -49,7 +44,7 @@ export default function Levels() {
       const levelIds = levelsRes.data.map((level) => level.id);
       const [progressRes, questionsRes] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('questions').select('level_id, type').in('level_id', levelIds),
+        supabase.from('questions_safe').select('level_id, type').in('level_id', levelIds),
       ]);
 
       if (progressRes.data) {
