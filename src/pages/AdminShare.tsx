@@ -60,7 +60,7 @@ export default function AdminShare() {
     fetchInvites();
 
     if (email && data) {
-      const url = `${window.location.origin}/invite/${data.code}`;
+      const url = `https://zgrpacademy.lovable.app/invite/${data.code}`;
       await navigator.clipboard.writeText(url);
       toast({
         title: 'Pozvánka vytvořena',
@@ -92,12 +92,12 @@ export default function AdminShare() {
   };
 
   const copyLink = (code: string) => {
-    const url = `${window.location.origin}/invite/${code}`;
+    const url = `https://zgrpacademy.lovable.app/invite/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Odkaz zkopírován', description: url });
   };
 
-  const appUrl = window.location.origin;
+  const appUrl = 'https://zgrpacademy.lovable.app';
 
   return (
     <AppLayout>
