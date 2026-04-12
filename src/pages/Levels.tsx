@@ -28,6 +28,9 @@ export default function Levels() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { category, basePath } = useAppPath();
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [progress, setProgress] = useState<UserProgressRow[]>([]);
+  const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!user) return;
