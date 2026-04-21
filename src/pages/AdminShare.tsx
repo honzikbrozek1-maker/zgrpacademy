@@ -60,7 +60,7 @@ export default function AdminShare() {
     fetchInvites();
 
     if (email && data) {
-      const url = `https://zgrpacademy.lovable.app/invite/${data.code}`;
+      const url = `https://zgrpacademy.vercel.app/invite/${data.code}`;
       await navigator.clipboard.writeText(url);
       toast({
         title: 'Pozvánka vytvořena',
@@ -92,12 +92,12 @@ export default function AdminShare() {
   };
 
   const copyLink = (code: string) => {
-    const url = `https://zgrpacademy.lovable.app/invite/${code}`;
+    const url = `https://zgrpacademy.vercel.app/invite/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Odkaz zkopírován', description: url });
   };
 
-  const appUrl = 'https://zgrpacademy.lovable.app';
+  const appUrl = 'https://zgrpacademy.vercel.app/auth';
 
   return (
     <AppLayout>
