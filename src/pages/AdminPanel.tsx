@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -93,13 +93,7 @@ export default function AdminPanel() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  // AI generation state
-  const [showAiDialog, setShowAiDialog] = useState(false);
-  const [aiText, setAiText] = useState('');
-  const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'flashcard', 'fill_blank']);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResults, setAiResults] = useState<any[] | null>(null);
-  const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
+  // (AI generation removed)
 
   useEffect(() => {
     fetchLevels();
@@ -313,65 +307,7 @@ export default function AdminPanel() {
     setDragOverId(null);
   };
 
-  const generateWithAi = async () => {
-    if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
-    setAiLoading(true);
-    setAiResults(null);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: { text: aiText, level_id: selectedLevel.id, types: aiTypes },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setAiResults(data.questions || []);
-      setAiSelected(new Set((data.questions || []).map((_: any, i: number) => i)));
-    } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  const saveAiQuestions = async () => {
-    if (!selectedLevel || !aiResults) return;
-    const toInsert = aiResults
-      .filter((_, i) => aiSelected.has(i))
-      .map((q, i) => ({
-        level_id: selectedLevel.id,
-        type: q.type,
-        question_text: q.question_text,
-        option_1: q.option_1 || null,
-        option_2: q.option_2 || null,
-        option_3: q.option_3 || null,
-        option_4: q.option_4 || null,
-        correct_answer: q.correct_answer || null,
-        back_text: q.back_text || null,
-        order_index: questions.length + i,
-      }));
-    if (toInsert.length === 0) return;
-    const { error } = await supabase.from('questions').insert(toInsert);
-    if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
-      return;
-    }
-    toast({ title: `${toInsert.length} otázek přidáno` });
-    setShowAiDialog(false);
-    setAiResults(null);
-    setAiText('');
-    fetchQuestions(selectedLevel.id);
-  };
-
-  const toggleAiType = (type: string) => {
-    setAiTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
-  };
-
-  const toggleAiSelected = (index: number) => {
-    setAiSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index); else next.add(index);
-      return next;
-    });
-  };
+  // (AI generation functions removed)
 
   const filteredUsers = users.filter(u => {
     if (!userSearch) return true;
