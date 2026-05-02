@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Level {
@@ -93,7 +93,13 @@ export default function AdminPanel() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  // (AI generation removed)
+  // AI generation state
+  const [showAiDialog, setShowAiDialog] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'flashcard', 'fill_blank']);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResults, setAiResults] = useState<any[] | null>(null);
+  const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchLevels();
@@ -307,7 +313,65 @@ export default function AdminPanel() {
     setDragOverId(null);
   };
 
-  // (AI generation functions removed)
+  const generateWithAi = async () => {
+    if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
+    setAiLoading(true);
+    setAiResults(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-questions', {
+        body: { text: aiText, level_id: selectedLevel.id, types: aiTypes },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiResults(data.questions || []);
+      setAiSelected(new Set((data.questions || []).map((_: any, i: number) => i)));
+    } catch (e: any) {
+      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const saveAiQuestions = async () => {
+    if (!selectedLevel || !aiResults) return;
+    const toInsert = aiResults
+      .filter((_, i) => aiSelected.has(i))
+      .map((q, i) => ({
+        level_id: selectedLevel.id,
+        type: q.type,
+        question_text: q.question_text,
+        option_1: q.option_1 || null,
+        option_2: q.option_2 || null,
+        option_3: q.option_3 || null,
+        option_4: q.option_4 || null,
+        correct_answer: q.correct_answer || null,
+        back_text: q.back_text || null,
+        order_index: questions.length + i,
+      }));
+    if (toInsert.length === 0) return;
+    const { error } = await supabase.from('questions').insert(toInsert);
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: `${toInsert.length} otázek přidáno` });
+    setShowAiDialog(false);
+    setAiResults(null);
+    setAiText('');
+    fetchQuestions(selectedLevel.id);
+  };
+
+  const toggleAiType = (type: string) => {
+    setAiTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
+  const toggleAiSelected = (index: number) => {
+    setAiSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index); else next.add(index);
+      return next;
+    });
+  };
 
   const filteredUsers = users.filter(u => {
     if (!userSearch) return true;
@@ -623,7 +687,106 @@ export default function AdminPanel() {
                     {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček, {questions.filter(q => q.type === 'fill_blank').length} doplňování
                   </p>
                   <div className="flex gap-2">
-                    {/* AI generation removed */}
+                    <Dialog open={showAiDialog} onOpenChange={(open) => { setShowAiDialog(open); if (!open) { setAiResults(null); } }}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" onClick={() => { setAiResults(null); setAiText(''); }}>
+                          <Sparkles className="mr-1 h-4 w-4" /> AI generování
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-h-[85vh] overflow-y-auto max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-primary" /> Generování otázek pomocí AI
+                          </DialogTitle>
+                        </DialogHeader>
+                        {!aiResults ? (
+                          <div className="space-y-4">
+                            <div>
+                              <label className="text-sm font-medium mb-1 block">Vložte text nebo téma</label>
+                              <Textarea
+                                placeholder="Vložte text z učebnice, NotebookLM, poznámek nebo popište téma..."
+                                value={aiText}
+                                onChange={e => setAiText(e.target.value)}
+                                rows={8}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
+                              <div className="flex gap-2 flex-wrap">
+                                {[
+                                  { type: 'quiz', label: '🧠 Kvíz' },
+                                  { type: 'flashcard', label: '📖 Kartičky' },
+                                  { type: 'fill_blank', label: '✏️ Doplňování' },
+                                ].map(opt => (
+                                  <button
+                                    key={opt.type}
+                                    className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                                      aiTypes.includes(opt.type) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                                    }`}
+                                    onClick={() => toggleAiType(opt.type)}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
+                              {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji...</> : <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat otázky</>}
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Vygenerováno {aiResults.length} otázek. Vyberte které chcete přidat:</p>
+                            <div className="flex gap-2 mb-2">
+                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>Vybrat vše</Button>
+                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>Zrušit výběr</Button>
+                            </div>
+                            <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                              {aiResults.map((q, i) => (
+                                <div
+                                  key={i}
+                                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                    aiSelected.has(i) ? 'border-primary bg-primary/5' : 'border-border opacity-60'
+                                  }`}
+                                  onClick={() => toggleAiSelected(i)}
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge variant="secondary" className="text-[10px]">
+                                      {q.type === 'quiz' ? '🧠 Kvíz' : q.type === 'flashcard' ? '📖 Kartička' : '✏️ Doplňování'}
+                                    </Badge>
+                                    {aiSelected.has(i) && <CheckCircle className="h-4 w-4 text-primary" />}
+                                  </div>
+                                  <p className="text-sm font-medium">{q.question_text}</p>
+                                  {q.type === 'quiz' && (
+                                    <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
+                                      {[q.option_1, q.option_2, q.option_3, q.option_4].filter(Boolean).map((opt, j) => (
+                                        <p key={j} className={j + 1 === q.correct_answer ? 'text-success font-medium' : ''}>
+                                          {j + 1}. {opt}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {q.type === 'flashcard' && q.back_text && (
+                                    <p className="text-xs text-muted-foreground mt-1">→ {q.back_text}</p>
+                                  )}
+                                  {q.type === 'fill_blank' && q.option_1 && (
+                                    <p className="text-xs text-success mt-1">Správně: {q.option_1}</p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" onClick={() => setAiResults(null)} className="flex-1">
+                                ← Zpět
+                              </Button>
+                              <Button onClick={saveAiQuestions} disabled={aiSelected.size === 0} className="flex-1">
+                                <Plus className="mr-1 h-4 w-4" /> Přidat {aiSelected.size} otázek
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
                     <Dialog open={showQuestionDialog} onOpenChange={(open) => {
                       setShowQuestionDialog(open);
                       if (!open) { setAddStep('pick_type'); setEditingQuestion(null); setBlankInserted(false); }
