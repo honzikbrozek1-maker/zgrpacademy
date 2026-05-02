@@ -64,7 +64,7 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
         p_question_answers: questionAnswers,
       });
 
-      const results = data as unknown as Array<{ question_id: string; correct: boolean; correct_answer: number }>;
+      const results = data as unknown as Array<{ question_id: string; correct: boolean }>;
       const correctCount = results.filter(r => r.correct).length;
       const score = Math.round((correctCount / questions.length) * 100);
       const passed = score >= passingScore;
