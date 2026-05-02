@@ -97,7 +97,7 @@ export default function AdminShare() {
     toast({ title: 'Odkaz zkopírován', description: url });
   };
 
-  const appUrl = 'https://zgrpacademy.vercel.app';
+  const appUrl = 'https://zgrpacademy.vercel.app/auth';
 
   return (
     <AppLayout>
