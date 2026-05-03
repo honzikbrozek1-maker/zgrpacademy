@@ -60,11 +60,19 @@ export default function AdminShare() {
     fetchInvites();
 
     if (email && data) {
-      const url = `https://zgrpacademy.lovable.app/invite/${data.code}`;
+      const url = `https://zgrpacademy.vercel.app/invite/${data.code}`;
+      const roleLabel = data.role === 'admin' ? 'Administrátor' : 'Uživatel';
+      const subject = encodeURIComponent('Pozvánka do ZGRP Academy');
+      const body = encodeURIComponent(
+        `Ahoj,\n\nzvu tě do aplikace ZGRP Academy.\n\nBudeš přidán/a jako: ${roleLabel}\n\nPozvánku přijmeš kliknutím na tento odkaz:\n${url}\n\nOdkaz je platný 7 dní.\n\nDěkuji!`
+      );
+      const mailto = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+      window.location.href = mailto;
+
       await navigator.clipboard.writeText(url);
       toast({
         title: 'Pozvánka vytvořena',
-        description: `Odkaz zkopírován do schránky. Pošlete ho na: ${email}`,
+        description: 'Otevřel se váš e-mailový klient. Odkaz je také zkopírován do schránky.',
       });
       setEmail('');
     } else {
