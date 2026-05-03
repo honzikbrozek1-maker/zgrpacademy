@@ -100,12 +100,12 @@ export default function AdminShare() {
   };
 
   const copyLink = (code: string) => {
-    const url = `https://zgrpacademy.lovable.app/invite/${code}`;
+    const url = `https://zgrpacademy.vercel.app/invite/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Odkaz zkopírován', description: url });
   };
 
-  const appUrl = 'https://zgrpacademy.lovable.app';
+  const appUrl = 'https://zgrpacademy.vercel.app';
 
   return (
     <AppLayout>
