@@ -1,36 +1,50 @@
+# Automatické odesílání pozvánek e-mailem
 
-Cíl: opravit procvičování tak, aby se zvládnuté položky už nevracely a chybně zodpovězené doplňování se vždy ukládalo do opakování.
+## Co to udělá
 
-Co jsem našel:
-- V `Review.tsx` je chyba v přepínání režimů: pro `fillin` se teď bere celé `items` místo jen `fillBlankItems`, takže se procvičování může chovat zmateně.
-- Ve `Review.tsx` se při označení jako „umím“ mění jen `confidence` a požadavek na backend se neposílá `await` + bez ošetření chyby. To může vysvětlovat stav „teď to zmizelo, ale po návratu je to zase zpět“.
-- `QuizModule.tsx` ani `FillInBlankModule.tsx` při pozdější správné odpovědi nemažou starý záznam z `review_items`, takže už jednou chybně zodpovězená otázka může zůstat viset.
-- V původní migraci je `review_items.source` vytvořené jen pro hodnoty `flashcard` a `failed_quiz`. Současný kód ale pro doplňování zapisuje `fill_blank`, takže je velmi pravděpodobné, že se tyto záznamy do databáze vůbec neuloží.
+Když na stránce **Sdílet aplikaci** vytvoříte pozvánku a vyplníte e-mail příjemce, aplikace:
+1. vytvoří pozvánku v databázi (jako dosud),
+2. **automaticky odešle e-mail** s odkazem na zadanou adresu,
+3. zobrazí potvrzení, že e-mail byl odeslán.
 
-Plán úpravy:
-1. Opravit logiku procvičování v `Review.tsx`
-- správně mapovat `mode === 'fillin'` na `fillBlankItems`
-- sjednotit práci s položkami tak, aby „umím“ položku rovnou odstranilo z `review_items` místo pouhé změny confidence
-- všechny změny do backendu dělat `await` a po dokončení znovu synchronizovat lokální stav
+Pokud e-mail nevyplníte, chování zůstane stejné jako teď (jen vytvoření pozvánky + zkopírování odkazu).
 
-2. Opravit ukládání chyb z doplňování
-- přidat databázovou migraci pro `review_items`, aby `source` podporovalo i `fill_blank`
-- v `FillInBlankModule.tsx` ponechat ukládání chybné odpovědi do `review_items`, ale doplnit kontrolu výsledku a okamžitý refresh
+## Jak to bude vypadat pro příjemce
 
-3. Opravit mazání zvládnutých otázek i mimo stránku procvičování
-- v `QuizModule.tsx` a `FillInBlankModule.tsx` při správné odpovědi smazat případný existující `review_items` záznam pro danou otázku
-- tím se zajistí, že když už člověk otázku zvládne, nebude se mu dál vracet do opakování
+Příjemce dostane e-mail v češtině s:
+- pozdravem a vysvětlením, že byl pozván do ZGRP Academy,
+- informací, jakou roli získá (Uživatel / Admin),
+- tlačítkem **Přijmout pozvánku** vedoucím na `https://zgrpacademy.vercel.app/invite/<kód>`,
+- informací o platnosti pozvánky (7 dní).
 
-4. Zajistit okamžitou aktualizaci UI
-- po insert/update/delete v procvičování znovu načíst review data
-- navázat to i na počty v levelu/dashboardu, aby nebylo nutné odcházet a vracet se
+## Technická realizace
 
-5. Ověření po úpravě
-- chybně odpovědět doplňování → položka se hned objeví v procvičování
-- v procvičování ji odpovědět správně → zmizí a po návratu už se neobjeví
-- zopakovat totéž pro kvíz i kartičky
-- ověřit, že režim doplňování v procvičování ukazuje opravdu jen doplňovací otázky
+**Backend (nová edge funkce `send-invite-email`):**
+- Přijme `email`, `inviteCode`, `role`.
+- Ověří přihlášeného uživatele a že je admin (přes JWT + `has_role`).
+- Validuje vstup pomocí Zod (formát e-mailu, max délky).
+- Odešle e-mail přes vestavěný Lovable Emails systém (transakční e-maily — bez nutnosti Resend API klíče).
+- Vrátí úspěch / chybu.
 
-Technické poznámky:
-- Dotčené soubory: `src/pages/Review.tsx`, `src/components/FillInBlankModule.tsx`, `src/components/QuizModule.tsx`, případně části s refreshi počtů
-- Bude velmi pravděpodobně potřeba i jedna malá databázová migrace pro `review_items`
+**Frontend (`src/pages/AdminShare.tsx`):**
+- Po `insert` do `invite_links` zavolá `supabase.functions.invoke('send-invite-email', ...)` pokud je vyplněn e-mail.
+- Aktualizuje toast hlášky („E-mail odeslán na …" / „Chyba při odesílání").
+
+**Infrastruktura e-mailů:**
+- Spustí se setup transakčních e-mailů (`scaffold_transactional_email`). To vyžaduje, aby byla v projektu nakonfigurovaná **e-mailová doména** (přes Lovable Cloud → Emails). Pokud doména ještě není nastavena, otevře se průvodce nastavením.
+- Žádné externí API klíče (Resend, SendGrid) nejsou potřeba — vše běží přes Lovable Cloud.
+
+## Soubory, které se změní/vytvoří
+
+- **Vytvoří se:** `supabase/functions/send-invite-email/index.ts` — odeslání e-mailu.
+- **Upraví se:** `src/pages/AdminShare.tsx` — volání edge funkce po vytvoření pozvánky.
+- **Automaticky:** infrastruktura transakčních e-mailů (queue, cron, atd.).
+
+## Předpoklad
+
+Pro odesílání e-mailů z vlastní domény je potřeba mít v Lovable Cloud nastavenou a ověřenou e-mailovou doménu (DNS záznamy). Pokud zatím není, průvodce vás tím provede — bez ověřené domény e-maily nepůjdou doručit.
+
+## Co zůstane stejné
+
+- Odkazy v aplikaci dál ukazují na `https://zgrpacademy.vercel.app` (jak jste dříve požadoval).
+- Pokud e-mail v poli necháte prázdný, funguje vše jako dosud (vytvoření + kopírování odkazu).
