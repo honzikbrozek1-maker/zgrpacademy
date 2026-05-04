@@ -85,7 +85,7 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           }
         }
 
-        await supabase.rpc('complete_level', { p_level_id: levelId, p_score: score });
+        await supabase.rpc('complete_level', { p_level_id: levelId, p_question_answers: questionAnswers });
         await refreshProfile();
       }
 
