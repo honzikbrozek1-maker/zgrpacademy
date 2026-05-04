@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      awarded_question_points: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           code: string
@@ -388,15 +412,16 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
-      award_points:
-        | { Args: { points: number }; Returns: Json }
-        | { Args: { p_category?: string; points: number }; Returns: Json }
+      award_points_for_question: {
+        Args: { p_category?: string; p_question_id: string }
+        Returns: Json
+      }
       check_quiz_answer: {
         Args: { p_answer: number; p_question_id: string }
         Returns: Json
       }
       complete_level: {
-        Args: { p_level_id: string; p_score: number }
+        Args: { p_level_id: string; p_question_answers: Json }
         Returns: Json
       }
       handle_admin_request: {
