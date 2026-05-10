@@ -73,8 +73,21 @@ Deno.serve(async (req) => {
       mode: "payment",
       ui_mode: "embedded_page",
       return_url: returnUrl,
-      invoice_creation: { enabled: true },
-      ...(customerId && { customer: customerId }),
+      payment_method_types: ["card"],
+      billing_address_collection: "required",
+      tax_id_collection: { enabled: true },
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: "Registrační poplatek ZGRP Academy",
+          footer: "Děkujeme za registraci.",
+          rendering_options: { amount_tax_display: "include_inclusive_tax" },
+        },
+      },
+      ...(customerId && {
+        customer: customerId,
+        customer_update: { address: "auto", name: "auto" },
+      }),
       ...(userId && { metadata: { userId } }),
     });
 
