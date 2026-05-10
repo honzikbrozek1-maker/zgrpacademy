@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { InvoicesList } from "@/components/InvoicesList";
 
 export default function CheckoutReturn() {
   const [searchParams] = useSearchParams();
@@ -63,7 +64,13 @@ export default function CheckoutReturn() {
             <p className="text-xs text-muted-foreground break-all">Session: {sessionId}</p>
           )}
           {profile?.has_paid ? (
-            <Button className="w-full" onClick={() => navigate("/")}>Pokračovat do aplikace</Button>
+            <>
+              <div className="rounded-md border p-3">
+                <p className="mb-2 text-sm font-medium">Tvoje faktura</p>
+                <InvoicesList />
+              </div>
+              <Button className="w-full" onClick={() => navigate("/")}>Pokračovat do aplikace</Button>
+            </>
           ) : !polling ? (
             <>
               <p className="text-sm text-muted-foreground">

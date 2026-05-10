@@ -28,6 +28,7 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
       stripe_session_id: session.id,
       stripe_payment_intent_id: session.payment_intent ?? null,
       stripe_customer_id: session.customer ?? null,
+      stripe_invoice_id: session.invoice ?? null,
       amount: session.amount_total ?? 0,
       currency: session.currency ?? "czk",
       status: session.payment_status === "paid" ? "paid" : (session.payment_status ?? "pending"),

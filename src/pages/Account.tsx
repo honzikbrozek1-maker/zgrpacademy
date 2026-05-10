@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2, Receipt } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
+import { InvoicesList } from '@/components/InvoicesList';
 
 export default function Account() {
   const { user, profile, refreshProfile, signOut } = useAuth();
@@ -196,6 +197,13 @@ export default function Account() {
                 Změnit
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> Faktury</div>
+            <InvoicesList />
           </CardContent>
         </Card>
 
