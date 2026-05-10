@@ -1,4 +1,12 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";
+
+const ALLOWED_RETURN_ORIGINS = [
+  "https://zgrpacademy.lovable.app",
+  "https://id-preview--7316d316-29fe-4772-9766-96eec5831cc2.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
