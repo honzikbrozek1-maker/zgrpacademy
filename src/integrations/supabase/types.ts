@@ -483,6 +483,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_paid: { Args: { _user_id: string }; Returns: boolean }
       list_admins: {
         Args: never
         Returns: {

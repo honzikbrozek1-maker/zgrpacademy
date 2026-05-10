@@ -27,7 +27,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, profile } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
-  if (profile && !profile.has_paid) return <Navigate to="/checkout" replace />;
+  if (!profile || !profile.has_paid) return <Navigate to="/checkout" replace />;
   return <>{children}</>;
 }
 
