@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
       }),
-      ...(userId && { metadata: { userId } }),
+      metadata: { userId: effectiveUserId },
     });
 
     return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
