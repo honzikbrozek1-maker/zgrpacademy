@@ -73,6 +73,7 @@ Deno.serve(async (req) => {
       mode: "payment",
       ui_mode: "embedded_page",
       return_url: returnUrl,
+      invoice_creation: { enabled: true },
       ...(customerId && { customer: customerId }),
       ...(userId && { metadata: { userId } }),
     });
