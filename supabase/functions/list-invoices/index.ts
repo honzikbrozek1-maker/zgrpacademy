@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     const { data: payments, error } = await supabase
       .from("payments")
-      .select("id, amount, currency, status, environment, created_at, stripe_invoice_id, stripe_session_id")
+      .select("id, amount, currency, status, environment, created_at, stripe_invoice_id, stripe_session_id, stripe_payment_intent_id, stripe_customer_id")
       .eq("user_id", userData.user.id)
       .eq("status", "paid")
       .order("created_at", { ascending: false });
@@ -34,21 +34,40 @@ Deno.serve(async (req) => {
       (payments ?? []).map(async (p) => {
         let hostedUrl: string | null = null;
         let pdfUrl: string | null = null;
-        if (p.stripe_invoice_id) {
-          try {
-            const stripe = createStripeClient(p.environment as StripeEnv);
-            const inv = await stripe.invoices.retrieve(p.stripe_invoice_id);
+        let number: string | null = null;
+
+        try {
+          const stripe = createStripeClient(p.environment as StripeEnv);
+          let inv: any = null;
+
+          if (p.stripe_invoice_id) {
+            inv = await stripe.invoices.retrieve(p.stripe_invoice_id);
+          } else if (p.stripe_customer_id) {
+            // Fallback: look up invoices for this customer and match by payment_intent
+            const list = await stripe.invoices.list({
+              customer: p.stripe_customer_id,
+              limit: 10,
+            });
+            inv = list.data.find((i: any) =>
+              i.payment_intent === p.stripe_payment_intent_id
+            ) ?? null;
+          }
+
+          if (inv) {
             hostedUrl = inv.hosted_invoice_url ?? null;
             pdfUrl = inv.invoice_pdf ?? null;
-          } catch (e) {
-            console.error("invoice fetch failed", p.stripe_invoice_id, e);
+            number = inv.number ?? null;
           }
+        } catch (e) {
+          console.error("invoice fetch failed for payment", p.id, e);
         }
+
         return {
           id: p.id,
           amount: p.amount,
           currency: p.currency,
           created_at: p.created_at,
+          number,
           hosted_invoice_url: hostedUrl,
           invoice_pdf: pdfUrl,
         };
