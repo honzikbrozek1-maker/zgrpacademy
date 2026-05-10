@@ -1,4 +1,12 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";
+
+const ALLOWED_RETURN_ORIGINS = [
+  "https://zgrpacademy.lovable.app",
+  "https://id-preview--7316d316-29fe-4772-9766-96eec5831cc2.lovable.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +53,30 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { priceId, customerEmail, userId, returnUrl, environment } = await req.json();
+    // Authenticate caller
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+    );
+    const { data: userData, error: userErr } = await supabaseAuth.auth.getUser(token);
+    if (userErr || !userData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authUserId = userData.user.id;
+    const authUserEmail = userData.user.email;
+
+    const { priceId, userId, returnUrl, environment } = await req.json();
 
     if (!priceId || !/^[a-zA-Z0-9_-]+$/.test(priceId)) {
       throw new Error("Invalid priceId");
@@ -56,6 +87,25 @@ Deno.serve(async (req) => {
     if (!returnUrl || typeof returnUrl !== "string") {
       throw new Error("Invalid returnUrl");
     }
+    // Validate returnUrl origin against allowlist
+    let parsedReturn: URL;
+    try {
+      parsedReturn = new URL(returnUrl);
+    } catch {
+      throw new Error("Invalid returnUrl");
+    }
+    if (!ALLOWED_RETURN_ORIGINS.includes(parsedReturn.origin)) {
+      throw new Error("returnUrl origin not allowed");
+    }
+    // Enforce that userId (if provided) matches authenticated user
+    if (userId && userId !== authUserId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const effectiveUserId = authUserId;
+    const effectiveEmail = authUserEmail;
 
     const env: StripeEnv = environment;
     const stripe = createStripeClient(env);
@@ -64,9 +114,10 @@ Deno.serve(async (req) => {
     if (!prices.data.length) throw new Error("Price not found");
     const stripePrice = prices.data[0];
 
-    const customerId = (customerEmail || userId)
-      ? await resolveOrCreateCustomer(stripe, { email: customerEmail, userId })
-      : undefined;
+    const customerId = await resolveOrCreateCustomer(stripe, {
+      email: effectiveEmail,
+      userId: effectiveUserId,
+    });
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: stripePrice.id, quantity: 1 }],
@@ -88,7 +139,7 @@ Deno.serve(async (req) => {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
       }),
-      ...(userId && { metadata: { userId } }),
+      metadata: { userId: effectiveUserId },
     });
 
     return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
