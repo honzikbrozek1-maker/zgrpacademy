@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { PathProvider } from "@/lib/pathContext";
 import Auth from "./pages/Auth";
+import Checkout from "./pages/Checkout";
+import CheckoutReturn from "./pages/CheckoutReturn";
 import PathSelection from "./pages/PathSelection";
 import Dashboard from "./pages/Dashboard";
 import Levels from "./pages/Levels";
@@ -22,9 +24,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
+  if (profile && !profile.has_paid) return <Navigate to="/checkout" replace />;
   return <>{children}</>;
 }
 
@@ -39,6 +42,8 @@ const App = () => (
             <PathProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
                 <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
                 
