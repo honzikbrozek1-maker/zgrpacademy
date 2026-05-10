@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2, Receipt } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
+import { InvoicesList } from '@/components/InvoicesList';
 
 export default function Account() {
   const { user, profile, refreshProfile, signOut } = useAuth();
