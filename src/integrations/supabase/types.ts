@@ -131,6 +131,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          environment?: string
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -138,6 +180,7 @@ export type Database = {
           created_at: string
           current_level: number
           display_name: string
+          has_paid: boolean
           id: string
           total_points: number
           updated_at: string
@@ -149,6 +192,7 @@ export type Database = {
           created_at?: string
           current_level?: number
           display_name?: string
+          has_paid?: boolean
           id?: string
           total_points?: number
           updated_at?: string
@@ -160,6 +204,7 @@ export type Database = {
           created_at?: string
           current_level?: number
           display_name?: string
+          has_paid?: boolean
           id?: string
           total_points?: number
           updated_at?: string
