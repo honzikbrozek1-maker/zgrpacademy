@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Mail, Send, Trash2 } from 'lucide-react';
+import { Share2, Copy, Plus, Link as LinkIcon, Users, Shield, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface InviteLink {
@@ -20,12 +20,13 @@ interface InviteLink {
   created_by: string;
 }
 
+const APP_URL = 'https://zgrpacademy.lovable.app';
+
 export default function AdminShare() {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [invites, setInvites] = useState<InviteLink[]>([]);
   const [newRole, setNewRole] = useState<string>('user');
-  const [email, setEmail] = useState('');
 
   useEffect(() => {
     if (user) fetchInvites();
@@ -33,6 +34,14 @@ export default function AdminShare() {
 
   const fetchInvites = async () => {
     if (!user) return;
+
+    // Auto-delete expired, unused invites
+    await supabase
+      .from('invite_links')
+      .delete()
+      .eq('created_by', user.id)
+      .is('used_by', null)
+      .lt('expires_at', new Date().toISOString());
 
     const { data } = await supabase
       .from('invite_links')
@@ -47,10 +56,10 @@ export default function AdminShare() {
   const createInvite = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase.from('invite_links').insert({
+    const { error } = await supabase.from('invite_links').insert({
       created_by: user.id,
       role: newRole as 'admin' | 'user',
-    }).select().single();
+    });
 
     if (error) {
       toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
@@ -58,26 +67,7 @@ export default function AdminShare() {
     }
 
     fetchInvites();
-
-    if (email && data) {
-      const url = `https://zgrpacademy.vercel.app/invite/${data.code}`;
-      const roleLabel = data.role === 'admin' ? 'Administrátor' : 'Uživatel';
-      const subject = encodeURIComponent('Pozvánka do ZGRP Academy');
-      const body = encodeURIComponent(
-        `Ahoj,\n\nzvu tě do aplikace ZGRP Academy.\n\nBudeš přidán/a jako: ${roleLabel}\n\nPozvánku přijmeš kliknutím na tento odkaz:\n${url}\n\nOdkaz je platný 7 dní.\n\nDěkuji!`
-      );
-      const mailto = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
-      window.location.href = mailto;
-
-      await navigator.clipboard.writeText(url);
-      toast({
-        title: 'Pozvánka vytvořena',
-        description: 'Otevřel se váš e-mailový klient. Odkaz je také zkopírován do schránky.',
-      });
-      setEmail('');
-    } else {
-      toast({ title: 'Pozvánka vytvořena' });
-    }
+    toast({ title: 'Pozvánka vytvořena' });
   };
 
   const deleteInvite = async (inviteId: string) => {
@@ -100,12 +90,10 @@ export default function AdminShare() {
   };
 
   const copyLink = (code: string) => {
-    const url = `https://zgrpacademy.vercel.app/invite/${code}`;
+    const url = `${APP_URL}/invite/${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Odkaz zkopírován', description: url });
   };
-
-  const appUrl = 'https://zgrpacademy.vercel.app';
 
   return (
     <AppLayout>
@@ -119,8 +107,8 @@ export default function AdminShare() {
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">Sdílejte tento odkaz pro přístup k aplikaci:</p>
             <div className="flex gap-2">
-              <Input value={appUrl} readOnly />
-              <Button variant="outline" onClick={() => { navigator.clipboard.writeText(appUrl); toast({ title: 'Odkaz zkopírován' }); }}>
+              <Input value={APP_URL} readOnly />
+              <Button variant="outline" onClick={() => { navigator.clipboard.writeText(APP_URL); toast({ title: 'Odkaz zkopírován' }); }}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -130,28 +118,20 @@ export default function AdminShare() {
         {isAdmin && (
           <>
             <Card className="shadow-card">
-              <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Mail className="h-5 w-5" /> Pozvat uživatele</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5" /> Vytvořit pozvánku</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">Vytvořte pozvánku a pošlete ji přímo na e-mail:</p>
-                <div className="space-y-3">
-                  <Input
-                    type="email"
-                    placeholder="E-mail příjemce (volitelné)"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
-                  <div className="flex gap-2">
-                    <Select value={newRole} onValueChange={setNewRole}>
-                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user"><Users className="mr-1 h-3 w-3 inline" /> Uživatel</SelectItem>
-                        <SelectItem value="admin"><Shield className="mr-1 h-3 w-3 inline" /> Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={createInvite}>
-                      {email ? <><Send className="mr-1 h-4 w-4" /> Vytvořit a zkopírovat</> : <><Plus className="mr-1 h-4 w-4" /> Vytvořit pozvánku</>}
-                    </Button>
-                  </div>
+                <p className="text-sm text-muted-foreground">Vytvořte pozvánkový odkaz a sdílejte jej s uživatelem. Odkaz je platný 7 dní.</p>
+                <div className="flex gap-2">
+                  <Select value={newRole} onValueChange={setNewRole}>
+                    <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user"><Users className="mr-1 h-3 w-3 inline" /> Uživatel</SelectItem>
+                      <SelectItem value="admin"><Shield className="mr-1 h-3 w-3 inline" /> Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={createInvite}>
+                    <Plus className="mr-1 h-4 w-4" /> Vytvořit pozvánku
+                  </Button>
                 </div>
               </CardContent>
             </Card>
