@@ -3,10 +3,20 @@ import { type StripeEnv, createStripeClient } from "../_shared/stripe.ts";
 
 const ALLOWED_RETURN_ORIGINS = [
   "https://zgrpacademy.lovable.app",
-  "https://id-preview--7316d316-29fe-4772-9766-96eec5831cc2.lovable.app",
   "http://localhost:5173",
   "http://localhost:8080",
 ];
+
+const ALLOWED_RETURN_ORIGIN_PATTERNS: RegExp[] = [
+  // Lovable preview subdomains (id-preview--*, *--*.lovable.app, *.lovableproject.com)
+  /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
+  /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
+];
+
+function isAllowedReturnOrigin(origin: string): boolean {
+  if (ALLOWED_RETURN_ORIGINS.includes(origin)) return true;
+  return ALLOWED_RETURN_ORIGIN_PATTERNS.some((re) => re.test(origin));
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
