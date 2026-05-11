@@ -65,6 +65,16 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Nápověda k vyplnění adresy</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-1">
+            <p><strong className="text-foreground">Řádek 1 (Address line 1):</strong> ulice a číslo popisné, např. <em>Pražská 123</em>.</p>
+            <p><strong className="text-foreground">Řádek 2 (Address line 2):</strong> nepovinné – doplněk adresy, např. <em>byt 5</em>, <em>patro 3</em>, <em>c/o Jan Novák</em>. V ČR a SK obvykle nechte prázdné.</p>
+          </CardContent>
+        </Card>
+
         <div id="checkout">
           <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
             <EmbeddedCheckout />
