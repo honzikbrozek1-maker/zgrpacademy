@@ -12,7 +12,7 @@ import QuizModule from '@/components/QuizModule';
 import FlashcardModule from '@/components/FlashcardModule';
 import FillInBlankModule from '@/components/FillInBlankModule';
 import LevelTest from '@/components/LevelTest';
-import LevelDiploma from '@/components/LevelDiploma';
+import { useToast } from '@/hooks/use-toast';
 import { type ModuleKey, getCompletedModules, getStartedModuleMarker } from '@/lib/levelProgress';
 
 interface Question {
@@ -39,12 +39,12 @@ export default function LevelDetail() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { category, basePath } = useAppPath();
-  const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number } | null>(null);
+  const { toast } = useToast();
+  const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
-  const [showDiploma, setShowDiploma] = useState(false);
   const [moduleMarkers, setModuleMarkers] = useState<string[]>([]);
 
   const refreshReviewCount = useCallback(async () => {
@@ -209,22 +209,6 @@ export default function LevelDetail() {
     </AppLayout>
   );
 
-  if (showDiploma && progress?.completed && progress.test_score) {
-    return (
-      <AppLayout>
-        <div className="p-4 md:p-8 max-w-3xl mx-auto pb-20">
-          <LevelDiploma
-            levelTitle={level.title}
-            userName={profile?.display_name || 'Uživatel'}
-            score={progress.test_score}
-            completedAt={progress.completed_at || new Date().toISOString()}
-            onBack={() => setShowDiploma(false)}
-          />
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
@@ -236,11 +220,6 @@ export default function LevelDetail() {
             <h1 className="text-2xl font-bold">{level.title}</h1>
             {level.description && <p className="text-muted-foreground">{level.description}</p>}
           </div>
-          {progress?.test_score && (
-            <Button variant="outline" size="sm" onClick={() => setShowDiploma(true)}>
-              <Trophy className="mr-1 h-4 w-4" /> Diplom
-            </Button>
-          )}
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -357,8 +336,8 @@ export default function LevelDetail() {
                   <Trophy className="h-8 w-8 mx-auto text-success" />
                   <h3 className="font-bold text-lg">Level dokončen! 🎉</h3>
                   <p className="text-muted-foreground">Výsledek testu: <span className="font-bold text-success">{progress.test_score}%</span></p>
-                  <Button onClick={() => setShowDiploma(true)} className="gradient-primary text-primary-foreground">
-                    Zobrazit diplom
+                  <Button onClick={() => navigate(`${basePath}/diplomas`)} className="gradient-primary text-primary-foreground">
+                    Moje diplomy
                   </Button>
                 </CardContent>
               </Card>
@@ -415,9 +394,16 @@ export default function LevelDetail() {
               levelId={level.id}
               passingScore={level.passing_score}
               basePath={basePath}
-              onPassedWithDiploma={(score) => {
+              onPassedWithDiploma={async (score) => {
                 setProgress({ completed: true, test_score: score, completed_at: new Date().toISOString(), completed_modules: moduleMarkers });
-                setShowDiploma(true);
+                if (level.group_id) {
+                  const { data } = await supabase.rpc('issue_diploma_if_eligible', { p_group_id: level.group_id });
+                  const res = data as { issued: boolean; already?: boolean } | null;
+                  if (res?.issued && !res.already) {
+                    toast({ title: '🎓 Získali jste diplom!', description: 'Dokončili jste celou skupinu levelů. Diplom najdete v sekci Moje diplomy.' });
+                    setTimeout(() => navigate(`${basePath}/diplomas`), 1500);
+                  }
+                }
               }}
             />
           </TabsContent>
