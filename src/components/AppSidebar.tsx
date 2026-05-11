@@ -43,6 +43,7 @@ export function AppSidebar() {
   const topItems = [
     { to: basePath, icon: Home, label: 'Dashboard' },
     { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
+    { to: `${basePath}/diplomas`, icon: GraduationCap, label: 'Moje diplomy' },
     { to: `${basePath}/share`, icon: Share2, label: 'Sdílet aplikaci' },
     { to: `${basePath}/admin`, icon: Shield, label: 'Admin panel' },
   ];

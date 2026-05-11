@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import AdminGroupsTab from '@/components/AdminGroupsTab';
 
 interface Level {
   id: string;
@@ -663,6 +664,7 @@ export default function AdminPanel() {
         <Tabs defaultValue="content">
           <TabsList>
             <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
+            <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> Skupiny & diplomy</TabsTrigger>
             <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
             {adminRequests.length > 0 && (
               <TabsTrigger value="requests" className="relative">
@@ -942,6 +944,10 @@ export default function AdminPanel() {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="groups" className="mt-6">
+            <AdminGroupsTab />
           </TabsContent>
 
           <TabsContent value="users" className="mt-6 space-y-4">

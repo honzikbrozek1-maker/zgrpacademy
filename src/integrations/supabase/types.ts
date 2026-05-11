@@ -101,11 +101,83 @@ export type Database = {
         }
         Relationships: []
       }
+      issued_diplomas: {
+        Row: {
+          average_score: number
+          group_id: string
+          id: string
+          issued_at: string
+          user_id: string
+        }
+        Insert: {
+          average_score: number
+          group_id: string
+          id?: string
+          issued_at?: string
+          user_id: string
+        }
+        Update: {
+          average_score?: number
+          group_id?: string
+          id?: string
+          issued_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issued_diplomas_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "level_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      level_groups: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          diploma_subtitle: string
+          diploma_title: string
+          id: string
+          min_average_score: number
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          diploma_subtitle?: string
+          diploma_title?: string
+          id?: string
+          min_average_score?: number
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          diploma_subtitle?: string
+          diploma_title?: string
+          id?: string
+          min_average_score?: number
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       levels: {
         Row: {
           category: string
           created_at: string
           description: string | null
+          group_id: string | null
           id: string
           order_index: number
           passing_score: number
@@ -115,6 +187,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          group_id?: string | null
           id?: string
           order_index?: number
           passing_score?: number
@@ -124,12 +197,21 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          group_id?: string | null
           id?: string
           order_index?: number
           passing_score?: number
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "levels_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "level_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -484,11 +566,25 @@ export type Database = {
         Returns: boolean
       }
       is_paid: { Args: { _user_id: string }; Returns: boolean }
+      issue_diploma_if_eligible: { Args: { p_group_id: string }; Returns: Json }
       list_admins: {
         Args: never
         Returns: {
           display_name: string
           user_id: string
+        }[]
+      }
+      list_my_diplomas: {
+        Args: never
+        Returns: {
+          average_score: number
+          category: string
+          diploma_id: string
+          diploma_subtitle: string
+          diploma_title: string
+          group_id: string
+          group_title: string
+          issued_at: string
         }[]
       }
       lookup_invite: {
