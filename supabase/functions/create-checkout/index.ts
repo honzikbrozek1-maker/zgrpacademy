@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     } catch {
       throw new Error("Invalid returnUrl");
     }
-    if (!ALLOWED_RETURN_ORIGINS.includes(parsedReturn.origin)) {
+    if (!isAllowedReturnOrigin(parsedReturn.origin)) {
       throw new Error("returnUrl origin not allowed");
     }
     // Enforce that userId (if provided) matches authenticated user
