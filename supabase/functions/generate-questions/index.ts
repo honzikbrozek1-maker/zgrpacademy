@@ -111,7 +111,8 @@ Vytvoř 5-10 otázek pokrývajících klíčové pojmy.`;
 
     return json({ questions });
   } catch (e) {
-    return json({ error: (e as Error).message || "Server error" }, 500);
+    console.error("generate-questions error:", e);
+    return json({ error: "Server error" }, 500);
   }
 });
 
