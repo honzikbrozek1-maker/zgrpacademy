@@ -66,26 +66,34 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
         answer: answers[i] ?? 0,
       }));
 
-      const { data } = await supabase.rpc('submit_quiz_test', {
+      // Authoritative server-side scoring + persistence (RLS-safe).
+      const { data: completeData, error: completeError } = await supabase.rpc('complete_level', {
+        p_level_id: levelId,
         p_question_answers: questionAnswers,
       });
+      if (completeError) throw completeError;
 
-      const results = data as unknown as Array<{ question_id: string; correct: boolean }>;
-      const correctCount = results.filter(r => r.correct).length;
-      const score = Math.round((correctCount / questions.length) * 100);
-      const passed = score >= passingScore;
+      const result = completeData as unknown as { score: number; passed: boolean };
+      const score = result?.score ?? 0;
+      const passed = Boolean(result?.passed);
 
       setTestScore(score);
       setTestPassed(passed);
 
+      // Use submit_quiz_test only to derive per-question correctness for review_items.
+      const { data: checkData } = await supabase.rpc('submit_quiz_test', {
+        p_question_answers: questionAnswers,
+      });
+      const perQuestion = (checkData as unknown as Array<{ question_id: string; correct: boolean }>) ?? [];
+
       if (user) {
-        for (const result of results) {
-          if (result.correct) {
-            await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', result.question_id);
+        for (const r of perQuestion) {
+          if (r.correct) {
+            await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', r.question_id);
           } else {
             await supabase.from('review_items').upsert({
               user_id: user.id,
-              question_id: result.question_id,
+              question_id: r.question_id,
               confidence: 'unknown',
               source: 'failed_quiz',
             }, { onConflict: 'user_id,question_id' });
@@ -100,12 +108,6 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           completed_at: existingProgress?.completed_at ?? (passed ? new Date().toISOString() : null),
           completed_modules: existingProgress?.completed_modules ?? [],
         };
-
-        await supabase.from('user_progress').upsert({
-          user_id: user.id,
-          level_id: levelId,
-          ...nextProgress,
-        }, { onConflict: 'user_id,level_id' });
 
         onProgressChange?.(nextProgress);
 
