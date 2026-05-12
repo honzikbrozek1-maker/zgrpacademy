@@ -79,11 +79,14 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    console.error("list-invoices error:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("list-invoices error:", e);
+    const isAuth = e instanceof Error && /unauthorized|missing authorization/i.test(e.message);
+    return new Response(
+      JSON.stringify({ error: isAuth ? "Unauthorized" : "Nepodařilo se načíst faktury." }),
+      {
+        status: isAuth ? 401 : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });

@@ -157,10 +157,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    console.error("create-checkout error:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 400,
+    console.error("create-checkout error:", e);
+    return new Response(JSON.stringify({ error: "Nepodařilo se vytvořit platbu. Zkuste to prosím později." }), {
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
