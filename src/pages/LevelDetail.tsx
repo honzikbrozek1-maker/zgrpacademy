@@ -138,11 +138,10 @@ export default function LevelDetail() {
 
     if (!user || !level) return;
 
-    await supabase.from('user_progress').upsert({
-      user_id: user.id,
-      level_id: level.id,
-      completed_modules: nextMarkers,
-    }, { onConflict: 'user_id,level_id' });
+    await supabase.rpc('set_completed_modules', {
+      p_level_id: level.id,
+      p_modules: nextMarkers as unknown as never,
+    });
   }, [user, level]);
 
   const getPendingReviewCountForModule = useCallback(async (module: ModuleKey) => {
