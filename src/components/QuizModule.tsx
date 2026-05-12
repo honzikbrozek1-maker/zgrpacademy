@@ -120,8 +120,6 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange,
 
   return (
     <div className="space-y-4">
-      <MilestoneDialog open={!!milestone} milestone={milestone || 0} onClose={() => setMilestone(null)} />
-
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
         <Progress value={progress} className="h-2 flex-1" />
