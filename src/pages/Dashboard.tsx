@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { POINT_ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
 import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
 
 interface Level {
