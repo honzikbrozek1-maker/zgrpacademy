@@ -132,10 +132,10 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/achievements`)}>
+          <Card className="shadow-card relative">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10" onClick={(event) => event.stopPropagation()}>
+                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10">
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </DialogTrigger>
@@ -164,10 +164,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Milníky:</h4>
-                    <p className="text-muted-foreground">Achievementy odemykáte při dosažení: {POINT_ACHIEVEMENTS.map((achievement) => achievement.threshold).join(', ')} bodů.</p>
-                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -178,7 +174,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">Body</p>
                 <p className="text-lg font-bold">{totalPoints}</p>
-                <p className="text-xs text-muted-foreground">{unlockedAchievements.length} achievementů</p>
               </div>
             </CardContent>
           </Card>
