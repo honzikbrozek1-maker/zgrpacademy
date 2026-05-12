@@ -6,8 +6,6 @@ import { ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
-import MilestoneDialog from '@/components/MilestoneDialog';
-import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
