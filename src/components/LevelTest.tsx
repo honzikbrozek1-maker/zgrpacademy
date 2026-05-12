@@ -88,8 +88,13 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           }
         }
 
+        const oldPoints = profile?.total_points ?? 0;
         await supabase.rpc('complete_level', { p_level_id: levelId, p_question_answers: questionAnswers });
         await refreshProfile();
+        const { data: prof } = await supabase.from('profiles').select('total_points').eq('user_id', user.id).maybeSingle();
+        const newPoints = prof?.total_points ?? oldPoints;
+        const m = checkMilestone(oldPoints, newPoints);
+        if (m) setMilestone(m);
       }
 
       setFinished(true);
