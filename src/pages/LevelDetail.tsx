@@ -228,17 +228,20 @@ export default function LevelDetail() {
               <span className="hidden sm:inline">Přehled</span>
               <span className="sm:hidden text-xs">📋</span>
             </TabsTrigger>
-            <TabsTrigger value="quiz" className="flex items-center gap-1.5">
-              {completedModules.has('quiz') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <Brain className="h-4 w-4" />}
+            <TabsTrigger value="quiz" className="flex items-center gap-1.5 relative">
+              <Brain className="h-4 w-4" />
               <span className="hidden sm:inline">Kvíz</span>
+              {completedModules.has('quiz') && <CheckCircle className="h-3 w-3 text-success absolute -top-1 -right-1" />}
             </TabsTrigger>
-            <TabsTrigger value="flashcards" className="flex items-center gap-1.5">
-              {completedModules.has('flashcards') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <BookOpen className="h-4 w-4" />}
+            <TabsTrigger value="flashcards" className="flex items-center gap-1.5 relative">
+              <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Kartičky</span>
+              {completedModules.has('flashcards') && <CheckCircle className="h-3 w-3 text-success absolute -top-1 -right-1" />}
             </TabsTrigger>
-            <TabsTrigger value="fillin" className="flex items-center gap-1.5">
-              {completedModules.has('fillin') ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <PenLine className="h-4 w-4" />}
+            <TabsTrigger value="fillin" className="flex items-center gap-1.5 relative">
+              <PenLine className="h-4 w-4" />
               <span className="hidden sm:inline">Doplňování</span>
+              {completedModules.has('fillin') && <CheckCircle className="h-3 w-3 text-success absolute -top-1 -right-1" />}
             </TabsTrigger>
             <TabsTrigger
               value="test"
