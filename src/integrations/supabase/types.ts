@@ -542,6 +542,10 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
+      admin_reset_user_progress: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       award_points_for_question: {
         Args: { p_category?: string; p_question_id: string }
         Returns: Json
@@ -594,6 +598,11 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
           used_by: string
         }[]
+      }
+      reset_my_progress: { Args: never; Returns: undefined }
+      set_completed_modules: {
+        Args: { p_level_id: string; p_modules: Json }
+        Returns: undefined
       }
       submit_quiz_test: { Args: { p_question_answers: Json }; Returns: Json }
     }
