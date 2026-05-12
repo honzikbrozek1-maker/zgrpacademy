@@ -107,7 +107,6 @@ export default function Dashboard() {
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
   const totalPoints = sectionProfile?.total_points || 0;
-  const unlockedAchievements = getUnlockedAchievements(totalPoints);
 
   // Next level unlocked only after test passed on previous
   const isLevelUnlocked = (level: Level) => {
