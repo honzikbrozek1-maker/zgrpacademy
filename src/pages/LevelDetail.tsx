@@ -255,48 +255,76 @@ export default function LevelDetail() {
             <div className="grid gap-4 md:grid-cols-2">
               <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('quiz') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('quiz')}>
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
-                    <Brain className="h-6 w-6 text-primary-foreground" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
+                      <Brain className="h-6 w-6 text-primary" />
+                    </div>
+                    {completedModules.has('quiz') && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                        <CheckCircle className="h-3.5 w-3.5 text-success-foreground" strokeWidth={3} />
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Kvíz</h3>
                     <p className="text-sm text-muted-foreground">{quizQuestions.length} otázek</p>
                   </div>
-                  {completedModules.has('quiz') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
               <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('flashcards') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('flashcards')}>
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center">
-                    <BookOpen className="h-6 w-6 text-accent-foreground" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    {completedModules.has('flashcards') && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                        <CheckCircle className="h-3.5 w-3.5 text-success-foreground" strokeWidth={3} />
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Kartičky</h3>
                     <p className="text-sm text-muted-foreground">{flashcardQuestions.length} kartiček</p>
                   </div>
-                  {completedModules.has('flashcards') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
               <Card className={`shadow-card cursor-pointer hover:shadow-elevated transition-all ${completedModules.has('fillin') ? 'ring-2 ring-success/30' : ''}`} onClick={() => setActiveTab('fillin')}>
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                    <PenLine className="h-6 w-6 text-secondary-foreground" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
+                      <PenLine className="h-6 w-6 text-primary" />
+                    </div>
+                    {completedModules.has('fillin') && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                        <CheckCircle className="h-3.5 w-3.5 text-success-foreground" strokeWidth={3} />
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Doplňování</h3>
                     <p className="text-sm text-muted-foreground">Vyberte chybějící slovo</p>
                   </div>
-                  {completedModules.has('fillin') && <CheckCircle className="h-5 w-5 text-success" />}
                 </CardContent>
               </Card>
 
-              <Card className={`shadow-card transition-all ${testUnlocked ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'}`} onClick={() => testUnlocked ? setActiveTab('test') : null}>
+              <Card className={`shadow-card transition-all ${testUnlocked ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${progress?.test_score ? 'ring-2 ring-success/30' : ''}`} onClick={() => testUnlocked ? setActiveTab('test') : null}>
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${testUnlocked ? 'bg-success/20' : 'bg-muted'}`}>
-                    {!testUnlocked && <Lock className="h-4 w-4 text-muted-foreground absolute" />}
-                    <ClipboardCheck className={`h-6 w-6 ${testUnlocked ? 'text-success' : 'text-muted-foreground'}`} />
+                  <div className="relative">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${testUnlocked ? 'bg-primary/15' : 'bg-muted'}`}>
+                      {testUnlocked ? (
+                        <ClipboardCheck className="h-6 w-6 text-primary" />
+                      ) : (
+                        <Lock className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    {progress?.test_score !== null && progress?.test_score !== undefined && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                        <CheckCircle className="h-3.5 w-3.5 text-success-foreground" strokeWidth={3} />
+                      </span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-semibold">Závěrečný test</h3>
@@ -305,8 +333,8 @@ export default function LevelDetail() {
                         <AlertTriangle className="h-3 w-3" /> Dokončete všechny moduly
                       </p>
                     ) : (
-                      <p className="text-sm text-success">
-                        {progress?.test_score ? `Výsledek: ${progress.test_score}%` : 'Připraven k testu'}
+                      <p className="text-sm text-muted-foreground">
+                        {progress?.test_score !== null && progress?.test_score !== undefined ? `Výsledek: ${progress.test_score}%` : 'Připraven k testu'}
                       </p>
                     )}
                   </div>
