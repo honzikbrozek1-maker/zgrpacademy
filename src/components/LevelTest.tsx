@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle } from 'lucide-react';
+import MilestoneDialog from '@/components/MilestoneDialog';
+import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
