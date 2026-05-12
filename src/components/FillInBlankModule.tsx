@@ -42,7 +42,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [milestone, setMilestone] = useState<number | null>(null);
+  
   const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
