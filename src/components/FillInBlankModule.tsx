@@ -115,12 +115,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         setCorrectCount(c => c + 1);
         playCorrectSound();
         if (user) {
-          const { data: pointsResult } = await supabase.rpc('award_points_for_question', { p_question_id: question.id, p_category: category });
-          if (pointsResult) {
-            const r = pointsResult as unknown as { old_points: number; new_points: number };
-            const m = checkMilestone(r.old_points, r.new_points);
-            if (m) setMilestone(m);
-          }
+          await supabase.rpc('award_points_for_question', { p_question_id: question.id, p_category: category });
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
