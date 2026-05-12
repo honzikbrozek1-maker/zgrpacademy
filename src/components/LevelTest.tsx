@@ -25,7 +25,7 @@ interface Props {
 }
 
 export default function LevelTest({ questions, levelId, passingScore, basePath, onPassedWithDiploma }: Props) {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -34,7 +34,6 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
   const [submitting, setSubmitting] = useState(false);
   const [testScore, setTestScore] = useState<number | null>(null);
   const [testPassed, setTestPassed] = useState(false);
-  const [milestone, setMilestone] = useState<number | null>(null);
 
   const question = questions[currentIndex];
   const options = question ? [question.option_1, question.option_2, question.option_3, question.option_4].filter(Boolean) : [];
