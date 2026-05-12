@@ -231,7 +231,7 @@ export default function Dashboard() {
                           }`}>
                             {unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
                           </div>
-                          {prog?.completed && prog.test_score && (
+                          {prog?.completed && prog.test_score !== null && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
                               <CheckCircle className="h-3 w-3 text-success-foreground" />
                             </div>
@@ -243,7 +243,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {prog?.test_score && (
+                        {prog?.completed && prog?.test_score !== null && (
                           <Badge variant="secondary" className="bg-success/10 text-success text-xs">
                             {prog.test_score}%
                           </Badge>
