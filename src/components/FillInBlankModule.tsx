@@ -19,7 +19,6 @@ interface Question {
 
 interface Props {
   questions: Question[];
-  category: string;
   onComplete: () => void;
   onReviewItemsChange?: () => void;
 }
@@ -33,8 +32,8 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange, category }: Props) {
-  const { user, refreshProfile } = useAuth();
+export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange }: Props) {
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -115,7 +114,6 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         setCorrectCount(c => c + 1);
         playCorrectSound();
         if (user) {
-          await supabase.rpc('award_points_for_question', { p_question_id: question.id, p_category: category });
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
@@ -145,7 +143,6 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setCorrectAnswerIndex(null);
     } else {
       setFinished(true);
-      refreshProfile();
     }
   };
 
