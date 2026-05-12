@@ -32,7 +32,6 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange,
   const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [milestone, setMilestone] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
