@@ -15,7 +15,7 @@ import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
-import Achievements from "./pages/Achievements";
+
 import Diplomas from "./pages/Diplomas";
 import AdminPanel from "./pages/AdminPanel";
 import AdminShare from "./pages/AdminShare";
@@ -53,7 +53,7 @@ const App = () => (
                 <Route path="/products/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
                 <Route path="/products/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
                 <Route path="/products/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-                <Route path="/products/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+                <Route path="/products/achievements" element={<Navigate to="/products" replace />} />
                 <Route path="/products/diplomas" element={<ProtectedRoute><Diplomas /></ProtectedRoute>} />
 
                 {/* Backoffice path */}
@@ -61,7 +61,7 @@ const App = () => (
                 <Route path="/backoffice/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
                 <Route path="/backoffice/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
                 <Route path="/backoffice/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-                <Route path="/backoffice/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+                <Route path="/backoffice/achievements" element={<Navigate to="/backoffice" replace />} />
                 <Route path="/backoffice/diplomas" element={<ProtectedRoute><Diplomas /></ProtectedRoute>} />
 
                 {/* Shared - per section */}

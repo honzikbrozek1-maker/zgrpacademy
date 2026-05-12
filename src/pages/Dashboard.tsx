@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { POINT_ACHIEVEMENTS, getUnlockedAchievements } from '@/lib/achievements';
 import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
 
 interface Level {
@@ -108,7 +107,6 @@ export default function Dashboard() {
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
   const totalPoints = sectionProfile?.total_points || 0;
-  const unlockedAchievements = getUnlockedAchievements(totalPoints);
 
   // Next level unlocked only after test passed on previous
   const isLevelUnlocked = (level: Level) => {
@@ -134,10 +132,10 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card relative cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/achievements`)}>
+          <Card className="shadow-card relative">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10" onClick={(event) => event.stopPropagation()}>
+                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10">
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </DialogTrigger>
@@ -166,10 +164,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Milníky:</h4>
-                    <p className="text-muted-foreground">Achievementy odemykáte při dosažení: {POINT_ACHIEVEMENTS.map((achievement) => achievement.threshold).join(', ')} bodů.</p>
-                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -180,7 +174,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">Body</p>
                 <p className="text-lg font-bold">{totalPoints}</p>
-                <p className="text-xs text-muted-foreground">{unlockedAchievements.length} achievementů</p>
               </div>
             </CardContent>
           </Card>
