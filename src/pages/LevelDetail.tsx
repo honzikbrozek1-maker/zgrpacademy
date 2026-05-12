@@ -427,8 +427,10 @@ export default function LevelDetail() {
               levelId={level.id}
               passingScore={level.passing_score}
               basePath={basePath}
-              onPassedWithDiploma={async (score) => {
-                setProgress({ completed: true, test_score: score, completed_at: new Date().toISOString(), completed_modules: moduleMarkers });
+              existingProgress={progress}
+              onProgressChange={setProgress}
+              onPassedWithDiploma={async (nextProgress) => {
+                setProgress(nextProgress);
                 if (level.group_id) {
                   const { data } = await supabase.rpc('issue_diploma_if_eligible', { p_group_id: level.group_id });
                   const res = data as { issued: boolean; already?: boolean } | null;
