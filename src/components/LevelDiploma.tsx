@@ -19,8 +19,9 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
     if (!content) return;
     const win = window.open('', '_blank');
     if (!win) return;
+    const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
     win.document.write(`
-      <html><head><title>Diplom - ${levelTitle}</title>
+      <html><head><title>Diplom - ${safe(levelTitle)}</title>
       <style>
         body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif; background: white; }
         .diploma { border: 4px double hsl(168, 65%, 38%); border-radius: 16px; padding: 60px; max-width: 700px; text-align: center; }
