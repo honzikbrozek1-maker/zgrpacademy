@@ -21,11 +21,18 @@ interface Props {
   levelId: string;
   passingScore: number;
   basePath: string;
-  onPassedWithDiploma?: (score: number) => void;
+  existingProgress?: {
+    completed: boolean;
+    test_score: number | null;
+    completed_at: string | null;
+    completed_modules: string[];
+  } | null;
+  onProgressChange?: (progress: { completed: boolean; test_score: number | null; completed_at: string | null; completed_modules: string[] }) => void;
+  onPassedWithDiploma?: (progress: { completed: boolean; test_score: number | null; completed_at: string | null; completed_modules: string[] }) => void;
 }
 
-export default function LevelTest({ questions, levelId, passingScore, basePath, onPassedWithDiploma }: Props) {
-  const { user, refreshProfile } = useAuth();
+export default function LevelTest({ questions, levelId, passingScore, basePath, existingProgress, onProgressChange, onPassedWithDiploma }: Props) {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -54,10 +61,9 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      // Build answers array for server-side validation
       const questionAnswers = questions.map((q, i) => ({
         question_id: q.id,
-        answer: answers[i] || 0,
+        answer: answers[i] ?? 0,
       }));
 
       const { data } = await supabase.rpc('submit_quiz_test', {
@@ -72,10 +78,11 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
       setTestScore(score);
       setTestPassed(passed);
 
-      // Add failed questions to review
       if (user) {
         for (const result of results) {
-          if (!result.correct) {
+          if (result.correct) {
+            await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', result.question_id);
+          } else {
             await supabase.from('review_items').upsert({
               user_id: user.id,
               question_id: result.question_id,
@@ -85,15 +92,29 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           }
         }
 
-        await supabase.rpc('complete_level', { p_level_id: levelId, p_question_answers: questionAnswers });
-        await refreshProfile();
+        const nextProgress = {
+          completed: Boolean(existingProgress?.completed || passed),
+          test_score: typeof existingProgress?.test_score === 'number'
+            ? Math.max(existingProgress.test_score, score)
+            : score,
+          completed_at: existingProgress?.completed_at ?? (passed ? new Date().toISOString() : null),
+          completed_modules: existingProgress?.completed_modules ?? [],
+        };
+
+        await supabase.from('user_progress').upsert({
+          user_id: user.id,
+          level_id: levelId,
+          ...nextProgress,
+        }, { onConflict: 'user_id,level_id' });
+
+        onProgressChange?.(nextProgress);
+
+        if (passed && onPassedWithDiploma) {
+          setTimeout(() => onPassedWithDiploma(nextProgress), 1500);
+        }
       }
 
       setFinished(true);
-
-      if (passed && onPassedWithDiploma) {
-        setTimeout(() => onPassedWithDiploma(score), 1500);
-      }
     } finally {
       setSubmitting(false);
     }
