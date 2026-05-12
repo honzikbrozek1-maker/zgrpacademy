@@ -110,7 +110,7 @@ export default function Account() {
     if (deleteConfirmText !== 'SMAZAT') return;
     if (user) {
       await supabase.from('review_items').delete().eq('user_id', user.id);
-      await supabase.from('user_progress').delete().eq('user_id', user.id);
+      await supabase.rpc('reset_my_progress');
       await supabase.from('section_profiles').delete().eq('user_id', user.id);
       await supabase.from('profiles').delete().eq('user_id', user.id);
       await supabase.from('user_roles').delete().eq('user_id', user.id);
