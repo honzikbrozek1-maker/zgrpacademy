@@ -129,7 +129,7 @@ export default function Levels() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {prog?.test_score !== null && prog?.test_score !== undefined && (
+                      {prog?.completed && prog?.test_score !== null && prog?.test_score !== undefined && (
                         <Badge variant="secondary" className="bg-success/10 text-success">
                           Test {prog.test_score}%
                         </Badge>
