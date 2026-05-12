@@ -28,6 +28,14 @@ export default function Diplomas() {
 
   useEffect(() => {
     (async () => {
+      // Auto-issue diplomas for any group the user is now eligible for
+      // (e.g. groups created/assigned after the level was already completed).
+      const { data: groups } = await supabase.from('level_groups').select('id');
+      if (groups) {
+        await Promise.all(
+          groups.map(g => supabase.rpc('issue_diploma_if_eligible', { p_group_id: g.id }))
+        );
+      }
       const { data } = await supabase.rpc('list_my_diplomas');
       if (data) setDiplomas(data as Diploma[]);
       setLoading(false);
