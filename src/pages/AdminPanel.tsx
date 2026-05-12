@@ -270,7 +270,7 @@ export default function AdminPanel() {
 
   const deleteUser = async (userId: string) => {
     await supabase.from('review_items').delete().eq('user_id', userId);
-    await supabase.from('user_progress').delete().eq('user_id', userId);
+    await supabase.rpc('admin_reset_user_progress', { p_user_id: userId });
     await supabase.from('profiles').delete().eq('user_id', userId);
     await supabase.from('user_roles').delete().eq('user_id', userId);
     setShowDeleteUser(null);
