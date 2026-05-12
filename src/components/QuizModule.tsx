@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
-import MilestoneDialog from '@/components/MilestoneDialog';
-import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
