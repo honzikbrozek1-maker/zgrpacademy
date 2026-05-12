@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
-import MilestoneDialog from '@/components/MilestoneDialog';
-import { checkMilestone } from '@/lib/achievements';
 
 interface Question {
   id: string;
@@ -34,7 +32,6 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange,
   const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [milestone, setMilestone] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
@@ -60,12 +57,7 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange,
         setCorrectCount(c => c + 1);
         playCorrectSound();
         if (user) {
-          const { data: pointsResult } = await supabase.rpc('award_points_for_question', { p_question_id: question.id, p_category: category });
-          if (pointsResult) {
-            const r = pointsResult as unknown as { old_points: number; new_points: number };
-            const m = checkMilestone(r.old_points, r.new_points);
-            if (m) setMilestone(m);
-          }
+          await supabase.rpc('award_points_for_question', { p_question_id: question.id, p_category: category });
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
@@ -128,8 +120,6 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange,
 
   return (
     <div className="space-y-4">
-      <MilestoneDialog open={!!milestone} milestone={milestone || 0} onClose={() => setMilestone(null)} />
-
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
         <Progress value={progress} className="h-2 flex-1" />

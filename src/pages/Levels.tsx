@@ -109,18 +109,19 @@ export default function Levels() {
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          prog?.completed && prog.test_score ? 'bg-success/20' 
-                          : unlocked ? 'bg-primary/15' 
-                          : 'bg-muted'
+                          unlocked ? 'bg-primary/15' : 'bg-muted'
                         }`}>
-                          {prog?.completed && prog.test_score ? (
-                            <CheckCircle className="h-5 w-5 text-success" />
-                          ) : unlocked ? (
+                          {unlocked ? (
                             <span className="font-bold text-primary">{level.order_index}</span>
                           ) : (
                             <Lock className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
+                        {prog?.completed && prog.test_score !== null && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                            <CheckCircle className="h-3 w-3 text-success-foreground" strokeWidth={3} />
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold">{level.title}</h3>
@@ -128,9 +129,9 @@ export default function Levels() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {prog?.test_score && (
+                      {prog?.test_score !== null && prog?.test_score !== undefined && (
                         <Badge variant="secondary" className="bg-success/10 text-success">
-                          {prog.test_score}%
+                          Test {prog.test_score}%
                         </Badge>
                       )}
                       {unlocked && (
