@@ -269,12 +269,17 @@ export default function Dashboard() {
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${
-                          prog?.completed && prog.test_score ? 'bg-success/20' 
-                          : unlocked ? 'bg-primary/15 text-primary' 
-                          : 'bg-muted'
-                        }`}>
-                          {prog?.completed && prog.test_score ? <CheckCircle className="h-4 w-4 text-success" /> : unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
+                        <div className="relative">
+                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${
+                            unlocked ? 'bg-primary/15 text-primary' : 'bg-muted'
+                          }`}>
+                            {unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
+                          </div>
+                          {prog?.completed && prog.test_score && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
+                              <CheckCircle className="h-3 w-3 text-success-foreground" />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <h3 className="font-medium text-sm">{level.title}</h3>
