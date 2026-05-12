@@ -15,7 +15,7 @@ import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
-import Achievements from "./pages/Achievements";
+
 import Diplomas from "./pages/Diplomas";
 import AdminPanel from "./pages/AdminPanel";
 import AdminShare from "./pages/AdminShare";
