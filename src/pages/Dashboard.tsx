@@ -8,8 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trophy, Star, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Info, Package, Briefcase } from 'lucide-react';
+import { Trophy, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
 
@@ -106,8 +105,6 @@ export default function Dashboard() {
   const progressPercent = levels.length > 0
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
-  const totalPoints = sectionProfile?.total_points || 0;
-
   // Next level unlocked only after test passed on previous
   const isLevelUnlocked = (level: Level) => {
     if (level.order_index === 1) return true;
@@ -132,59 +129,25 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-card relative">
-            <Dialog>
-              <DialogTrigger asChild>
-                <button className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors z-10">
-                  <Info className="h-3.5 w-3.5" />
-                </button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-amber-500" /> Bodový systém
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3 text-sm">
-                  <p className="text-muted-foreground">Body získáváte za aktivitu v aplikaci.</p>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Jak získat body:</h4>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
-                        <span>✅ Správná odpověď v kvízu</span>
-                        <Badge variant="secondary">+10 bodů</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
-                        <span>✍️ Správné doplnění slova</span>
-                        <Badge variant="secondary">+10 bodů</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-muted">
-                        <span>🏆 Úspěšný závěrečný test</span>
-                        <Badge variant="secondary">+50 bodů</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+          <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
                 <Trophy className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Body</p>
-                <p className="text-lg font-bold">{totalPoints}</p>
+                <p className="text-xs text-muted-foreground">Dokončeno</p>
+                <p className="text-lg font-bold">{completedCount}/{levels.length}</p>
               </div>
             </CardContent>
           </Card>
           <Card className="shadow-card">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Star className="h-5 w-5 text-primary" />
+                <Layers className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Level</p>
-                <p className="text-lg font-bold">{sectionProfile?.current_level || 1}</p>
+                <p className="text-xs text-muted-foreground">Celkový postup</p>
+                <p className="text-lg font-bold">{Math.round(progressPercent)}%</p>
               </div>
             </CardContent>
           </Card>
@@ -194,8 +157,8 @@ export default function Dashboard() {
                 <BookOpen className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Dokončeno</p>
-                <p className="text-lg font-bold">{completedCount}/{levels.length}</p>
+                <p className="text-xs text-muted-foreground">Aktivní sekce</p>
+                <p className="text-lg font-bold">{pathLabel}</p>
               </div>
             </CardContent>
           </Card>
@@ -268,7 +231,7 @@ export default function Dashboard() {
                           }`}>
                             {unlocked ? level.order_index : <Lock className="h-4 w-4 text-muted-foreground" />}
                           </div>
-                          {prog?.completed && prog.test_score && (
+                          {prog?.completed && prog.test_score !== null && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
                               <CheckCircle className="h-3 w-3 text-success-foreground" />
                             </div>
@@ -280,7 +243,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {prog?.test_score && (
+                        {prog?.completed && prog?.test_score !== null && (
                           <Badge variant="secondary" className="bg-success/10 text-success text-xs">
                             {prog.test_score}%
                           </Badge>

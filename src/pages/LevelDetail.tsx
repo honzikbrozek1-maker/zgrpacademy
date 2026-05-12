@@ -384,7 +384,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {quizQuestions.length > 0 ? (
-              <QuizModule questions={quizQuestions} levelId={level.id} category={category} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
+              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
             )}
@@ -410,7 +410,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} category={category} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
+              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
@@ -427,8 +427,10 @@ export default function LevelDetail() {
               levelId={level.id}
               passingScore={level.passing_score}
               basePath={basePath}
-              onPassedWithDiploma={async (score) => {
-                setProgress({ completed: true, test_score: score, completed_at: new Date().toISOString(), completed_modules: moduleMarkers });
+              existingProgress={progress}
+              onProgressChange={setProgress}
+              onPassedWithDiploma={async (nextProgress) => {
+                setProgress(nextProgress);
                 if (level.group_id) {
                   const { data } = await supabase.rpc('issue_diploma_if_eligible', { p_group_id: level.group_id });
                   const res = data as { issued: boolean; already?: boolean } | null;

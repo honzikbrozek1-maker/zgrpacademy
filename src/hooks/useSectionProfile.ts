@@ -3,8 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
 export interface SectionProfile {
-  total_points: number;
-  current_level: number;
   color_scheme: string;
 }
 
@@ -15,8 +13,6 @@ function getCachedSectionProfile(category: string): SectionProfile | null {
   if (!cachedColorScheme) return null;
 
   return {
-    total_points: 0,
-    current_level: 1,
     color_scheme: cachedColorScheme,
   };
 }
@@ -33,7 +29,7 @@ export function useSectionProfile(category: string) {
 
     const { data } = await supabase
       .from('section_profiles')
-      .select('total_points, current_level, color_scheme')
+      .select('color_scheme')
       .eq('user_id', user.id)
       .eq('category', category)
       .single();

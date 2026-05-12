@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, Trophy, Star, Palette, Volume2, Trash2, Receipt } from 'lucide-react';
+import { User, Mail, Lock, Palette, Volume2, Trash2, Receipt } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
@@ -125,18 +125,6 @@ export default function Account() {
     <AppLayout>
       <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4 animate-slide-up pb-20">
         <h1 className="text-2xl font-bold">Nastavení účtu</h1>
-
-        <div className="flex gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
-            <Trophy className="h-4 w-4 text-amber-500" />
-            <span className="font-bold text-sm">{sectionProfile?.total_points || 0}</span>
-            <span className="text-xs text-muted-foreground">bodů ({category})</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border">
-            <Star className="h-4 w-4 text-violet-500" />
-            <span className="font-bold text-sm">Level {sectionProfile?.current_level || 1}</span>
-          </div>
-        </div>
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-4">
