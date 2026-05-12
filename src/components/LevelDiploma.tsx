@@ -38,11 +38,11 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
         <h1>Certifikát o absolvování</h1>
         <h2>ZGRP Academy</h2>
         <p class="detail">Tímto certifikujeme, že</p>
-        <p class="name">${userName}</p>
+        <p class="name">${safe(userName)}</p>
         <p class="detail">úspěšně absolvoval/a kurz</p>
-        <p class="name">${levelTitle}</p>
-        <p class="score">${score}%</p>
-        <p class="detail">Datum: ${new Date(completedAt).toLocaleDateString('cs-CZ')}</p>
+        <p class="name">${safe(levelTitle)}</p>
+        <p class="score">${Number(score)}%</p>
+        <p class="detail">Datum: ${safe(new Date(completedAt).toLocaleDateString('cs-CZ'))}</p>
       </div>
       </body></html>
     `);
