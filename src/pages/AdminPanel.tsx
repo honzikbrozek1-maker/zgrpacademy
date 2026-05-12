@@ -42,8 +42,6 @@ interface Question {
 interface UserProfile {
   user_id: string;
   display_name: string;
-  total_points: number;
-  current_level: number;
   created_at: string;
 }
 
@@ -438,8 +436,6 @@ export default function AdminPanel() {
           <div>
             <p className="font-medium">{u.display_name || 'Bez jména'}</p>
             <div className="flex gap-3 text-xs text-muted-foreground">
-              <span>Body: {u.total_points}</span>
-              <span>Level: {u.current_level}</span>
               <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
             </div>
           </div>
