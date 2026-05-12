@@ -313,7 +313,7 @@ export default function LevelDetail() {
                 </CardContent>
               </Card>
 
-              <Card className={`shadow-card transition-all ${testUnlocked ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${progress?.test_score ? 'ring-2 ring-success/30' : ''}`} onClick={() => testUnlocked ? setActiveTab('test') : null}>
+              <Card className={`shadow-card transition-all ${testUnlocked ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${progress?.completed ? 'ring-2 ring-success/30' : ''}`} onClick={() => testUnlocked ? setActiveTab('test') : null}>
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="relative">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${testUnlocked ? 'bg-primary/15' : 'bg-muted'}`}>
@@ -323,7 +323,7 @@ export default function LevelDetail() {
                         <Lock className="h-5 w-5 text-muted-foreground" />
                       )}
                     </div>
-                    {progress?.test_score !== null && progress?.test_score !== undefined && (
+                    {progress?.completed && (
                       <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center ring-2 ring-background">
                         <CheckCircle className="h-3.5 w-3.5 text-success-foreground" strokeWidth={3} />
                       </span>
@@ -335,10 +335,12 @@ export default function LevelDetail() {
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
                         <AlertTriangle className="h-3 w-3" /> Dokončete všechny moduly
                       </p>
+                    ) : progress?.completed ? (
+                      <p className="text-sm text-muted-foreground">Výsledek: {progress.test_score}%</p>
+                    ) : progress?.test_score !== null && progress?.test_score !== undefined ? (
+                      <p className="text-sm text-muted-foreground">Poslední pokus: {progress.test_score}% — zkuste znovu</p>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        {progress?.test_score !== null && progress?.test_score !== undefined ? `Výsledek: ${progress.test_score}%` : 'Připraven k testu'}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Připraven k testu</p>
                     )}
                   </div>
                 </CardContent>
