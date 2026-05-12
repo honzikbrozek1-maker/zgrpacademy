@@ -61,7 +61,7 @@ const App = () => (
                 <Route path="/backoffice/levels" element={<ProtectedRoute><Levels /></ProtectedRoute>} />
                 <Route path="/backoffice/level/:levelId" element={<ProtectedRoute><LevelDetail /></ProtectedRoute>} />
                 <Route path="/backoffice/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-                <Route path="/backoffice/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+                <Route path="/backoffice/achievements" element={<Navigate to="/backoffice" replace />} />
                 <Route path="/backoffice/diplomas" element={<ProtectedRoute><Diplomas /></ProtectedRoute>} />
 
                 {/* Shared - per section */}
