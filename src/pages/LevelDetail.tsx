@@ -363,7 +363,7 @@ export default function LevelDetail() {
               )}
             </div>
 
-            {progress?.test_score && (
+            {progress?.completed && (
               <Card className="shadow-elevated mt-4 border-success/30">
                 <CardContent className="p-6 text-center space-y-3">
                   <Trophy className="h-8 w-8 mx-auto text-success" />
