@@ -384,7 +384,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {quizQuestions.length > 0 ? (
-              <QuizModule questions={quizQuestions} levelId={level.id} category={category} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
+              <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
             )}
@@ -410,7 +410,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} category={category} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
+              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}
