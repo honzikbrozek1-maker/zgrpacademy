@@ -129,28 +129,31 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
 
   if (finished && testScore !== null) {
     return (
-      <Card className="shadow-elevated">
-        <CardContent className="p-8 text-center space-y-4">
-          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
-            {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
-          </div>
-          <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
-          <p className="text-2xl font-bold">{testScore}%</p>
-          <p className="text-muted-foreground">
-            {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
-              Zpět na levely
-            </Button>
-            {!testPassed && (
-              <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }} className="gradient-primary text-primary-foreground">
-                Zkusit znovu
+      <>
+        <MilestoneDialog open={!!milestone} milestone={milestone || 0} onClose={() => setMilestone(null)} />
+        <Card className="shadow-elevated">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
+              {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
+            </div>
+            <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
+            <p className="text-2xl font-bold">{testScore}%</p>
+            <p className="text-muted-foreground">
+              {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
+                Zpět na levely
               </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              {!testPassed && (
+                <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }} className="gradient-primary text-primary-foreground">
+                  Zkusit znovu
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </>
     );
   }
 
