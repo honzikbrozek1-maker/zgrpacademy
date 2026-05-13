@@ -109,11 +109,11 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'SMAZAT') return;
     if (user) {
-      await supabase.from('review_items').delete().eq('user_id', user.id);
-      await supabase.rpc('reset_my_progress');
-      await supabase.from('section_profiles').delete().eq('user_id', user.id);
-      await supabase.from('profiles').delete().eq('user_id', user.id);
-      await supabase.from('user_roles').delete().eq('user_id', user.id);
+      const { error } = await supabase.rpc('delete_my_account');
+      if (error) {
+        toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+        return;
+      }
     }
     toast({ title: 'Účet smazán', description: 'Vaše data byla odstraněna.' });
     await signOut();
