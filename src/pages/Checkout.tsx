@@ -17,7 +17,7 @@ export default function Checkout() {
     refreshProfile();
   }, []);
 
-  if (loading) {
+  if (loading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Načítání...</p>
