@@ -558,6 +558,7 @@ export type Database = {
         Args: { p_level_id: string; p_question_answers: Json }
         Returns: Json
       }
+      delete_my_account: { Args: never; Returns: undefined }
       handle_admin_request: {
         Args: { p_approve: boolean; p_request_id: string }
         Returns: undefined
