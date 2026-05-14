@@ -12,6 +12,8 @@ interface Body {
   text: string;
   level_id: string;
   types: string[];
+  count?: number;
+  existing_questions?: string[];
 }
 
 Deno.serve(async (req) => {
@@ -69,6 +71,15 @@ Deno.serve(async (req) => {
       return json({ error: "AI not configured" }, 500);
     }
 
+    const count = Math.min(Math.max(Number(body.count) || 10, 1), 30);
+    const existing = Array.isArray(body.existing_questions)
+      ? body.existing_questions.slice(0, 200).map((s) => String(s).slice(0, 300))
+      : [];
+
+    const avoidBlock = existing.length > 0
+      ? `\n\nDŮLEŽITÉ: Nevytvářej otázky duplicitní s těmito již existujícími otázkami (vytvoř ZCELA jiné, pokrývající další části textu):\n${existing.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+      : "";
+
     const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.
 Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - type: jeden z ${JSON.stringify(types)}
@@ -76,7 +87,7 @@ Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - option_1, option_2, option_3, option_4: pro quiz čtyři možnosti, jinak null
 - correct_answer: pro quiz číslo 1-4, pro fill_in_blank null (správná odpověď v back_text), pro flashcard null
 - back_text: pro flashcard a fill_in_blank obsahuje správnou odpověď, pro quiz null
-Vytvoř 5-10 otázek pokrývajících klíčové pojmy.`;
+Vytvoř PŘESNĚ ${count} otázek pokrývajících klíčové pojmy z textu.${avoidBlock}`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
