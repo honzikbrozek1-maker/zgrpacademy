@@ -958,7 +958,12 @@ export default function AdminPanel() {
                                     <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
                                   {q.type === 'flashcard' && q.back_text && (
-                                    <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                    <>
+                                      <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                      {(!q.wrong_option_1 || !q.wrong_option_2 || !q.wrong_option_3) && (
+                                        <p className="text-[10px] text-warning mt-0.5">⚠ Chybí špatné možnosti pro test</p>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                                 <div className="flex gap-1 shrink-0">
