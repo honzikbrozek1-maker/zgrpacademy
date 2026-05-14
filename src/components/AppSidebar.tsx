@@ -107,12 +107,27 @@ export function AppSidebar() {
 
               {topItems.map(item => {
                 const active = isActive(item.to);
+                const showBadge = item.to === `${basePath}/admin` && isAdmin && pendingRequests > 0;
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={active}>
-                      <Link to={item.to} onClick={closeMobileIfNeeded} className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.label}</span>}
+                      <Link to={item.to} onClick={closeMobileIfNeeded} className="flex items-center gap-2 relative">
+                        <span className="relative inline-flex">
+                          <item.icon className="h-4 w-4" />
+                          {showBadge && (
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" aria-label={`${pendingRequests} nových žádostí`} />
+                          )}
+                        </span>
+                        {!collapsed && (
+                          <span className="flex items-center gap-2">
+                            {item.label}
+                            {showBadge && (
+                              <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-destructive text-destructive-foreground">
+                                {pendingRequests}
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
