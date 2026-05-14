@@ -12,6 +12,8 @@ interface Body {
   text: string;
   level_id: string;
   types: string[];
+  count?: number;
+  existing_questions?: string[];
 }
 
 Deno.serve(async (req) => {
