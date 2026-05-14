@@ -769,8 +769,25 @@ export default function AdminPanel() {
                                 ))}
                               </div>
                             </div>
+                            <div>
+                              <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
+                              <Input
+                                type="number"
+                                min={1}
+                                max={100}
+                                value={aiCount}
+                                onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
+                              </p>
+                            </div>
                             <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
-                              {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji...</> : <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat otázky</>}
+                              {aiLoading ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji {aiProgress ? `${aiProgress.done}/${aiProgress.total}` : ''}...</>
+                              ) : (
+                                <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat otázky</>
+                              )}
                             </Button>
                           </div>
                         ) : (
