@@ -20,8 +20,28 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 
 export function AppSidebar() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    if (!isAdmin || !user) { setPendingRequests(0); return; }
+    let cancelled = false;
+    const load = async () => {
+      const { count } = await supabase
+        .from('admin_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .eq('target_admin_id', user.id);
+      if (!cancelled) setPendingRequests(count ?? 0);
+    };
+    load();
+    const channel = supabase
+      .channel('admin-requests-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_requests' }, load)
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [isAdmin, user]);
   const { state, setOpenMobile } = useSidebar();
   const { currentPath, basePath, pathLabel } = useAppPath();
   const accountPath = `${basePath}/account`;
