@@ -565,13 +565,36 @@ export default function AdminPanel() {
       )}
 
       {qForm.type === 'flashcard' && (
-        <div>
-          <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (odpověď)</label>
-          <Textarea
-            placeholder="Co se zobrazí po otočení kartičky?"
-            value={qForm.back_text}
-            onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
-          />
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (správná odpověď)</label>
+            <Textarea
+              placeholder="Co se zobrazí po otočení kartičky?"
+              value={qForm.back_text}
+              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
+            <label className="text-sm font-medium block">Špatné možnosti pro závěrečný test</label>
+            <p className="text-xs text-muted-foreground">
+              V testu se kartička zobrazí jako kvíz se 4 možnostmi. Vyplňte 3 nesprávné odpovědi. Bez nich nebude kartička v testu zařazena.
+            </p>
+            <Input
+              placeholder="Špatná možnost 1"
+              value={qForm.wrong_option_1}
+              onChange={e => setQForm({ ...qForm, wrong_option_1: e.target.value })}
+            />
+            <Input
+              placeholder="Špatná možnost 2"
+              value={qForm.wrong_option_2}
+              onChange={e => setQForm({ ...qForm, wrong_option_2: e.target.value })}
+            />
+            <Input
+              placeholder="Špatná možnost 3"
+              value={qForm.wrong_option_3}
+              onChange={e => setQForm({ ...qForm, wrong_option_3: e.target.value })}
+            />
+          </div>
         </div>
       )}
 
