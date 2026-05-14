@@ -214,6 +214,7 @@ export default function AdminPanel() {
   const saveQuestion = async () => {
     if (!selectedLevel) return;
     const needsOptions = qForm.type === 'quiz' || qForm.type === 'fill_blank';
+    const isFlashcard = qForm.type === 'flashcard';
     const payload = {
       ...qForm,
       level_id: selectedLevel.id,
@@ -223,6 +224,9 @@ export default function AdminPanel() {
       option_4: needsOptions ? qForm.option_4 : null,
       correct_answer: (qForm.type === 'quiz' || qForm.type === 'fill_blank') ? qForm.correct_answer : null,
       back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
+      wrong_option_1: isFlashcard ? (qForm.wrong_option_1 || null) : null,
+      wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
+      wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
