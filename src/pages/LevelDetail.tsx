@@ -422,7 +422,6 @@ export default function LevelDetail() {
               </Button>
             </div>
             <LevelTest
-              questions={quizQuestions}
               levelId={level.id}
               passingScore={level.passing_score}
               basePath={basePath}

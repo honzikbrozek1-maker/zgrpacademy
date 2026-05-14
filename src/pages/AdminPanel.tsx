@@ -36,6 +36,9 @@ interface Question {
   option_4: string | null;
   correct_answer: number | null;
   back_text: string | null;
+  wrong_option_1: string | null;
+  wrong_option_2: string | null;
+  wrong_option_3: string | null;
   order_index: number;
 }
 
@@ -80,6 +83,7 @@ export default function AdminPanel() {
     option_1: '', option_2: '', option_3: '', option_4: '',
     correct_answer: 1,
     back_text: '',
+    wrong_option_1: '', wrong_option_2: '', wrong_option_3: '',
     order_index: 0,
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
@@ -210,6 +214,7 @@ export default function AdminPanel() {
   const saveQuestion = async () => {
     if (!selectedLevel) return;
     const needsOptions = qForm.type === 'quiz' || qForm.type === 'fill_blank';
+    const isFlashcard = qForm.type === 'flashcard';
     const payload = {
       ...qForm,
       level_id: selectedLevel.id,
@@ -219,6 +224,9 @@ export default function AdminPanel() {
       option_4: needsOptions ? qForm.option_4 : null,
       correct_answer: (qForm.type === 'quiz' || qForm.type === 'fill_blank') ? qForm.correct_answer : null,
       back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
+      wrong_option_1: isFlashcard ? (qForm.wrong_option_1 || null) : null,
+      wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
+      wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
@@ -248,6 +256,9 @@ export default function AdminPanel() {
       option_3: q.option_3 || '', option_4: q.option_4 || '',
       correct_answer: q.correct_answer || 1,
       back_text: q.back_text || '',
+      wrong_option_1: q.wrong_option_1 || '',
+      wrong_option_2: q.wrong_option_2 || '',
+      wrong_option_3: q.wrong_option_3 || '',
       order_index: q.order_index,
     });
     setEditingQuestion(q.id);
@@ -257,7 +268,7 @@ export default function AdminPanel() {
   };
 
   const resetQForm = () => {
-    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', order_index: questions.length });
+    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length });
     setBlankInserted(false);
   };
 
@@ -380,6 +391,9 @@ export default function AdminPanel() {
         option_4: q.option_4 || null,
         correct_answer: q.correct_answer || null,
         back_text: q.back_text || null,
+        wrong_option_1: q.wrong_option_1 || null,
+        wrong_option_2: q.wrong_option_2 || null,
+        wrong_option_3: q.wrong_option_3 || null,
         order_index: questions.length + i,
       }));
     if (toInsert.length === 0) return;
@@ -554,13 +568,36 @@ export default function AdminPanel() {
       )}
 
       {qForm.type === 'flashcard' && (
-        <div>
-          <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (odpověď)</label>
-          <Textarea
-            placeholder="Co se zobrazí po otočení kartičky?"
-            value={qForm.back_text}
-            onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
-          />
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (správná odpověď)</label>
+            <Textarea
+              placeholder="Co se zobrazí po otočení kartičky?"
+              value={qForm.back_text}
+              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
+            <label className="text-sm font-medium block">Špatné možnosti pro závěrečný test</label>
+            <p className="text-xs text-muted-foreground">
+              V testu se kartička zobrazí jako kvíz se 4 možnostmi. Vyplňte 3 nesprávné odpovědi. Bez nich nebude kartička v testu zařazena.
+            </p>
+            <Input
+              placeholder="Špatná možnost 1"
+              value={qForm.wrong_option_1}
+              onChange={e => setQForm({ ...qForm, wrong_option_1: e.target.value })}
+            />
+            <Input
+              placeholder="Špatná možnost 2"
+              value={qForm.wrong_option_2}
+              onChange={e => setQForm({ ...qForm, wrong_option_2: e.target.value })}
+            />
+            <Input
+              placeholder="Špatná možnost 3"
+              value={qForm.wrong_option_3}
+              onChange={e => setQForm({ ...qForm, wrong_option_3: e.target.value })}
+            />
+          </div>
         </div>
       )}
 
@@ -921,7 +958,12 @@ export default function AdminPanel() {
                                     <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
                                   {q.type === 'flashcard' && q.back_text && (
-                                    <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                    <>
+                                      <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
+                                      {(!q.wrong_option_1 || !q.wrong_option_2 || !q.wrong_option_3) && (
+                                        <p className="text-[10px] text-warning mt-0.5">⚠ Chybí špatné možnosti pro test</p>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                                 <div className="flex gap-1 shrink-0">

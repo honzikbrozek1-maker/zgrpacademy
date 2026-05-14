@@ -311,6 +311,9 @@ export type Database = {
           order_index: number
           question_text: string
           type: string
+          wrong_option_1: string | null
+          wrong_option_2: string | null
+          wrong_option_3: string | null
         }
         Insert: {
           back_text?: string | null
@@ -325,6 +328,9 @@ export type Database = {
           order_index?: number
           question_text: string
           type: string
+          wrong_option_1?: string | null
+          wrong_option_2?: string | null
+          wrong_option_3?: string | null
         }
         Update: {
           back_text?: string | null
@@ -339,6 +345,9 @@ export type Database = {
           order_index?: number
           question_text?: string
           type?: string
+          wrong_option_1?: string | null
+          wrong_option_2?: string | null
+          wrong_option_3?: string | null
         }
         Relationships: [
           {
@@ -558,7 +567,12 @@ export type Database = {
         Args: { p_level_id: string; p_question_answers: Json }
         Returns: Json
       }
+      complete_level_v2: {
+        Args: { p_answers: Json; p_level_id: string }
+        Returns: Json
+      }
       delete_my_account: { Args: never; Returns: undefined }
+      get_level_test: { Args: { p_level_id: string }; Returns: Json }
       handle_admin_request: {
         Args: { p_approve: boolean; p_request_id: string }
         Returns: undefined
