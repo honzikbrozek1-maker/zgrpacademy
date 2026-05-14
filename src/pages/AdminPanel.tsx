@@ -36,6 +36,9 @@ interface Question {
   option_4: string | null;
   correct_answer: number | null;
   back_text: string | null;
+  wrong_option_1: string | null;
+  wrong_option_2: string | null;
+  wrong_option_3: string | null;
   order_index: number;
 }
 
