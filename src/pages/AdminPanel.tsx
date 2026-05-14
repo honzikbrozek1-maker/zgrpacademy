@@ -256,6 +256,9 @@ export default function AdminPanel() {
       option_3: q.option_3 || '', option_4: q.option_4 || '',
       correct_answer: q.correct_answer || 1,
       back_text: q.back_text || '',
+      wrong_option_1: q.wrong_option_1 || '',
+      wrong_option_2: q.wrong_option_2 || '',
+      wrong_option_3: q.wrong_option_3 || '',
       order_index: q.order_index,
     });
     setEditingQuestion(q.id);
@@ -265,7 +268,7 @@ export default function AdminPanel() {
   };
 
   const resetQForm = () => {
-    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', order_index: questions.length });
+    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length });
     setBlankInserted(false);
   };
 
