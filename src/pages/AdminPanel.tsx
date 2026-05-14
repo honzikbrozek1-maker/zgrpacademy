@@ -83,6 +83,7 @@ export default function AdminPanel() {
     option_1: '', option_2: '', option_3: '', option_4: '',
     correct_answer: 1,
     back_text: '',
+    wrong_option_1: '', wrong_option_2: '', wrong_option_3: '',
     order_index: 0,
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
