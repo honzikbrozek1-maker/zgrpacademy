@@ -2,22 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle, Loader2 } from 'lucide-react';
 
-interface Question {
+interface TestItem {
   id: string;
+  type: string;
   question_text: string;
-  option_1: string | null;
-  option_2: string | null;
-  option_3: string | null;
-  option_4: string | null;
+  options: string[];
 }
 
 interface Props {
-  questions: Question[];
   levelId: string;
   passingScore: number;
   basePath: string;
@@ -31,27 +29,56 @@ interface Props {
   onPassedWithDiploma?: (progress: { completed: boolean; test_score: number | null; completed_at: string | null; completed_modules: string[] }) => void;
 }
 
-export default function LevelTest({ questions, levelId, passingScore, basePath, existingProgress, onProgressChange, onPassedWithDiploma }: Props) {
+export default function LevelTest({ levelId, passingScore, basePath, existingProgress, onProgressChange, onPassedWithDiploma }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [items, setItems] = useState<TestItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, string>>({});
   const [finished, setFinished] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [testScore, setTestScore] = useState<number | null>(null);
   const [testPassed, setTestPassed] = useState(false);
 
-  const question = questions[currentIndex];
-  const options = question ? [question.option_1, question.option_2, question.option_3, question.option_4].filter(Boolean) : [];
-  const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+  const startTest = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('get_level_test', { p_level_id: levelId });
+      if (error) throw error;
+      const list = (data as unknown as TestItem[]) || [];
+      if (list.length === 0) {
+        toast({
+          title: 'Test není připraven',
+          description: 'V tomto levelu nejsou žádné otázky vhodné pro test (u kartiček a doplňování chybí špatné možnosti).',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setItems(list);
+      setAnswers({});
+      setCurrentIndex(0);
+      setFinished(false);
+      setTestScore(null);
+      setStarted(true);
+    } catch (e: any) {
+      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se načíst test', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleSelect = (optNum: number) => {
-    setAnswers(a => ({ ...a, [currentIndex]: optNum }));
+  const item = items[currentIndex];
+  const progress = items.length > 0 ? ((currentIndex + 1) / items.length) * 100 : 0;
+
+  const handleSelect = (optText: string) => {
+    setAnswers(a => ({ ...a, [currentIndex]: optText }));
   };
 
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) setCurrentIndex(i => i + 1);
+    if (currentIndex < items.length - 1) setCurrentIndex(i => i + 1);
   };
 
   const handlePrev = () => {
@@ -61,33 +88,30 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const questionAnswers = questions.map((q, i) => ({
+      const payload = items.map((q, i) => ({
         question_id: q.id,
-        answer: answers[i] ?? 0,
+        answer_text: answers[i] ?? '',
       }));
 
-      // Authoritative server-side scoring + persistence (RLS-safe).
-      const { data: completeData, error: completeError } = await supabase.rpc('complete_level', {
+      const { data, error } = await supabase.rpc('complete_level_v2', {
         p_level_id: levelId,
-        p_question_answers: questionAnswers,
+        p_answers: payload,
       });
-      if (completeError) throw completeError;
+      if (error) throw error;
 
-      const result = completeData as unknown as { score: number; passed: boolean };
+      const result = data as unknown as {
+        score: number;
+        passed: boolean;
+        per_question?: Array<{ question_id: string; correct: boolean }>;
+      };
       const score = result?.score ?? 0;
       const passed = Boolean(result?.passed);
 
       setTestScore(score);
       setTestPassed(passed);
 
-      // Use submit_quiz_test only to derive per-question correctness for review_items.
-      const { data: checkData } = await supabase.rpc('submit_quiz_test', {
-        p_question_answers: questionAnswers,
-      });
-      const perQuestion = (checkData as unknown as Array<{ question_id: string; correct: boolean }>) ?? [];
-
-      if (user) {
-        for (const r of perQuestion) {
+      if (user && Array.isArray(result?.per_question)) {
+        for (const r of result.per_question) {
           if (r.correct) {
             await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', r.question_id);
           } else {
@@ -117,6 +141,8 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
       }
 
       setFinished(true);
+    } catch (e: any) {
+      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se odeslat test', variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -131,11 +157,11 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           </div>
           <h3 className="text-xl font-bold">Závěrečný test</h3>
           <p className="text-muted-foreground">
-            Pro postup do dalšího levelu potřebujete minimálně {passingScore}% správných odpovědí.
+            Test pokrývá všechny otázky levelu (kvízy, kartičky i doplňování) v jednotné kvízové formě.
+            Pro postup potřebujete minimálně {passingScore}% správných odpovědí.
           </p>
-          <p className="text-sm text-muted-foreground">Počet otázek: {questions.length}</p>
-          <Button onClick={() => setStarted(true)} className="gradient-primary text-primary-foreground" disabled={questions.length === 0}>
-            Začít test <ArrowRight className="ml-1 h-4 w-4" />
+          <Button onClick={startTest} className="gradient-primary text-primary-foreground" disabled={loading}>
+            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Načítám...</> : <>Začít test <ArrowRight className="ml-1 h-4 w-4" /></>}
           </Button>
         </CardContent>
       </Card>
@@ -159,7 +185,10 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
               Zpět na levely
             </Button>
             {!testPassed && (
-              <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }} className="gradient-primary text-primary-foreground">
+              <Button
+                onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }}
+                className="gradient-primary text-primary-foreground"
+              >
                 Zkusit znovu
               </Button>
             )}
@@ -169,25 +198,26 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
     );
   }
 
+  if (!item) return null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
+        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{items.length}</span>
         <Progress value={progress} className="h-2 flex-1" />
       </div>
 
       <Card className="shadow-card">
         <CardContent className="p-6 space-y-6">
-          <h3 className="text-lg font-semibold">{question.question_text}</h3>
+          <h3 className="text-lg font-semibold">{item.question_text}</h3>
           <div className="space-y-3">
-            {options.map((opt, i) => {
-              const optNum = i + 1;
-              const isSelected = answers[currentIndex] === optNum;
+            {item.options.map((opt, i) => {
+              const isSelected = answers[currentIndex] === opt;
               return (
                 <button
                   key={i}
                   className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                  onClick={() => handleSelect(optNum)}
+                  onClick={() => handleSelect(opt)}
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-sm font-medium">
@@ -208,12 +238,16 @@ export default function LevelTest({ questions, levelId, passingScore, basePath, 
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
         <div className="flex gap-2">
-          {currentIndex < questions.length - 1 ? (
+          {currentIndex < items.length - 1 ? (
             <Button onClick={handleNext} disabled={!answers[currentIndex]} className="gradient-primary text-primary-foreground">
               Další <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={Object.keys(answers).length < questions.length || submitting} className="gradient-primary text-primary-foreground">
+            <Button
+              onClick={handleSubmit}
+              disabled={Object.keys(answers).length < items.length || submitting}
+              className="gradient-primary text-primary-foreground"
+            >
               {submitting ? 'Odesílání...' : 'Odevzdat test'}
             </Button>
           )}
