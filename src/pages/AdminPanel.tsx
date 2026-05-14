@@ -318,18 +318,51 @@ export default function AdminPanel() {
     if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
     setAiLoading(true);
     setAiResults(null);
+    const target = Math.min(Math.max(aiCount || 1, 1), 100);
+    const BATCH = 20;
+    setAiProgress({ done: 0, total: target });
+    const all: any[] = [];
     try {
-      const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: { text: aiText, level_id: selectedLevel.id, types: aiTypes },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setAiResults(data.questions || []);
-      setAiSelected(new Set((data.questions || []).map((_: any, i: number) => i)));
+      while (all.length < target) {
+        const remaining = target - all.length;
+        const batchSize = Math.min(BATCH, remaining);
+        const { data, error } = await supabase.functions.invoke('generate-questions', {
+          body: {
+            text: aiText,
+            level_id: selectedLevel.id,
+            types: aiTypes,
+            count: batchSize,
+            existing_questions: all.map(q => q.question_text),
+          },
+        });
+        if (error) {
+          const ctx: any = (error as any).context;
+          let msg = error.message || 'Chyba generování';
+          if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
+          if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
+          throw new Error(msg);
+        }
+        if (data?.error) throw new Error(data.error);
+        const batch = (data?.questions || []) as any[];
+        if (batch.length === 0) break;
+        all.push(...batch);
+        setAiProgress({ done: Math.min(all.length, target), total: target });
+        if (all.length < target) await new Promise(r => setTimeout(r, 800));
+      }
+      const finalList = all.slice(0, target);
+      setAiResults(finalList);
+      setAiSelected(new Set(finalList.map((_, i) => i)));
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
+      if (all.length > 0) {
+        setAiResults(all);
+        setAiSelected(new Set(all.map((_, i) => i)));
+        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${target} otázek.`, variant: 'destructive' });
+      } else {
+        toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
+      }
     } finally {
       setAiLoading(false);
+      setAiProgress(null);
     }
   };
 
