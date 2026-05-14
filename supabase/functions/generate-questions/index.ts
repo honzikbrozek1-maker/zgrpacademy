@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       return json({ error: "Text too long" }, 400);
     }
 
-    const allowedTypes = new Set(["quiz", "fill_in_blank", "flashcard"]);
+    const allowedTypes = new Set(["quiz", "fill_blank", "flashcard"]);
     const types = body.types.filter((t) => allowedTypes.has(t));
     if (types.length === 0) {
       return json({ error: "No valid question types" }, 400);
@@ -82,12 +82,12 @@ Deno.serve(async (req) => {
 
     const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.
 Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
-- type: jeden z ${JSON.stringify(types)}
-- question_text: text otázky (pro fill_in_blank použij ___ pro mezeru)
-- option_1, option_2, option_3, option_4: pro quiz čtyři možnosti, jinak null
-- correct_answer: pro quiz číslo 1-4, pro fill_in_blank null (správná odpověď v back_text), pro flashcard null
-- back_text: pro flashcard a fill_in_blank obsahuje správnou odpověď, pro quiz null
-- wrong_option_1, wrong_option_2, wrong_option_3: POVINNÉ pro flashcard — 3 věrohodné nesprávné odpovědi tematicky blízké správné odpovědi v back_text (použijí se v závěrečném testu jako distraktory). Pro quiz a fill_in_blank vždy null.
+- type: jeden z ${JSON.stringify(types)} (používej PŘESNĚ tyto názvy, např. "fill_blank", nikoli "fill_in_blank")
+- question_text: text otázky. Pro fill_blank to bude celá věta s ______ (šest podtržítek) na místě vynechaného slova.
+- option_1, option_2, option_3, option_4: pro quiz a fill_blank čtyři věrohodné možnosti (u fill_blank musí být právě jedna z nich to správné slovo do mezery, ostatní jsou nesprávné, ale tematicky blízké). Pro flashcard vždy null.
+- correct_answer: pro quiz a fill_blank číslo 1-4 udávající správnou možnost. Pro flashcard null.
+- back_text: pro flashcard obsahuje správnou odpověď (zadní strana kartičky). Pro fill_blank obsahuje samotné správné slovo (to, co patří do mezery). Pro quiz null.
+- wrong_option_1, wrong_option_2, wrong_option_3: POVINNÉ pro flashcard — 3 věrohodné nesprávné odpovědi tematicky blízké správné odpovědi v back_text (použijí se v závěrečném testu jako distraktory). Pro quiz a fill_blank vždy null.
 Vytvoř PŘESNĚ ${count} otázek pokrývajících klíčové pojmy z textu.${avoidBlock}`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
