@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, Package, Briefcase } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AppSidebar() {
   const { profile, signOut } = useAuth();
