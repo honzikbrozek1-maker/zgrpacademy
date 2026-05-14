@@ -87,6 +87,7 @@ Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - option_1, option_2, option_3, option_4: pro quiz čtyři možnosti, jinak null
 - correct_answer: pro quiz číslo 1-4, pro fill_in_blank null (správná odpověď v back_text), pro flashcard null
 - back_text: pro flashcard a fill_in_blank obsahuje správnou odpověď, pro quiz null
+- wrong_option_1, wrong_option_2, wrong_option_3: POVINNÉ pro flashcard — 3 věrohodné nesprávné odpovědi tematicky blízké správné odpovědi v back_text (použijí se v závěrečném testu jako distraktory). Pro quiz a fill_in_blank vždy null.
 Vytvoř PŘESNĚ ${count} otázek pokrývajících klíčové pojmy z textu.${avoidBlock}`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
