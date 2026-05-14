@@ -398,7 +398,13 @@ export default function AdminPanel() {
               {myRequest ? (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
                   {myRequest.status === 'pending' && <><Clock className="h-4 w-4 text-warning" /><span className="text-sm">Vaše žádost čeká na schválení...</span></>}
-                  {myRequest.status === 'approved' && <><CheckCircle className="h-4 w-4 text-success" /><span className="text-sm">Žádost schválena! Odhlaste se a přihlaste znovu.</span></>}
+                  {myRequest.status === 'approved' && (
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <span className="text-sm">Žádost schválena! Klikněte pro načtení oprávnění.</span>
+                      <Button size="sm" variant="outline" onClick={() => window.location.reload()}>Načíst oprávnění</Button>
+                    </div>
+                  )}
                   {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">Žádost byla zamítnuta.</span></>}
                 </div>
               ) : (
