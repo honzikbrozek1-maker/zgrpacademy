@@ -391,6 +391,9 @@ export default function AdminPanel() {
         option_4: q.option_4 || null,
         correct_answer: q.correct_answer || null,
         back_text: q.back_text || null,
+        wrong_option_1: q.wrong_option_1 || null,
+        wrong_option_2: q.wrong_option_2 || null,
+        wrong_option_3: q.wrong_option_3 || null,
         order_index: questions.length + i,
       }));
     if (toInsert.length === 0) return;
