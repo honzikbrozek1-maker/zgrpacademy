@@ -15,12 +15,33 @@ import {
 } from '@/components/ui/sidebar';
 import { Home, Layers, Share2, Shield, Sun, Moon, LogOut, GraduationCap, Volume2, VolumeX, UserCog, Settings, Package, Briefcase } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AppSidebar() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    if (!isAdmin || !user) { setPendingRequests(0); return; }
+    let cancelled = false;
+    const load = async () => {
+      const { count } = await supabase
+        .from('admin_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .eq('target_admin_id', user.id);
+      if (!cancelled) setPendingRequests(count ?? 0);
+    };
+    load();
+    const channel = supabase
+      .channel('admin-requests-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_requests' }, load)
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [isAdmin, user]);
   const { state, setOpenMobile } = useSidebar();
   const { currentPath, basePath, pathLabel } = useAppPath();
   const accountPath = `${basePath}/account`;
@@ -86,12 +107,27 @@ export function AppSidebar() {
 
               {topItems.map(item => {
                 const active = isActive(item.to);
+                const showBadge = item.to === `${basePath}/admin` && isAdmin && pendingRequests > 0;
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={active}>
-                      <Link to={item.to} onClick={closeMobileIfNeeded} className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.label}</span>}
+                      <Link to={item.to} onClick={closeMobileIfNeeded} className="flex items-center gap-2 relative">
+                        <span className="relative inline-flex">
+                          <item.icon className="h-4 w-4" />
+                          {showBadge && (
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" aria-label={`${pendingRequests} nových žádostí`} />
+                          )}
+                        </span>
+                        {!collapsed && (
+                          <span className="flex items-center gap-2">
+                            {item.label}
+                            {showBadge && (
+                              <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-destructive text-destructive-foreground">
+                                {pendingRequests}
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
