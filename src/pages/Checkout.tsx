@@ -72,6 +72,8 @@ export default function Checkout() {
           <CardContent className="text-sm text-muted-foreground space-y-1">
             <p><strong className="text-foreground">Řádek 1 (Address line 1):</strong> ulice a číslo popisné, např. <em>Pražská 123</em>.</p>
             <p><strong className="text-foreground">Řádek 2 (Address line 2):</strong> nepovinné – doplněk adresy, např. <em>byt 5</em>, <em>patro 3</em>, <em>c/o Jan Novák</em>. V ČR a SK obvykle nechte prázdné.</p>
+            <p><strong className="text-foreground">City (Město):</strong> název obce, např. <em>Praha</em> nebo <em>Brno</em>.</p>
+            <p><strong className="text-foreground">Postal code (PSČ):</strong> poštovní směrovací číslo, v ČR 5 číslic (např. <em>110 00</em>), na SK 5 číslic (např. <em>811 01</em>).</p>
           </CardContent>
         </Card>
 
