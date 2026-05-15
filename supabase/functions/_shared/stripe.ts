@@ -23,16 +23,29 @@ export function createStripeClient(env: StripeEnv): Stripe {
 
   return new Stripe(connectionApiKey, {
     apiVersion: "2026-03-25.dahlia",
-    httpClient: Stripe.createFetchHttpClient((url: string | URL, init?: RequestInit) => {
+    httpClient: Stripe.createFetchHttpClient(async (url: string | URL, init?: RequestInit) => {
       const gatewayUrl = url.toString().replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
-      return fetch(gatewayUrl, {
-        ...init,
-        headers: {
-          ...Object.fromEntries(new Headers(init?.headers).entries()),
-          "X-Connection-Api-Key": connectionApiKey,
-          "Lovable-API-Key": lovableApiKey,
-        },
-      });
+      const headers = {
+        ...Object.fromEntries(new Headers(init?.headers).entries()),
+        "X-Connection-Api-Key": connectionApiKey,
+        "Lovable-API-Key": lovableApiKey,
+      };
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await fetch(gatewayUrl, { ...init, headers });
+          if (res.status >= 500 && res.status < 600 && attempt < 2) {
+            await res.body?.cancel();
+            await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+            continue;
+          }
+          return res;
+        } catch (e) {
+          lastErr = e;
+          await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+        }
+      }
+      throw lastErr ?? new Error("Stripe gateway request failed");
     }),
   });
 }
