@@ -220,7 +220,7 @@ export default function Dashboard() {
                 <Card
                   key={level.id}
                   className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                  onClick={() => unlocked && navigate(`${basePath}/level/${level.order_index}`)}
+                  onClick={() => unlocked && navigate(`${basePath}/level/${level.id}`)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
