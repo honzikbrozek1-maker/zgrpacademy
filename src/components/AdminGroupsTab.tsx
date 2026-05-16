@@ -163,6 +163,13 @@ export default function AdminGroupsTab() {
                       <Button variant="ghost" size="icon" onClick={() => remove(g.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                   </div>
+                  <div className="pl-13">
+                    <AdminGroupTestDialog
+                      groupId={g.id}
+                      groupTitle={g.title}
+                      passingScore={g.final_test_passing_score ?? 70}
+                    />
+                  </div>
                   {groupLevels.length > 0 && (
                     <div className="flex flex-wrap gap-1 pl-13">
                       {groupLevels.map(l => (
@@ -226,6 +233,10 @@ export default function AdminGroupsTab() {
                 <label className="text-sm font-medium">Min. průměrné skóre (%)</label>
                 <Input type="number" min={0} max={100} value={form.min_average_score} onChange={e => setForm({ ...form, min_average_score: Number(e.target.value) })} />
               </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Min. skóre závěrečného testu (%)</label>
+              <Input type="number" min={0} max={100} value={form.final_test_passing_score} onChange={e => setForm({ ...form, final_test_passing_score: Number(e.target.value) })} />
             </div>
             <div className="border-t pt-3 space-y-3">
               <p className="text-sm font-medium">Konfigurace diplomu</p>
