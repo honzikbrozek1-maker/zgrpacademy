@@ -974,7 +974,14 @@ export default function AdminPanel() {
                                     </>
                                   )}
                                 </div>
-                                <div className="flex gap-1 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none" title="Zařadit do závěrečného testu levelu">
+                                    <Switch
+                                      checked={q.in_level_test !== false}
+                                      onCheckedChange={(v) => toggleInLevelTest(q, v)}
+                                    />
+                                    <span className="hidden sm:inline">v testu</span>
+                                  </label>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>
