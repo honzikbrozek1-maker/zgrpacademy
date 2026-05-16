@@ -124,13 +124,17 @@ export default function Dashboard() {
   const progressPercent = levels.length > 0
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
-  // Next level unlocked only after test passed on previous
-  const isLevelUnlocked = (level: Level) => {
-    if (level.order_index === 1) return true;
-    const prevLevel = levels.find(l => l.order_index === level.order_index - 1);
-    if (!prevLevel) return true;
-    return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
+  // Group-based unlocking: a level is unlocked if its group is unlocked.
+  // A group is unlocked if it's the first by order_index, or the previous group's final test was passed.
+  // Ungrouped levels are always unlocked.
+  const isGroupUnlocked = (groupId: string | null): boolean => {
+    if (!groupId) return true;
+    const idx = groups.findIndex(g => g.id === groupId);
+    if (idx <= 0) return true;
+    const prev = groups[idx - 1];
+    return groupProgress.some(p => p.group_id === prev.id && p.passed);
   };
+  const isLevelUnlocked = (level: Level) => isGroupUnlocked(level.group_id);
 
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-primary" /> : <Package className="h-6 w-6 text-primary" />;
 
