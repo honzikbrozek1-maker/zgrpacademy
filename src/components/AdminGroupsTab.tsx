@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
+import AdminGroupTestDialog from './AdminGroupTestDialog';
 
 interface Group {
   id: string;
@@ -20,6 +21,7 @@ interface Group {
   diploma_title: string;
   diploma_subtitle: string;
   min_average_score: number;
+  final_test_passing_score: number;
 }
 
 interface Level {
@@ -37,6 +39,7 @@ const emptyForm = {
   diploma_title: 'Certifikát o absolvování',
   diploma_subtitle: 'ZGRP Academy',
   min_average_score: 70,
+  final_test_passing_score: 70,
 };
 
 export default function AdminGroupsTab() {
@@ -73,6 +76,7 @@ export default function AdminGroupsTab() {
       diploma_title: g.diploma_title,
       diploma_subtitle: g.diploma_subtitle,
       min_average_score: g.min_average_score,
+      final_test_passing_score: g.final_test_passing_score ?? 70,
     });
     setEditingId(g.id);
     setShowDialog(true);
