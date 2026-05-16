@@ -64,7 +64,7 @@ export default function Levels() {
       setGroups((groupsRes.data || []) as Group[]);
       const lvls = (levelsRes.data || []) as Level[];
       setLevels(lvls);
-      setGroupProgress((gpRes.data || []) as GroupProgressRow[]);
+      setGroupProgress(((gpRes.data as any) || []) as GroupProgressRow[]);
       setDiplomaGroupIds(new Set((diplomasRes.data || []).map((d: any) => d.group_id)));
 
       if (lvls.length === 0) {
