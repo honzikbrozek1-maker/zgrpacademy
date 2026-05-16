@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
@@ -247,6 +248,15 @@ export default function AdminPanel() {
     await supabase.from('questions').delete().eq('id', id);
     if (selectedLevel) fetchQuestions(selectedLevel.id);
     toast({ title: 'Otázka smazána' });
+  };
+
+  const toggleInLevelTest = async (q: Question, value: boolean) => {
+    setQuestions(prev => prev.map(x => x.id === q.id ? { ...x, in_level_test: value } : x));
+    const { error } = await supabase.from('questions').update({ in_level_test: value }).eq('id', q.id);
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      if (selectedLevel) fetchQuestions(selectedLevel.id);
+    }
   };
 
   const editQuestion = (q: Question) => {
