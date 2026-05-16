@@ -40,6 +40,7 @@ interface Question {
   wrong_option_2: string | null;
   wrong_option_3: string | null;
   order_index: number;
+  in_level_test: boolean;
 }
 
 interface UserProfile {
