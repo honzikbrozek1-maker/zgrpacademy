@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       return json({ error: "Text too long" }, 400);
     }
 
-    const allowedTypes = new Set(["quiz", "fill_blank", "flashcard"]);
+    const allowedTypes = new Set(["quiz", "fill_blank"]);
     const types = body.types.filter((t) => allowedTypes.has(t));
     if (types.length === 0) {
       return json({ error: "No valid question types" }, 400);

@@ -99,7 +99,7 @@ export default function AdminPanel() {
   // AI generation state
   const [showAiDialog, setShowAiDialog] = useState(false);
   const [aiText, setAiText] = useState('');
-  const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'flashcard', 'fill_blank']);
+  const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'fill_blank']);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResults, setAiResults] = useState<any[] | null>(null);
   const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
@@ -523,7 +523,6 @@ export default function AdminPanel() {
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="quiz">🧠 Kvíz</SelectItem>
-            <SelectItem value="flashcard">📖 Kartička</SelectItem>
             <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
           </SelectContent>
         </Select>
@@ -791,7 +790,6 @@ export default function AdminPanel() {
                               <div className="flex gap-2 flex-wrap">
                                 {[
                                   { type: 'quiz', label: '🧠 Kvíz' },
-                                  { type: 'flashcard', label: '📖 Kartičky' },
                                   { type: 'fill_blank', label: '✏️ Doplňování' },
                                 ].map(opt => (
                                   <button
@@ -899,7 +897,6 @@ export default function AdminPanel() {
                           <div className="grid gap-3">
                             {[
                               { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
-                              { type: 'flashcard', icon: '📖', label: 'Kartička', desc: 'Přední a zadní strana k učení' },
                               { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
                             ].map(opt => (
                               <button
