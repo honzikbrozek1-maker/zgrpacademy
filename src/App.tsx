@@ -13,6 +13,7 @@ import PathSelection from "./pages/PathSelection";
 import Dashboard from "./pages/Dashboard";
 import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
+import GroupFinalTest from "./pages/GroupFinalTest";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
 
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="/products/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
                 <Route path="/products/achievements" element={<Navigate to="/products" replace />} />
                 <Route path="/products/diplomas" element={<ProtectedRoute><Diplomas /></ProtectedRoute>} />
+                <Route path="/products/group/:groupId/test" element={<ProtectedRoute><GroupFinalTest /></ProtectedRoute>} />
 
                 {/* Backoffice path */}
                 <Route path="/backoffice" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -63,6 +65,7 @@ const App = () => (
                 <Route path="/backoffice/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
                 <Route path="/backoffice/achievements" element={<Navigate to="/backoffice" replace />} />
                 <Route path="/backoffice/diplomas" element={<ProtectedRoute><Diplomas /></ProtectedRoute>} />
+                <Route path="/backoffice/group/:groupId/test" element={<ProtectedRoute><GroupFinalTest /></ProtectedRoute>} />
 
                 {/* Shared - per section */}
                 <Route path="/products/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
