@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Paid users can view questions" ON public.questions;
