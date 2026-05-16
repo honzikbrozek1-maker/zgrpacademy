@@ -17,6 +17,17 @@ interface Level {
   title: string;
   description: string | null;
   order_index: number;
+  group_id: string | null;
+}
+
+interface Group {
+  id: string;
+  order_index: number;
+}
+
+interface GroupProgressRow {
+  group_id: string;
+  passed: boolean;
 }
 
 interface UserProgressRow {
@@ -32,6 +43,8 @@ export default function Dashboard() {
   const { currentPath, category, basePath, pathLabel } = useAppPath();
   const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const [levels, setLevels] = useState<Level[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [groupProgress, setGroupProgress] = useState<GroupProgressRow[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
   const [reviewCount, setReviewCount] = useState(0);
@@ -41,8 +54,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const { data: levelsData } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
+      const [{ data: levelsData }, { data: groupsData }, { data: gpData }] = await Promise.all([
+        supabase.from('levels').select('*').eq('category', category).order('order_index'),
+        supabase.from('level_groups').select('id, order_index').eq('category', category).order('order_index'),
+        supabase.from('user_group_progress' as any).select('group_id, passed').eq('user_id', user.id),
+      ]);
       setLevels(levelsData || []);
+      setGroups((groupsData || []) as Group[]);
+      setGroupProgress(((gpData as any) || []) as GroupProgressRow[]);
 
       if (!levelsData || levelsData.length === 0) {
         setProgress([]);
