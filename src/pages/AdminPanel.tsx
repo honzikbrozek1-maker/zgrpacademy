@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
@@ -40,6 +41,7 @@ interface Question {
   wrong_option_2: string | null;
   wrong_option_3: string | null;
   order_index: number;
+  in_level_test: boolean;
 }
 
 interface UserProfile {
@@ -246,6 +248,15 @@ export default function AdminPanel() {
     await supabase.from('questions').delete().eq('id', id);
     if (selectedLevel) fetchQuestions(selectedLevel.id);
     toast({ title: 'Otázka smazána' });
+  };
+
+  const toggleInLevelTest = async (q: Question, value: boolean) => {
+    setQuestions(prev => prev.map(x => x.id === q.id ? { ...x, in_level_test: value } : x));
+    const { error } = await supabase.from('questions').update({ in_level_test: value }).eq('id', q.id);
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      if (selectedLevel) fetchQuestions(selectedLevel.id);
+    }
   };
 
   const editQuestion = (q: Question) => {
@@ -963,7 +974,14 @@ export default function AdminPanel() {
                                     </>
                                   )}
                                 </div>
-                                <div className="flex gap-1 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none" title="Zařadit do závěrečného testu levelu">
+                                    <Switch
+                                      checked={q.in_level_test !== false}
+                                      onCheckedChange={(v) => toggleInLevelTest(q, v)}
+                                    />
+                                    <span className="hidden sm:inline">v testu</span>
+                                  </label>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>

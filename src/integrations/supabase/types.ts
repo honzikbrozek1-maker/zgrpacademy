@@ -307,6 +307,7 @@ export type Database = {
           created_at: string
           group_id: string | null
           id: string
+          in_level_test: boolean
           level_id: string | null
           option_1: string | null
           option_2: string | null
@@ -325,6 +326,7 @@ export type Database = {
           created_at?: string
           group_id?: string | null
           id?: string
+          in_level_test?: boolean
           level_id?: string | null
           option_1?: string | null
           option_2?: string | null
@@ -343,6 +345,7 @@ export type Database = {
           created_at?: string
           group_id?: string | null
           id?: string
+          in_level_test?: boolean
           level_id?: string | null
           option_1?: string | null
           option_2?: string | null
