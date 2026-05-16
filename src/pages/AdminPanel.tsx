@@ -759,7 +759,7 @@ export default function AdminPanel() {
 
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <p className="text-sm text-muted-foreground">
-                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'flashcard').length} kartiček, {questions.filter(q => q.type === 'fill_blank').length} doplňování
+                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'fill_blank').length} doplňování
                   </p>
                   <div className="flex gap-2">
                     <Dialog open={showAiDialog} onOpenChange={(open) => { setShowAiDialog(open); if (!open) { setAiResults(null); } }}>
@@ -921,10 +921,10 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Questions grouped by type - collapsible with visual distinction */}
-                {(['quiz', 'flashcard', 'fill_blank'] as const).map(type => {
+                {(['quiz', 'fill_blank'] as const).map(type => {
                   const typeQuestions = questions.filter(q => q.type === type);
                   if (typeQuestions.length === 0) return null;
-                  const label = type === 'quiz' ? '🧠 Kvíz' : type === 'flashcard' ? '📖 Kartičky' : '✏️ Doplňování';
+                  const label = type === 'quiz' ? '🧠 Kvíz' : '✏️ Doplňování';
                   const isOpen = openSections[type] !== false;
                   return (
                     <Card key={type} className="shadow-card overflow-hidden">
