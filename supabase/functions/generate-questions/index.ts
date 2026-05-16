@@ -10,7 +10,9 @@ const corsHeaders = {
 
 interface Body {
   text: string;
-  level_id: string;
+  level_id?: string;
+  group_id?: string;
+  mode?: "practice" | "final_test";
   types: string[];
   count?: number;
   existing_questions?: string[];
@@ -53,9 +55,12 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as Body;
-    if (!body?.text || !body?.level_id || !Array.isArray(body?.types) || body.types.length === 0) {
-      return json({ error: "Invalid request" }, 400);
+    const hasLevel = !!body?.level_id;
+    const hasGroup = !!body?.group_id;
+    if (!body?.text || !Array.isArray(body?.types) || body.types.length === 0 || (hasLevel === hasGroup)) {
+      return json({ error: "Invalid request — provide exactly one of level_id / group_id" }, 400);
     }
+    const mode = body.mode === "final_test" ? "final_test" : "practice";
     if (body.text.length > 20000) {
       return json({ error: "Text too long" }, 400);
     }
@@ -80,7 +85,11 @@ Deno.serve(async (req) => {
       ? `\n\nDŮLEŽITÉ: Nevytvářej otázky duplicitní s těmito již existujícími otázkami (vytvoř ZCELA jiné, pokrývající další části textu):\n${existing.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
       : "";
 
-    const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.
+    const modeBlock = mode === "final_test"
+      ? `\n\nREŽIM: ZÁVĚREČNÝ TEST SKUPINY. Vybírej POUZE ty NEJDŮLEŽITĚJŠÍ a klíčové informace z textu — koncepty, definice a fakta, která by měl absolvent znát „nazpaměť". Vyhni se okrajovým detailům.`
+      : `\n\nREŽIM: PROCVIČOVÁNÍ. Pokryj rovnoměrně CELÝ text — všechny pojmy, detaily i okrajové informace. Cílem je široké procvičení.`;
+
+    const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.${modeBlock}
 Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - type: jeden z ${JSON.stringify(types)} (používej PŘESNĚ tyto názvy, např. "fill_blank", nikoli "fill_in_blank")
 - question_text: text otázky. Pro fill_blank to bude celá věta s ______ (šest podtržítek) na místě vynechaného slova.
