@@ -1,10 +1,12 @@
-export const MODULE_KEYS = ['quiz', 'flashcards', 'fillin'] as const;
+// Note: 'flashcards' modul je dočasně skrytý (vypnuté kartičky), ale ponechán v mapování
+// pro případné budoucí zapnutí. Aktivní moduly:
+export const MODULE_KEYS = ['quiz', 'fillin'] as const;
 
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
 const QUESTION_TYPE_TO_MODULE: Record<string, ModuleKey | undefined> = {
   quiz: 'quiz',
-  flashcard: 'flashcards',
+  // flashcard: 'flashcards', // dočasně vypnuto
   fill_blank: 'fillin',
 };
 

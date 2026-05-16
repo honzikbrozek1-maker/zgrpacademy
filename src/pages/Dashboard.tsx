@@ -17,6 +17,17 @@ interface Level {
   title: string;
   description: string | null;
   order_index: number;
+  group_id: string | null;
+}
+
+interface Group {
+  id: string;
+  order_index: number;
+}
+
+interface GroupProgressRow {
+  group_id: string;
+  passed: boolean;
 }
 
 interface UserProgressRow {
@@ -32,6 +43,8 @@ export default function Dashboard() {
   const { currentPath, category, basePath, pathLabel } = useAppPath();
   const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const [levels, setLevels] = useState<Level[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [groupProgress, setGroupProgress] = useState<GroupProgressRow[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
   const [levelQuestionTypes, setLevelQuestionTypes] = useState<Record<string, string[]>>({});
   const [reviewCount, setReviewCount] = useState(0);
@@ -41,8 +54,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const { data: levelsData } = await supabase.from('levels').select('*').eq('category', category).order('order_index');
+      const [{ data: levelsData }, { data: groupsData }, { data: gpData }] = await Promise.all([
+        supabase.from('levels').select('*').eq('category', category).order('order_index'),
+        supabase.from('level_groups').select('id, order_index').eq('category', category).order('order_index'),
+        supabase.from('user_group_progress' as any).select('group_id, passed').eq('user_id', user.id),
+      ]);
       setLevels(levelsData || []);
+      setGroups((groupsData || []) as Group[]);
+      setGroupProgress(((gpData as any) || []) as GroupProgressRow[]);
 
       if (!levelsData || levelsData.length === 0) {
         setProgress([]);
@@ -105,13 +124,17 @@ export default function Dashboard() {
   const progressPercent = levels.length > 0
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
-  // Next level unlocked only after test passed on previous
-  const isLevelUnlocked = (level: Level) => {
-    if (level.order_index === 1) return true;
-    const prevLevel = levels.find(l => l.order_index === level.order_index - 1);
-    if (!prevLevel) return true;
-    return progress.some(p => p.level_id === prevLevel.id && p.completed && p.test_score !== null);
+  // Group-based unlocking: a level is unlocked if its group is unlocked.
+  // A group is unlocked if it's the first by order_index, or the previous group's final test was passed.
+  // Ungrouped levels are always unlocked.
+  const isGroupUnlocked = (groupId: string | null): boolean => {
+    if (!groupId) return true;
+    const idx = groups.findIndex(g => g.id === groupId);
+    if (idx <= 0) return true;
+    const prev = groups[idx - 1];
+    return groupProgress.some(p => p.group_id === prev.id && p.passed);
   };
+  const isLevelUnlocked = (level: Level) => isGroupUnlocked(level.group_id);
 
   const headerIcon = isBackoffice ? <Briefcase className="h-6 w-6 text-primary" /> : <Package className="h-6 w-6 text-primary" />;
 
@@ -220,7 +243,7 @@ export default function Dashboard() {
                 <Card
                   key={level.id}
                   className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
-                  onClick={() => unlocked && navigate(`${basePath}/level/${level.order_index}`)}
+                  onClick={() => unlocked && navigate(`${basePath}/level/${level.id}`)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">

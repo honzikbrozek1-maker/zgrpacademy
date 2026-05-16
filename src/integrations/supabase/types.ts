@@ -140,6 +140,7 @@ export type Database = {
           description: string | null
           diploma_subtitle: string
           diploma_title: string
+          final_test_passing_score: number
           id: string
           min_average_score: number
           order_index: number
@@ -152,6 +153,7 @@ export type Database = {
           description?: string | null
           diploma_subtitle?: string
           diploma_title?: string
+          final_test_passing_score?: number
           id?: string
           min_average_score?: number
           order_index?: number
@@ -164,6 +166,7 @@ export type Database = {
           description?: string | null
           diploma_subtitle?: string
           diploma_title?: string
+          final_test_passing_score?: number
           id?: string
           min_average_score?: number
           order_index?: number
@@ -302,8 +305,9 @@ export type Database = {
           back_text: string | null
           correct_answer: number | null
           created_at: string
+          group_id: string | null
           id: string
-          level_id: string
+          level_id: string | null
           option_1: string | null
           option_2: string | null
           option_3: string | null
@@ -319,8 +323,9 @@ export type Database = {
           back_text?: string | null
           correct_answer?: number | null
           created_at?: string
+          group_id?: string | null
           id?: string
-          level_id: string
+          level_id?: string | null
           option_1?: string | null
           option_2?: string | null
           option_3?: string | null
@@ -336,8 +341,9 @@ export type Database = {
           back_text?: string | null
           correct_answer?: number | null
           created_at?: string
+          group_id?: string | null
           id?: string
-          level_id?: string
+          level_id?: string | null
           option_1?: string | null
           option_2?: string | null
           option_3?: string | null
@@ -350,6 +356,13 @@ export type Database = {
           wrong_option_3?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "level_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_level_id_fkey"
             columns: ["level_id"]
@@ -437,6 +450,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_group_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          group_id: string
+          id: string
+          passed: boolean
+          test_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          passed?: boolean
+          test_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          passed?: boolean
+          test_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_group_progress_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "level_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed: boolean
@@ -502,6 +556,7 @@ export type Database = {
         Row: {
           back_text: string | null
           created_at: string | null
+          group_id: string | null
           id: string | null
           level_id: string | null
           option_1: string | null
@@ -511,10 +566,14 @@ export type Database = {
           order_index: number | null
           question_text: string | null
           type: string | null
+          wrong_option_1: string | null
+          wrong_option_2: string | null
+          wrong_option_3: string | null
         }
         Insert: {
           back_text?: string | null
           created_at?: string | null
+          group_id?: string | null
           id?: string | null
           level_id?: string | null
           option_1?: string | null
@@ -524,10 +583,14 @@ export type Database = {
           order_index?: number | null
           question_text?: string | null
           type?: string | null
+          wrong_option_1?: string | null
+          wrong_option_2?: string | null
+          wrong_option_3?: string | null
         }
         Update: {
           back_text?: string | null
           created_at?: string | null
+          group_id?: string | null
           id?: string | null
           level_id?: string | null
           option_1?: string | null
@@ -537,8 +600,18 @@ export type Database = {
           order_index?: number | null
           question_text?: string | null
           type?: string | null
+          wrong_option_1?: string | null
+          wrong_option_2?: string | null
+          wrong_option_3?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "level_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_level_id_fkey"
             columns: ["level_id"]
@@ -563,6 +636,10 @@ export type Database = {
         Args: { p_answer: number; p_question_id: string }
         Returns: Json
       }
+      complete_group_test_v2: {
+        Args: { p_answers: Json; p_group_id: string }
+        Returns: Json
+      }
       complete_level: {
         Args: { p_level_id: string; p_question_answers: Json }
         Returns: Json
@@ -572,6 +649,7 @@ export type Database = {
         Returns: Json
       }
       delete_my_account: { Args: never; Returns: undefined }
+      get_group_test: { Args: { p_group_id: string }; Returns: Json }
       get_level_test: { Args: { p_level_id: string }; Returns: Json }
       handle_admin_request: {
         Args: { p_approve: boolean; p_request_id: string }
@@ -582,6 +660,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_group_unlocked: {
+        Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       is_paid: { Args: { _user_id: string }; Returns: boolean }
