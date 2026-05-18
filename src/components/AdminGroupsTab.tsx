@@ -20,6 +20,9 @@ interface Group {
   order_index: number;
   diploma_title: string;
   diploma_subtitle: string;
+  diploma_body_text: string;
+  diploma_signatory: string;
+  diploma_validity_years: number;
   min_average_score: number;
   final_test_passing_score: number;
 }
@@ -38,6 +41,9 @@ const emptyForm = {
   order_index: 1,
   diploma_title: 'Certifikát o absolvování',
   diploma_subtitle: 'ZGRP Academy',
+  diploma_body_text: 'Tímto certifikujeme, že {user_name} úspěšně absolvoval/a vzdělávací kurz {group_title} v rámci platformy ZGRP Academy.',
+  diploma_signatory: 'MUDr. Gabriela Hanslianová',
+  diploma_validity_years: 1,
   min_average_score: 70,
   final_test_passing_score: 70,
 };
@@ -75,6 +81,9 @@ export default function AdminGroupsTab() {
       order_index: g.order_index,
       diploma_title: g.diploma_title,
       diploma_subtitle: g.diploma_subtitle,
+      diploma_body_text: g.diploma_body_text ?? emptyForm.diploma_body_text,
+      diploma_signatory: g.diploma_signatory ?? emptyForm.diploma_signatory,
+      diploma_validity_years: g.diploma_validity_years ?? 1,
       min_average_score: g.min_average_score,
       final_test_passing_score: g.final_test_passing_score ?? 70,
     });
@@ -247,6 +256,28 @@ export default function AdminGroupsTab() {
               <div>
                 <label className="text-sm font-medium">Podtitul</label>
                 <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Text certifikátu</label>
+                <Textarea
+                  rows={4}
+                  value={form.diploma_body_text}
+                  onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
+                  placeholder="Použij {user_name}, {group_title}, {date}, {score} pro automatické dosazení."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Placeholdery: <code>{'{user_name}'}</code>, <code>{'{group_title}'}</code>, <code>{'{date}'}</code>, <code>{'{score}'}</code>, <code>{'{valid_until}'}</code>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium">Podpisující osoba</label>
+                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Platnost (roky)</label>
+                  <Input type="number" min={0} value={form.diploma_validity_years} onChange={e => setForm({ ...form, diploma_validity_years: Number(e.target.value) })} />
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
