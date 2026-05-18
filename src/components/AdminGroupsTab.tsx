@@ -249,34 +249,36 @@ export default function AdminGroupsTab() {
             </div>
             <div className="border-t pt-3 space-y-3">
               <p className="text-sm font-medium">Konfigurace diplomu</p>
-              <div>
-                <label className="text-sm font-medium">Název certifikátu</label>
-                <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} />
+              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+                <p>✨ Jméno absolventa, název kurzu, datum vydání i platnost se na diplom doplní <strong>automaticky</strong>.</p>
+                <p>Vyplňte jen pole níže — žádné značky jako <code>{'{user_name}'}</code> psát nemusíte.</p>
               </div>
               <div>
-                <label className="text-sm font-medium">Podtitul</label>
-                <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} />
+                <label className="text-sm font-medium">Nadpis diplomu</label>
+                <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
               </div>
               <div>
-                <label className="text-sm font-medium">Text certifikátu</label>
+                <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné, zobrazí se pod jménem)</span></label>
                 <Textarea
-                  rows={4}
+                  rows={3}
                   value={form.diploma_body_text}
                   onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
-                  placeholder="Použij {user_name}, {group_title}, {date}, {score} pro automatické dosazení."
+                  placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí České lékařské komory dle SP č. 16 pod registračním číslem 120042 a je hodnocena 5 kredity za účast."
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Placeholdery: <code>{'{user_name}'}</code>, <code>{'{group_title}'}</code>, <code>{'{date}'}</code>, <code>{'{score}'}</code>, <code>{'{valid_until}'}</code>
-                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Drobný text pod datem <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
+                <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} placeholder="např. ZGRP Academy" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium">Podpisující osoba</label>
-                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
+                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} placeholder="MUDr. Gabriela Hanslianová" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
                   <Input type="number" min={0} value={form.diploma_validity_years} onChange={e => setForm({ ...form, diploma_validity_years: Number(e.target.value) })} />
+                  <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
                 </div>
               </div>
             </div>
