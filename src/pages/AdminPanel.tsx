@@ -231,6 +231,7 @@ export default function AdminPanel() {
       wrong_option_1: isFlashcard ? (qForm.wrong_option_1 || null) : null,
       wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
       wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
+      in_practice: qForm.in_practice,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
