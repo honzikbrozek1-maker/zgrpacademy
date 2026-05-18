@@ -15,6 +15,9 @@ interface Diploma {
   category: string;
   diploma_title: string;
   diploma_subtitle: string;
+  diploma_body_text: string;
+  diploma_signatory: string;
+  diploma_validity_years: number;
   average_score: number;
   issued_at: string;
 }
