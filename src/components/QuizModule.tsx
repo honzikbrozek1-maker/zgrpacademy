@@ -48,8 +48,8 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
         p_answer: optIndex,
       });
 
-      const result = data as unknown as { correct: boolean; correct_answer: number };
-      setCorrectAnswer(result.correct_answer);
+      const result = data as unknown as { correct: boolean; correct_answer?: number };
+      setCorrectAnswer(result.correct ? optIndex : (result.correct_answer ?? null));
       setShowResult(true);
 
       if (result.correct) {
