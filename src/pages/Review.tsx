@@ -230,8 +230,8 @@ export default function Review() {
           p_question_id: currentItem.question_id,
           p_answer: optIndex,
         });
-        const result = data as unknown as { correct: boolean; correct_answer: number };
-        setCorrectAnswer(result.correct_answer);
+        const result = data as unknown as { correct: boolean; correct_answer?: number };
+        setCorrectAnswer(result.correct ? optIndex : (result.correct_answer ?? null));
         setShowResult(true);
       } finally {
         setChecking(false);
@@ -335,8 +335,8 @@ export default function Review() {
           p_question_id: currentItem.question_id,
           p_answer: optIndex,
         });
-        const result = data as unknown as { correct: boolean; correct_answer: number };
-        setCorrectAnswer(result.correct_answer);
+        const result = data as unknown as { correct: boolean; correct_answer?: number };
+        setCorrectAnswer(result.correct ? optIndex : (result.correct_answer ?? null));
         setShowResult(true);
       } finally {
         setChecking(false);
