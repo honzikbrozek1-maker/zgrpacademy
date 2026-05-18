@@ -76,7 +76,7 @@ export default function Levels() {
       const levelIds = lvls.map(l => l.id);
       const [progressRes, questionsRes] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.from('questions_safe').select('level_id, type').in('level_id', levelIds),
+        supabase.from('questions_safe').select('level_id, type').in('level_id', levelIds).eq('in_practice', true),
       ]);
 
       if (progressRes.data) {
