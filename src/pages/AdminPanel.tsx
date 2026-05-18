@@ -42,6 +42,7 @@ interface Question {
   wrong_option_3: string | null;
   order_index: number;
   in_level_test: boolean;
+  in_practice: boolean;
 }
 
 interface UserProfile {
@@ -78,7 +79,7 @@ export default function AdminPanel() {
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
-  const [addStep, setAddStep] = useState<'pick_type' | 'edit'>('pick_type');
+  const [addStep, setAddStep] = useState<'pick_type' | 'pick_test_format' | 'edit'>('pick_type');
   const [qForm, setQForm] = useState({
     type: 'quiz' as string,
     question_text: '',
@@ -87,6 +88,7 @@ export default function AdminPanel() {
     back_text: '',
     wrong_option_1: '', wrong_option_2: '', wrong_option_3: '',
     order_index: 0,
+    in_practice: true,
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
@@ -107,6 +109,9 @@ export default function AdminPanel() {
   const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
   const [aiCount, setAiCount] = useState<number>(15);
   const [aiProgress, setAiProgress] = useState<{ done: number; total: number } | null>(null);
+  const [aiForTest, setAiForTest] = useState(false);
+  const [aiQuizCount, setAiQuizCount] = useState<number>(5);
+  const [aiFillCount, setAiFillCount] = useState<number>(5);
 
   useEffect(() => {
     fetchLevels();
@@ -229,6 +234,7 @@ export default function AdminPanel() {
       wrong_option_1: isFlashcard ? (qForm.wrong_option_1 || null) : null,
       wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
       wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
+      in_practice: qForm.in_practice,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
@@ -271,6 +277,7 @@ export default function AdminPanel() {
       wrong_option_2: q.wrong_option_2 || '',
       wrong_option_3: q.wrong_option_3 || '',
       order_index: q.order_index,
+      in_practice: q.in_practice !== false,
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
@@ -279,7 +286,7 @@ export default function AdminPanel() {
   };
 
   const resetQForm = () => {
-    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length });
+    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length, in_practice: true });
     setBlankInserted(false);
   };
 
@@ -337,48 +344,70 @@ export default function AdminPanel() {
   };
 
   const generateWithAi = async () => {
-    if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
+    if (!aiText.trim() || !selectedLevel) return;
+    // Build per-type targets
+    const targets: { type: string; count: number }[] = aiForTest
+      ? [
+          { type: 'quiz', count: Math.min(Math.max(aiQuizCount || 0, 0), 100) },
+          { type: 'fill_blank', count: Math.min(Math.max(aiFillCount || 0, 0), 100) },
+        ].filter(t => t.count > 0)
+      : aiTypes.length > 0
+        ? [{ type: '__mixed__', count: Math.min(Math.max(aiCount || 1, 1), 100) }]
+        : [];
+
+    if (targets.length === 0) return;
+    const grandTotal = targets.reduce((s, t) => s + t.count, 0);
+
     setAiLoading(true);
     setAiResults(null);
-    const target = Math.min(Math.max(aiCount || 1, 1), 100);
     const BATCH = 20;
-    setAiProgress({ done: 0, total: target });
+    setAiProgress({ done: 0, total: grandTotal });
     const all: any[] = [];
+
+    // Existing practice questions so AI can avoid duplicates / build on them
+    const existingPracticeTexts = questions
+      .filter(q => q.in_practice !== false)
+      .map(q => q.question_text);
+
     try {
-      while (all.length < target) {
-        const remaining = target - all.length;
-        const batchSize = Math.min(BATCH, remaining);
-        const { data, error } = await supabase.functions.invoke('generate-questions', {
-          body: {
-            text: aiText,
-            level_id: selectedLevel.id,
-            types: aiTypes,
-            count: batchSize,
-            existing_questions: all.map(q => q.question_text),
-          },
-        });
-        if (error) {
-          const ctx: any = (error as any).context;
-          let msg = error.message || 'Chyba generování';
-          if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
-          if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
-          throw new Error(msg);
+      for (const t of targets) {
+        const typesForCall = t.type === '__mixed__' ? aiTypes : [t.type];
+        let producedForType = 0;
+        while (producedForType < t.count) {
+          const remaining = t.count - producedForType;
+          const batchSize = Math.min(BATCH, remaining);
+          const { data, error } = await supabase.functions.invoke('generate-questions', {
+            body: {
+              text: aiText,
+              level_id: selectedLevel.id,
+              types: typesForCall,
+              count: batchSize,
+              existing_questions: [...existingPracticeTexts, ...all.map(q => q.question_text)],
+            },
+          });
+          if (error) {
+            const ctx: any = (error as any).context;
+            let msg = error.message || 'Chyba generování';
+            if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
+            if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
+            throw new Error(msg);
+          }
+          if (data?.error) throw new Error(data.error);
+          const batch = (data?.questions || []) as any[];
+          if (batch.length === 0) break;
+          all.push(...batch);
+          producedForType += batch.length;
+          setAiProgress({ done: Math.min(all.length, grandTotal), total: grandTotal });
+          if (producedForType < t.count) await new Promise(r => setTimeout(r, 800));
         }
-        if (data?.error) throw new Error(data.error);
-        const batch = (data?.questions || []) as any[];
-        if (batch.length === 0) break;
-        all.push(...batch);
-        setAiProgress({ done: Math.min(all.length, target), total: target });
-        if (all.length < target) await new Promise(r => setTimeout(r, 800));
       }
-      const finalList = all.slice(0, target);
-      setAiResults(finalList);
-      setAiSelected(new Set(finalList.map((_, i) => i)));
+      setAiResults(all);
+      setAiSelected(new Set(all.map((_, i) => i)));
     } catch (e: any) {
       if (all.length > 0) {
         setAiResults(all);
         setAiSelected(new Set(all.map((_, i) => i)));
-        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${target} otázek.`, variant: 'destructive' });
+        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${grandTotal} otázek.`, variant: 'destructive' });
       } else {
         toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
       }
@@ -406,6 +435,7 @@ export default function AdminPanel() {
         wrong_option_2: q.wrong_option_2 || null,
         wrong_option_3: q.wrong_option_3 || null,
         order_index: questions.length + i,
+        in_practice: !aiForTest,
       }));
     if (toInsert.length === 0) return;
     const { error } = await supabase.from('questions').insert(toInsert);
@@ -799,39 +829,61 @@ export default function AdminPanel() {
                                 rows={8}
                               />
                             </div>
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
-                              <div className="flex gap-2 flex-wrap">
-                                {[
-                                  { type: 'quiz', label: '🧠 Kvíz' },
-                                  { type: 'fill_blank', label: '✏️ Doplňování' },
-                                ].map(opt => (
-                                  <button
-                                    key={opt.type}
-                                    className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                                      aiTypes.includes(opt.type) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
-                                    }`}
-                                    onClick={() => toggleAiType(opt.type)}
-                                  >
-                                    {opt.label}
-                                  </button>
-                                ))}
+                            <label className="flex items-center justify-between gap-2 p-3 rounded-lg border-2 border-border cursor-pointer">
+                              <div>
+                                <p className="text-sm font-medium flex items-center gap-1.5">🏁 Pro závěrečný test</p>
+                                <p className="text-xs text-muted-foreground">Otázky se neobjeví v procvičování. AI bude znát i existující procvičovací otázky.</p>
                               </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
-                              <Input
-                                type="number"
-                                min={1}
-                                max={100}
-                                value={aiCount}
-                                onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
-                              </p>
-                            </div>
-                            <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
+                              <Switch checked={aiForTest} onCheckedChange={setAiForTest} />
+                            </label>
+                            {!aiForTest ? (
+                              <>
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {[
+                                      { type: 'quiz', label: '🧠 Kvíz' },
+                                      { type: 'fill_blank', label: '✏️ Doplňování' },
+                                    ].map(opt => (
+                                      <button
+                                        key={opt.type}
+                                        className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                                          aiTypes.includes(opt.type) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                                        }`}
+                                        onClick={() => toggleAiType(opt.type)}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={aiCount}
+                                    onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                                  />
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
+                                  </p>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">🧠 Kvízových</label>
+                                  <Input type="number" min={0} max={100} value={aiQuizCount} onChange={e => setAiQuizCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">✏️ Doplňovacích</label>
+                                  <Input type="number" min={0} max={100} value={aiFillCount} onChange={e => setAiFillCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                </div>
+                              </div>
+                            )}
+                            <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || (aiForTest ? (aiQuizCount + aiFillCount === 0) : aiTypes.length === 0)} className="w-full">
                               {aiLoading ? (
                                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji {aiProgress ? `${aiProgress.done}/${aiProgress.total}` : ''}...</>
                               ) : (
@@ -910,19 +962,25 @@ export default function AdminPanel() {
                       <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>
-                            {editingQuestion ? 'Upravit otázku' : addStep === 'pick_type' ? 'Vyberte typ' : 'Nová otázka'}
+                            {editingQuestion
+                              ? 'Upravit otázku'
+                              : addStep === 'pick_type'
+                                ? 'Vyberte typ'
+                                : addStep === 'pick_test_format'
+                                  ? 'Formát otázky pro test'
+                                  : 'Nová otázka'}
                           </DialogTitle>
                         </DialogHeader>
                         {!editingQuestion && addStep === 'pick_type' ? (
                           <div className="grid gap-3">
                             {[
-                              { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
-                              { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                              { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Procvičování – otázka se 4 možnostmi' },
+                              { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Procvičování – věta s vynechaným slovem' },
                             ].map(opt => (
                               <button
                                 key={opt.type}
                                 className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
-                                onClick={() => { setQForm({ ...qForm, type: opt.type }); setAddStep('edit'); }}
+                                onClick={() => { setQForm({ ...qForm, type: opt.type, in_practice: true }); setAddStep('edit'); }}
                               >
                                 <span className="text-2xl">{opt.icon}</span>
                                 <div>
@@ -931,9 +989,51 @@ export default function AdminPanel() {
                                 </div>
                               </button>
                             ))}
+                            <button
+                              className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
+                              onClick={() => setAddStep('pick_test_format')}
+                            >
+                              <span className="text-2xl">🏁</span>
+                              <div>
+                                <p className="font-medium">Závěrečný test</p>
+                                <p className="text-xs text-muted-foreground">Otázka pouze do testu levelu (nezobrazí se v procvičování)</p>
+                              </div>
+                            </button>
+                          </div>
+                        ) : !editingQuestion && addStep === 'pick_test_format' ? (
+                          <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">Vyberte formát otázky pro závěrečný test:</p>
+                            <div className="grid gap-3">
+                              {[
+                                { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
+                                { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                              ].map(opt => (
+                                <button
+                                  key={opt.type}
+                                  className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
+                                  onClick={() => { setQForm({ ...qForm, type: opt.type, in_practice: false }); setAddStep('edit'); }}
+                                >
+                                  <span className="text-2xl">{opt.icon}</span>
+                                  <div>
+                                    <p className="font-medium">{opt.label}</p>
+                                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setAddStep('pick_type')}>
+                              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+                            </Button>
                           </div>
                         ) : (
-                          renderQuestionForm()
+                          <>
+                            {!editingQuestion && qForm.in_practice === false && (
+                              <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3 text-sm flex items-center gap-2">
+                                🏁 <span>Tato otázka půjde <strong>pouze do závěrečného testu</strong>.</span>
+                              </div>
+                            )}
+                            {renderQuestionForm()}
+                          </>
                         )}
                       </DialogContent>
                     </Dialog>
@@ -967,7 +1067,12 @@ export default function AdminPanel() {
                               >
                                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                    {q.in_practice === false && (
+                                      <Badge variant="secondary" className="text-[10px] shrink-0">🏁 Jen test</Badge>
+                                    )}
+                                  </div>
                                   {q.type === 'quiz' && (
                                     <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
@@ -983,14 +1088,7 @@ export default function AdminPanel() {
                                     </>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none" title="Zařadit do závěrečného testu levelu">
-                                    <Switch
-                                      checked={q.in_level_test !== false}
-                                      onCheckedChange={(v) => toggleInLevelTest(q, v)}
-                                    />
-                                    <span className="hidden sm:inline">v testu</span>
-                                  </label>
+                                <div className="flex items-center gap-1 shrink-0">
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>
