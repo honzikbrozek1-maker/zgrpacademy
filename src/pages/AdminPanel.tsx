@@ -616,9 +616,12 @@ export default function AdminPanel() {
           {/* Step 1: Write the sentence */}
           <div>
             <label className="text-sm font-medium mb-1 block">1. Napište celou větu</label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Napište celou větu i se slovem, které pak chcete vynechat. Např.: <em>„Hlavním městem České republiky je Praha."</em> V dalším kroku si v této větě označíte slovo, které se má vynechat.
+            </p>
             <Textarea
               ref={sentenceRef}
-              placeholder="Napište větu, ze které bude jedno slovo vynecháno..."
+              placeholder="Např.: Hlavním městem České republiky je Praha."
               value={qForm.back_text}
               onChange={e => { setQForm({ ...qForm, back_text: e.target.value }); if (!e.target.value.includes('______')) setBlankInserted(false); }}
             />
@@ -871,8 +874,14 @@ export default function AdminPanel() {
                                   {q.type === 'flashcard' && q.back_text && (
                                     <p className="text-xs text-muted-foreground mt-1">→ {q.back_text}</p>
                                   )}
-                                  {q.type === 'fill_blank' && q.option_1 && (
-                                    <p className="text-xs text-success mt-1">Správně: {q.option_1}</p>
+                                  {q.type === 'fill_blank' && (
+                                    <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
+                                      {[q.option_1, q.option_2, q.option_3, q.option_4].filter(Boolean).map((opt, j) => (
+                                        <p key={j} className={j + 1 === q.correct_answer ? 'text-success font-medium' : ''}>
+                                          {j + 1}. {opt}
+                                        </p>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
                               ))}

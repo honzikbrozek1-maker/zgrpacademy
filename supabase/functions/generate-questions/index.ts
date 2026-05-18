@@ -94,8 +94,8 @@ Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - type: jeden z ${JSON.stringify(types)} (používej PŘESNĚ tyto názvy, např. "fill_blank", nikoli "fill_in_blank")
 - question_text: text otázky. Pro fill_blank to bude celá věta s ______ (šest podtržítek) na místě vynechaného slova.
 - option_1, option_2, option_3, option_4: čtyři věrohodné možnosti. U fill_blank musí být právě jedna z nich to správné slovo do mezery, ostatní jsou nesprávné, ale tematicky blízké.
-- correct_answer: číslo 1-4 udávající správnou možnost.
-- back_text: pro fill_blank obsahuje samotné správné slovo (to, co patří do mezery). Pro quiz null.
+- correct_answer: číslo 1-4 udávající správnou možnost (pozice správné možnosti mezi option_1..option_4).
+- back_text: pro fill_blank obsahuje PŘESNĚ TUTÉŽ celou větu jako question_text (včetně ______). Pro quiz null.
 - wrong_option_1, wrong_option_2, wrong_option_3: vždy null.
 Vytvoř PŘESNĚ ${count} otázek pokrývajících klíčové pojmy z textu.${avoidBlock}`;
 
