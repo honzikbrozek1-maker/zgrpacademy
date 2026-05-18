@@ -20,6 +20,9 @@ interface Group {
   order_index: number;
   diploma_title: string;
   diploma_subtitle: string;
+  diploma_body_text: string;
+  diploma_signatory: string;
+  diploma_validity_years: number;
   min_average_score: number;
   final_test_passing_score: number;
 }
