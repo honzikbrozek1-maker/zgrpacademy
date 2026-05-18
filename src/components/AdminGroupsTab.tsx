@@ -257,6 +257,28 @@ export default function AdminGroupsTab() {
                 <label className="text-sm font-medium">Podtitul</label>
                 <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} />
               </div>
+              <div>
+                <label className="text-sm font-medium">Text certifikátu</label>
+                <Textarea
+                  rows={4}
+                  value={form.diploma_body_text}
+                  onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
+                  placeholder="Použij {user_name}, {group_title}, {date}, {score} pro automatické dosazení."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Placeholdery: <code>{'{user_name}'}</code>, <code>{'{group_title}'}</code>, <code>{'{date}'}</code>, <code>{'{score}'}</code>, <code>{'{valid_until}'}</code>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium">Podpisující osoba</label>
+                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Platnost (roky)</label>
+                  <Input type="number" min={0} value={form.diploma_validity_years} onChange={e => setForm({ ...form, diploma_validity_years: Number(e.target.value) })} />
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
