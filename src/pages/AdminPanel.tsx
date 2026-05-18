@@ -112,6 +112,7 @@ export default function AdminPanel() {
   const [aiForTest, setAiForTest] = useState(false);
   const [aiQuizCount, setAiQuizCount] = useState<number>(5);
   const [aiFillCount, setAiFillCount] = useState<number>(5);
+  const [aiSourceMode, setAiSourceMode] = useState<'new_only' | 'new_plus_existing'>('new_plus_existing');
 
   useEffect(() => {
     fetchLevels();
@@ -290,6 +291,28 @@ export default function AdminPanel() {
     setBlankInserted(false);
   };
 
+  const resetAiDialog = () => {
+    setAiResults(null);
+    setAiSelected(new Set());
+    setAiText('');
+    setAiLoading(false);
+    setAiProgress(null);
+    setAiForTest(false);
+    setAiTypes(['quiz', 'fill_blank']);
+    setAiCount(15);
+    setAiQuizCount(5);
+    setAiFillCount(5);
+    setAiSourceMode('new_plus_existing');
+  };
+
+  const openAiGenerator = (options?: { forTest?: boolean }) => {
+    resetAiDialog();
+    if (options?.forTest) {
+      setAiForTest(true);
+    }
+    setShowAiDialog(true);
+  };
+
   const toggleAdmin = async (userId: string, isCurrentlyAdmin: boolean) => {
     if (isCurrentlyAdmin) {
       await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
@@ -364,10 +387,21 @@ export default function AdminPanel() {
     setAiProgress({ done: 0, total: grandTotal });
     const all: any[] = [];
 
-    // Existing practice questions so AI can avoid duplicates / build on them
-    const existingPracticeTexts = questions
-      .filter(q => q.in_practice !== false)
-      .map(q => q.question_text);
+    const sourceQuestions = questions.filter(q => q.in_practice !== false);
+    const existingPracticeTexts = aiSourceMode === 'new_plus_existing'
+      ? sourceQuestions.map(q => q.question_text)
+      : [];
+    const existingPracticeMaterials = aiSourceMode === 'new_plus_existing'
+      ? sourceQuestions
+          .map(q => {
+            const correctOption = [q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1] || null;
+            const detail = q.type === 'fill_blank'
+              ? q.back_text
+              : correctOption;
+            return [q.question_text, detail].filter(Boolean).join(' | Správně: ');
+          })
+          .filter(Boolean)
+      : [];
 
     try {
       for (const t of targets) {
@@ -380,9 +414,12 @@ export default function AdminPanel() {
             body: {
               text: aiText,
               level_id: selectedLevel.id,
+              mode: aiForTest ? 'final_test' : 'practice',
               types: typesForCall,
               count: batchSize,
               existing_questions: [...existingPracticeTexts, ...all.map(q => q.question_text)],
+              existing_material: existingPracticeMaterials,
+              strict_source: aiSourceMode === 'new_only',
             },
           });
           if (error) {
@@ -806,9 +843,9 @@ export default function AdminPanel() {
                     {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'fill_blank').length} doplňování
                   </p>
                   <div className="flex gap-2">
-                    <Dialog open={showAiDialog} onOpenChange={(open) => { setShowAiDialog(open); if (!open) { setAiResults(null); } }}>
+                    <Dialog open={showAiDialog} onOpenChange={(open) => { setShowAiDialog(open); if (!open) resetAiDialog(); }}>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" onClick={() => { setAiResults(null); setAiText(''); }}>
+                        <Button size="sm" variant="outline" onClick={() => openAiGenerator()}>
                           <Sparkles className="mr-1 h-4 w-4" /> AI generování
                         </Button>
                       </DialogTrigger>
@@ -832,10 +869,35 @@ export default function AdminPanel() {
                             <label className="flex items-center justify-between gap-2 p-3 rounded-lg border-2 border-border cursor-pointer">
                               <div>
                                 <p className="text-sm font-medium flex items-center gap-1.5">🏁 Pro závěrečný test</p>
-                                <p className="text-xs text-muted-foreground">Otázky se neobjeví v procvičování. AI bude znát i existující procvičovací otázky.</p>
+                                <p className="text-xs text-muted-foreground">Otázky se neobjeví v procvičování a budou cílené na závěrečný test.</p>
                               </div>
                               <Switch checked={aiForTest} onCheckedChange={setAiForTest} />
                             </label>
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">Zdroj pro AI</label>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <button
+                                  type="button"
+                                  className={`rounded-lg border-2 p-3 text-left transition-all ${
+                                    aiSourceMode === 'new_only' ? 'border-primary bg-primary/10' : 'border-border'
+                                  }`}
+                                  onClick={() => setAiSourceMode('new_only')}
+                                >
+                                  <p className="text-sm font-medium">Jen nový vstup</p>
+                                  <p className="text-xs text-muted-foreground">AI použije pouze text, který vložíte teď.</p>
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`rounded-lg border-2 p-3 text-left transition-all ${
+                                    aiSourceMode === 'new_plus_existing' ? 'border-primary bg-primary/10' : 'border-border'
+                                  }`}
+                                  onClick={() => setAiSourceMode('new_plus_existing')}
+                                >
+                                  <p className="text-sm font-medium">Nový vstup + existující otázky</p>
+                                  <p className="text-xs text-muted-foreground">AI může navázat i na již existující procvičovací otázky v tomto levelu.</p>
+                                </button>
+                              </div>
+                            </div>
                             {!aiForTest ? (
                               <>
                                 <div>
@@ -1007,11 +1069,21 @@ export default function AdminPanel() {
                               {[
                                 { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
                                 { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                                { type: 'ai_import', icon: '✨', label: 'AI import', desc: 'Vygeneruje kvízové i doplňovací otázky pro závěrečný test' },
                               ].map(opt => (
                                 <button
                                   key={opt.type}
                                   className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
-                                  onClick={() => { setQForm({ ...qForm, type: opt.type, in_practice: false }); setAddStep('edit'); }}
+                                  onClick={() => {
+                                    if (opt.type === 'ai_import') {
+                                      setShowQuestionDialog(false);
+                                      setAddStep('pick_type');
+                                      openAiGenerator({ forTest: true });
+                                      return;
+                                    }
+                                    setQForm({ ...qForm, type: opt.type, in_practice: false });
+                                    setAddStep('edit');
+                                  }}
                                 >
                                   <span className="text-2xl">{opt.icon}</span>
                                   <div>
