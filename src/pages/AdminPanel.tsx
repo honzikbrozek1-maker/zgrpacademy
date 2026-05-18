@@ -344,48 +344,70 @@ export default function AdminPanel() {
   };
 
   const generateWithAi = async () => {
-    if (!aiText.trim() || !selectedLevel || aiTypes.length === 0) return;
+    if (!aiText.trim() || !selectedLevel) return;
+    // Build per-type targets
+    const targets: { type: string; count: number }[] = aiForTest
+      ? [
+          { type: 'quiz', count: Math.min(Math.max(aiQuizCount || 0, 0), 100) },
+          { type: 'fill_blank', count: Math.min(Math.max(aiFillCount || 0, 0), 100) },
+        ].filter(t => t.count > 0)
+      : aiTypes.length > 0
+        ? [{ type: '__mixed__', count: Math.min(Math.max(aiCount || 1, 1), 100) }]
+        : [];
+
+    if (targets.length === 0) return;
+    const grandTotal = targets.reduce((s, t) => s + t.count, 0);
+
     setAiLoading(true);
     setAiResults(null);
-    const target = Math.min(Math.max(aiCount || 1, 1), 100);
     const BATCH = 20;
-    setAiProgress({ done: 0, total: target });
+    setAiProgress({ done: 0, total: grandTotal });
     const all: any[] = [];
+
+    // Existing practice questions so AI can avoid duplicates / build on them
+    const existingPracticeTexts = questions
+      .filter(q => q.in_practice !== false)
+      .map(q => q.question_text);
+
     try {
-      while (all.length < target) {
-        const remaining = target - all.length;
-        const batchSize = Math.min(BATCH, remaining);
-        const { data, error } = await supabase.functions.invoke('generate-questions', {
-          body: {
-            text: aiText,
-            level_id: selectedLevel.id,
-            types: aiTypes,
-            count: batchSize,
-            existing_questions: all.map(q => q.question_text),
-          },
-        });
-        if (error) {
-          const ctx: any = (error as any).context;
-          let msg = error.message || 'Chyba generování';
-          if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
-          if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
-          throw new Error(msg);
+      for (const t of targets) {
+        const typesForCall = t.type === '__mixed__' ? aiTypes : [t.type];
+        let producedForType = 0;
+        while (producedForType < t.count) {
+          const remaining = t.count - producedForType;
+          const batchSize = Math.min(BATCH, remaining);
+          const { data, error } = await supabase.functions.invoke('generate-questions', {
+            body: {
+              text: aiText,
+              level_id: selectedLevel.id,
+              types: typesForCall,
+              count: batchSize,
+              existing_questions: [...existingPracticeTexts, ...all.map(q => q.question_text)],
+            },
+          });
+          if (error) {
+            const ctx: any = (error as any).context;
+            let msg = error.message || 'Chyba generování';
+            if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
+            if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
+            throw new Error(msg);
+          }
+          if (data?.error) throw new Error(data.error);
+          const batch = (data?.questions || []) as any[];
+          if (batch.length === 0) break;
+          all.push(...batch);
+          producedForType += batch.length;
+          setAiProgress({ done: Math.min(all.length, grandTotal), total: grandTotal });
+          if (producedForType < t.count) await new Promise(r => setTimeout(r, 800));
         }
-        if (data?.error) throw new Error(data.error);
-        const batch = (data?.questions || []) as any[];
-        if (batch.length === 0) break;
-        all.push(...batch);
-        setAiProgress({ done: Math.min(all.length, target), total: target });
-        if (all.length < target) await new Promise(r => setTimeout(r, 800));
       }
-      const finalList = all.slice(0, target);
-      setAiResults(finalList);
-      setAiSelected(new Set(finalList.map((_, i) => i)));
+      setAiResults(all);
+      setAiSelected(new Set(all.map((_, i) => i)));
     } catch (e: any) {
       if (all.length > 0) {
         setAiResults(all);
         setAiSelected(new Set(all.map((_, i) => i)));
-        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${target} otázek.`, variant: 'destructive' });
+        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${grandTotal} otázek.`, variant: 'destructive' });
       } else {
         toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
       }
