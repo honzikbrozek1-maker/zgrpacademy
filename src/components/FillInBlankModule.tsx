@@ -104,9 +104,9 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         p_answer: optIndex,
       });
 
-      const result = data as unknown as { correct: boolean; correct_answer: number };
+      const result = data as unknown as { correct: boolean; correct_answer?: number };
       const correct = result.correct;
-      setCorrectAnswerIndex(result.correct_answer);
+      setCorrectAnswerIndex(correct ? optIndex : (result.correct_answer ?? null));
       setIsCorrect(correct);
       setShowResult(true);
 
