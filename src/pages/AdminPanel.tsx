@@ -962,19 +962,25 @@ export default function AdminPanel() {
                       <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>
-                            {editingQuestion ? 'Upravit otázku' : addStep === 'pick_type' ? 'Vyberte typ' : 'Nová otázka'}
+                            {editingQuestion
+                              ? 'Upravit otázku'
+                              : addStep === 'pick_type'
+                                ? 'Vyberte typ'
+                                : addStep === 'pick_test_format'
+                                  ? 'Formát otázky pro test'
+                                  : 'Nová otázka'}
                           </DialogTitle>
                         </DialogHeader>
                         {!editingQuestion && addStep === 'pick_type' ? (
                           <div className="grid gap-3">
                             {[
-                              { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
-                              { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                              { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Procvičování – otázka se 4 možnostmi' },
+                              { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Procvičování – věta s vynechaným slovem' },
                             ].map(opt => (
                               <button
                                 key={opt.type}
                                 className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
-                                onClick={() => { setQForm({ ...qForm, type: opt.type }); setAddStep('edit'); }}
+                                onClick={() => { setQForm({ ...qForm, type: opt.type, in_practice: true }); setAddStep('edit'); }}
                               >
                                 <span className="text-2xl">{opt.icon}</span>
                                 <div>
@@ -983,9 +989,51 @@ export default function AdminPanel() {
                                 </div>
                               </button>
                             ))}
+                            <button
+                              className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
+                              onClick={() => setAddStep('pick_test_format')}
+                            >
+                              <span className="text-2xl">🏁</span>
+                              <div>
+                                <p className="font-medium">Závěrečný test</p>
+                                <p className="text-xs text-muted-foreground">Otázka pouze do testu levelu (nezobrazí se v procvičování)</p>
+                              </div>
+                            </button>
+                          </div>
+                        ) : !editingQuestion && addStep === 'pick_test_format' ? (
+                          <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">Vyberte formát otázky pro závěrečný test:</p>
+                            <div className="grid gap-3">
+                              {[
+                                { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
+                                { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
+                              ].map(opt => (
+                                <button
+                                  key={opt.type}
+                                  className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
+                                  onClick={() => { setQForm({ ...qForm, type: opt.type, in_practice: false }); setAddStep('edit'); }}
+                                >
+                                  <span className="text-2xl">{opt.icon}</span>
+                                  <div>
+                                    <p className="font-medium">{opt.label}</p>
+                                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setAddStep('pick_type')}>
+                              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+                            </Button>
                           </div>
                         ) : (
-                          renderQuestionForm()
+                          <>
+                            {!editingQuestion && qForm.in_practice === false && (
+                              <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3 text-sm flex items-center gap-2">
+                                🏁 <span>Tato otázka půjde <strong>pouze do závěrečného testu</strong>.</span>
+                              </div>
+                            )}
+                            {renderQuestionForm()}
+                          </>
                         )}
                       </DialogContent>
                     </Dialog>
