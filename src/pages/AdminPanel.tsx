@@ -829,39 +829,61 @@ export default function AdminPanel() {
                                 rows={8}
                               />
                             </div>
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
-                              <div className="flex gap-2 flex-wrap">
-                                {[
-                                  { type: 'quiz', label: '🧠 Kvíz' },
-                                  { type: 'fill_blank', label: '✏️ Doplňování' },
-                                ].map(opt => (
-                                  <button
-                                    key={opt.type}
-                                    className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                                      aiTypes.includes(opt.type) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
-                                    }`}
-                                    onClick={() => toggleAiType(opt.type)}
-                                  >
-                                    {opt.label}
-                                  </button>
-                                ))}
+                            <label className="flex items-center justify-between gap-2 p-3 rounded-lg border-2 border-border cursor-pointer">
+                              <div>
+                                <p className="text-sm font-medium flex items-center gap-1.5">🏁 Pro závěrečný test</p>
+                                <p className="text-xs text-muted-foreground">Otázky se neobjeví v procvičování. AI bude znát i existující procvičovací otázky.</p>
                               </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
-                              <Input
-                                type="number"
-                                min={1}
-                                max={100}
-                                value={aiCount}
-                                onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
-                              </p>
-                            </div>
-                            <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
+                              <Switch checked={aiForTest} onCheckedChange={setAiForTest} />
+                            </label>
+                            {!aiForTest ? (
+                              <>
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {[
+                                      { type: 'quiz', label: '🧠 Kvíz' },
+                                      { type: 'fill_blank', label: '✏️ Doplňování' },
+                                    ].map(opt => (
+                                      <button
+                                        key={opt.type}
+                                        className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                                          aiTypes.includes(opt.type) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                                        }`}
+                                        onClick={() => toggleAiType(opt.type)}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={aiCount}
+                                    onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                                  />
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
+                                  </p>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">🧠 Kvízových</label>
+                                  <Input type="number" min={0} max={100} value={aiQuizCount} onChange={e => setAiQuizCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-1 block">✏️ Doplňovacích</label>
+                                  <Input type="number" min={0} max={100} value={aiFillCount} onChange={e => setAiFillCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                </div>
+                              </div>
+                            )}
+                            <Button onClick={generateWithAi} disabled={aiLoading || !aiText.trim() || (aiForTest ? (aiQuizCount + aiFillCount === 0) : aiTypes.length === 0)} className="w-full">
                               {aiLoading ? (
                                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji {aiProgress ? `${aiProgress.done}/${aiProgress.total}` : ''}...</>
                               ) : (
