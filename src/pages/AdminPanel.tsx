@@ -273,6 +273,7 @@ export default function AdminPanel() {
       wrong_option_2: q.wrong_option_2 || '',
       wrong_option_3: q.wrong_option_3 || '',
       order_index: q.order_index,
+      in_practice: q.in_practice !== false,
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
