@@ -1067,7 +1067,12 @@ export default function AdminPanel() {
                               >
                                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-sm truncate">{q.question_text}</p>
+                                    {q.in_practice === false && (
+                                      <Badge variant="secondary" className="text-[10px] shrink-0">🏁 Jen test</Badge>
+                                    )}
+                                  </div>
                                   {q.type === 'quiz' && (
                                     <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
@@ -1083,14 +1088,7 @@ export default function AdminPanel() {
                                     </>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none" title="Zařadit do závěrečného testu levelu">
-                                    <Switch
-                                      checked={q.in_level_test !== false}
-                                      onCheckedChange={(v) => toggleInLevelTest(q, v)}
-                                    />
-                                    <span className="hidden sm:inline">v testu</span>
-                                  </label>
+                                <div className="flex items-center gap-1 shrink-0">
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editQuestion(q)}><Edit className="h-4 w-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteQuestion(q.id)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>
