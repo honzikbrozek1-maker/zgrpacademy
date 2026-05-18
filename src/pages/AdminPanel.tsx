@@ -109,6 +109,9 @@ export default function AdminPanel() {
   const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
   const [aiCount, setAiCount] = useState<number>(15);
   const [aiProgress, setAiProgress] = useState<{ done: number; total: number } | null>(null);
+  const [aiForTest, setAiForTest] = useState(false);
+  const [aiQuizCount, setAiQuizCount] = useState<number>(5);
+  const [aiFillCount, setAiFillCount] = useState<number>(5);
 
   useEffect(() => {
     fetchLevels();
