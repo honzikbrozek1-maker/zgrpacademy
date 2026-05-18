@@ -435,6 +435,7 @@ export default function AdminPanel() {
         wrong_option_2: q.wrong_option_2 || null,
         wrong_option_3: q.wrong_option_3 || null,
         order_index: questions.length + i,
+        in_practice: !aiForTest,
       }));
     if (toInsert.length === 0) return;
     const { error } = await supabase.from('questions').insert(toInsert);
