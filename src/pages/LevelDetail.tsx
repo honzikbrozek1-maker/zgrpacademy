@@ -51,7 +51,8 @@ export default function LevelDetail() {
     const { data: levelQuestionIds } = await supabase
       .from('questions_safe' as any)
       .select('id')
-      .eq('level_id', level.id);
+      .eq('level_id', level.id)
+      .eq('in_practice', true);
 
     if (!levelQuestionIds || levelQuestionIds.length === 0) {
       setReviewCount(0);
