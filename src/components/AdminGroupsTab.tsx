@@ -81,6 +81,9 @@ export default function AdminGroupsTab() {
       order_index: g.order_index,
       diploma_title: g.diploma_title,
       diploma_subtitle: g.diploma_subtitle,
+      diploma_body_text: g.diploma_body_text ?? emptyForm.diploma_body_text,
+      diploma_signatory: g.diploma_signatory ?? emptyForm.diploma_signatory,
+      diploma_validity_years: g.diploma_validity_years ?? 1,
       min_average_score: g.min_average_score,
       final_test_passing_score: g.final_test_passing_score ?? 70,
     });
