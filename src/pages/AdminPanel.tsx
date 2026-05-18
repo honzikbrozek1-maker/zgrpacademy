@@ -42,6 +42,7 @@ interface Question {
   wrong_option_3: string | null;
   order_index: number;
   in_level_test: boolean;
+  in_practice: boolean;
 }
 
 interface UserProfile {
