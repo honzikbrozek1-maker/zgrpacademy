@@ -79,7 +79,7 @@ export default function AdminPanel() {
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
-  const [addStep, setAddStep] = useState<'pick_type' | 'edit'>('pick_type');
+  const [addStep, setAddStep] = useState<'pick_type' | 'pick_test_format' | 'edit'>('pick_type');
   const [qForm, setQForm] = useState({
     type: 'quiz' as string,
     question_text: '',
@@ -88,6 +88,7 @@ export default function AdminPanel() {
     back_text: '',
     wrong_option_1: '', wrong_option_2: '', wrong_option_3: '',
     order_index: 0,
+    in_practice: true,
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
