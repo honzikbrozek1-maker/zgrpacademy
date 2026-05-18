@@ -16,6 +16,8 @@ interface Body {
   types: string[];
   count?: number;
   existing_questions?: string[];
+  existing_material?: string[];
+  strict_source?: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -80,16 +82,26 @@ Deno.serve(async (req) => {
     const existing = Array.isArray(body.existing_questions)
       ? body.existing_questions.slice(0, 200).map((s) => String(s).slice(0, 300))
       : [];
+    const existingMaterial = Array.isArray(body.existing_material)
+      ? body.existing_material.slice(0, 200).map((s) => String(s).slice(0, 500))
+      : [];
+    const strictSource = body.strict_source === true;
 
     const avoidBlock = existing.length > 0
       ? `\n\nDŮLEŽITÉ: Nevytvářej otázky duplicitní s těmito již existujícími otázkami (vytvoř ZCELA jiné, pokrývající další části textu):\n${existing.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
       : "";
+    const existingMaterialBlock = !strictSource && existingMaterial.length > 0
+      ? `\n\nEXISTUJÍCÍ MATERIÁL V LEVELU: Můžeš zohlednit i tyto již existující otázky a odpovědi, aby nově vytvořené otázky stylově navazovaly a zbytečně se neopakovaly:\n${existingMaterial.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+      : "";
+    const sourceBlock = strictSource
+      ? `\n\nZDROJOVÉ OMEZENÍ: Používej VÝHRADNĚ informace z nově dodaného textu uživatele v této zprávě. Nepřebírej fakta, formulace ani odpovědi z dříve existujících otázek. Pokud v textu něco není, nevymýšlej to.`
+      : `\n\nZDROJOVÉ OMEZENÍ: Primárním zdrojem je nově dodaný text. Existující otázky můžeš použít jen jako podpůrný kontext pro styl a vyhnutí se duplicitám, ne jako hlavní zdroj nového obsahu.`;
 
     const modeBlock = mode === "final_test"
       ? `\n\nREŽIM: ZÁVĚREČNÝ TEST SKUPINY. Vybírej POUZE ty NEJDŮLEŽITĚJŠÍ a klíčové informace z textu — koncepty, definice a fakta, která by měl absolvent znát „nazpaměť". Vyhni se okrajovým detailům.`
       : `\n\nREŽIM: PROCVIČOVÁNÍ. Pokryj rovnoměrně CELÝ text — všechny pojmy, detaily i okrajové informace. Cílem je široké procvičení.`;
 
-    const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.${modeBlock}
+    const systemPrompt = `Jsi expert na tvorbu vzdělávacích otázek v češtině. Z dodaného textu vytvoř kvalitní otázky.${modeBlock}${sourceBlock}${existingMaterialBlock}
 Vrať POUZE JSON pole otázek bez dalšího textu. Každá otázka má pole:
 - type: jeden z ${JSON.stringify(types)} (používej PŘESNĚ tyto názvy, např. "fill_blank", nikoli "fill_in_blank")
 - question_text: text otázky. Pro fill_blank to bude celá věta s ______ (šest podtržítek) na místě vynechaného slova.
