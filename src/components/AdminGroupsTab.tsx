@@ -220,57 +220,61 @@ export default function AdminGroupsTab() {
       </Card>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-w-3xl p-0 gap-0 max-h-[90vh] flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b">
             <DialogTitle>{editingId ? 'Upravit skupinu' : 'Nová skupina'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium">Název skupiny *</label>
-              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="např. Modul: Základy ZGRP" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Popis</label>
-              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
               <div>
+                <label className="text-sm font-medium">Název skupiny *</label>
+                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="např. Modul: Základy ZGRP" />
+              </div>
+              <div className="md:w-24">
                 <label className="text-sm font-medium">Pořadí</label>
                 <Input type="number" value={form.order_index} onChange={e => setForm({ ...form, order_index: Number(e.target.value) })} />
               </div>
-              <div>
-                <label className="text-sm font-medium">Min. průměrné skóre (%)</label>
+              <div className="md:w-40">
+                <label className="text-sm font-medium">Min. průměr (%)</label>
                 <Input type="number" min={0} max={100} value={form.min_average_score} onChange={e => setForm({ ...form, min_average_score: Number(e.target.value) })} />
               </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">Min. skóre závěrečného testu (%)</label>
-              <Input type="number" min={0} max={100} value={form.final_test_passing_score} onChange={e => setForm({ ...form, final_test_passing_score: Number(e.target.value) })} />
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+              <div>
+                <label className="text-sm font-medium">Popis</label>
+                <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
+              </div>
+              <div className="md:w-56">
+                <label className="text-sm font-medium">Min. skóre záv. testu (%)</label>
+                <Input type="number" min={0} max={100} value={form.final_test_passing_score} onChange={e => setForm({ ...form, final_test_passing_score: Number(e.target.value) })} />
+              </div>
             </div>
-            <div className="border-t pt-3 space-y-3">
+
+            <div className="border-t pt-4 space-y-3">
               <p className="text-sm font-medium">Konfigurace diplomu</p>
-              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-                <p>✨ Jméno absolventa, název kurzu, datum vydání i platnost se na diplom doplní <strong>automaticky</strong>.</p>
-                <p>Vyplňte jen pole níže — žádné značky jako <code>{'{user_name}'}</code> psát nemusíte.</p>
+              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+                ✨ Jméno absolventa, název kurzu, datum vydání i platnost se doplní <strong>automaticky</strong>.
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium">Nadpis diplomu</label>
+                  <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Drobný text pod datem</label>
+                  <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} placeholder="např. ZGRP Academy" />
+                </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Nadpis diplomu</label>
-                <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné, zobrazí se pod jménem)</span></label>
+                <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
                 <Textarea
                   rows={3}
                   value={form.diploma_body_text}
                   onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
-                  placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí České lékařské komory dle SP č. 16 pod registračním číslem 120042 a je hodnocena 5 kredity za účast."
+                  placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí ČLK..."
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium">Drobný text pod datem <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
-                <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} placeholder="např. ZGRP Academy" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">Podpisující osoba</label>
                   <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} placeholder="MUDr. Gabriela Hanslianová" />
@@ -282,10 +286,10 @@ export default function AdminGroupsTab() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
-              <Button onClick={save} className="gradient-primary text-primary-foreground">Uložit</Button>
-            </div>
+          </div>
+          <div className="flex justify-end gap-2 px-6 py-4 border-t bg-background">
+            <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
+            <Button onClick={save} className="gradient-primary text-primary-foreground">Uložit</Button>
           </div>
         </DialogContent>
       </Dialog>
