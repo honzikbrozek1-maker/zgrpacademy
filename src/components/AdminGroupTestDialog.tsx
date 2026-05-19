@@ -194,13 +194,14 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
           <GraduationCap className="mr-1 h-4 w-4" /> Závěrečný test
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl p-0 gap-0 max-h-[90vh] flex flex-col">
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-primary" />
             Závěrečný test — {groupTitle}
           </DialogTitle>
         </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-6 py-4">
 
         {showAi ? (
           <div className="space-y-4">
@@ -379,6 +380,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
             )}
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
