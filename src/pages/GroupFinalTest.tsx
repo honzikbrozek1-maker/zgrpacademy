@@ -222,39 +222,47 @@ export default function GroupFinalTest() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{currentIndex + 1}/{items.length}</span>
-          <Progress value={progressPct} className="h-2 flex-1" />
+      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto w-full">
+        <div className="px-4 md:px-6 pt-4 pb-3 border-b bg-background/80 backdrop-blur sticky top-0 z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate(`${basePath}/levels`)}>
+              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+            </Button>
+            <div className="flex-1" />
+            <span className="text-sm font-medium tabular-nums">{currentIndex + 1}/{items.length}</span>
+          </div>
+          <Progress value={progressPct} className="h-2" />
         </div>
 
-        <Card className="shadow-card">
-          <CardContent className="p-6 space-y-6">
-            <h3 className="text-lg font-semibold">{item.question_text}</h3>
-            <div className="space-y-3">
-              {item.options.map((opt, i) => {
-                const isSelected = answers[currentIndex] === opt;
-                return (
-                  <button
-                    key={i}
-                    className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                    onClick={() => handleSelect(opt)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-sm font-medium">
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      <span className="flex-1">{opt}</span>
-                      {isSelected && <CheckCircle className="h-5 w-5 text-primary" />}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
+          <Card className="shadow-card">
+            <CardContent className="p-5 md:p-6 space-y-5">
+              <h3 className="text-lg md:text-xl font-semibold leading-snug">{item.question_text}</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {item.options.map((opt, i) => {
+                  const isSelected = answers[currentIndex] === opt;
+                  return (
+                    <button
+                      key={i}
+                      className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                      onClick={() => handleSelect(opt)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-sm font-medium shrink-0">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span className="flex-1">{opt}</span>
+                        {isSelected && <CheckCircle className="h-5 w-5 text-primary shrink-0" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-3 px-4 md:px-6 py-3 border-t bg-background sticky bottom-0">
           <Button variant="outline" onClick={() => setCurrentIndex(i => Math.max(0, i - 1))} disabled={currentIndex === 0}>
             <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
           </Button>
