@@ -380,6 +380,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
             )}
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
