@@ -1,0 +1,1 @@
+UPDATE public.profiles SET has_paid = false, updated_at = now() WHERE user_id IN ('5ca82dba-86b4-4e99-884f-808060aef2f6','4f75e40f-73c1-4ecb-a0c6-2dbebbace902');
