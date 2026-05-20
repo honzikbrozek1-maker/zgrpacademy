@@ -127,6 +127,10 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
 
   const generateAi = async () => {
     if (!aiText.trim() || aiTypes.length === 0) return;
+    if (!Number.isFinite(aiCount)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      return;
+    }
     setAiLoading(true);
     setAiResults(null);
     try {
