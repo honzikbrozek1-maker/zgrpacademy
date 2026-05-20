@@ -159,9 +159,10 @@ export default function GroupFinalTest() {
   }
 
   if (finished && score !== null) {
+    const wrongCount = perQuestion.filter(p => !p.correct).length;
     return (
       <AppLayout>
-        <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
+        <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4 pb-20">
           <Card className="shadow-elevated">
             <CardContent className="p-8 text-center space-y-4">
               <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
@@ -174,22 +175,75 @@ export default function GroupFinalTest() {
                   ? 'Úspěšně jste dokončili celou skupinu. Diplom najdete v sekci Moje diplomy.'
                   : `Pro splnění potřebujete alespoň ${group?.final_test_passing_score}%. Můžete to zkusit znovu.`}
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-3 justify-center flex-wrap">
                 <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
                   Zpět na levely
                 </Button>
+                {perQuestion.length > 0 && (
+                  <Button variant="outline" onClick={() => setShowReview(s => !s)}>
+                    <ListChecks className="mr-1 h-4 w-4" />
+                    {showReview ? 'Skrýt odpovědi' : 'Zobrazit odpovědi'}
+                  </Button>
+                )}
                 {passed ? (
                   <Button onClick={() => navigate(`${basePath}/diplomas`)} className="gradient-primary text-primary-foreground">
                     Moje diplomy
                   </Button>
                 ) : (
-                  <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setScore(null); }} className="gradient-primary text-primary-foreground">
+                  <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setScore(null); setPerQuestion([]); setShowReview(false); }} className="gradient-primary text-primary-foreground">
                     Zkusit znovu
                   </Button>
                 )}
               </div>
             </CardContent>
           </Card>
+
+          {showReview && perQuestion.length > 0 && (
+            <Card className="shadow-card">
+              <CardContent className="p-4 md:p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Vaše odpovědi</h3>
+                  <span className="text-sm text-muted-foreground">
+                    {perQuestion.length - wrongCount} / {perQuestion.length} správně
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {perQuestion.map((p, i) => (
+                    <div
+                      key={p.question_id}
+                      className={`rounded-xl border-2 p-3 md:p-4 ${p.correct ? 'border-success/40 bg-success/5' : 'border-destructive/40 bg-destructive/5'}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        {p.correct
+                          ? <CheckCircle className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          : <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm md:text-base mb-2">
+                            <span className="text-muted-foreground mr-1">{i + 1}.</span>
+                            {p.question_text}
+                          </p>
+                          <div className="text-sm space-y-1">
+                            <div>
+                              <span className="text-muted-foreground">Vaše odpověď: </span>
+                              <span className={p.correct ? 'text-success font-medium' : 'text-destructive font-medium'}>
+                                {p.user_answer || <em className="text-muted-foreground">— bez odpovědi —</em>}
+                              </span>
+                            </div>
+                            {!p.correct && (
+                              <div>
+                                <span className="text-muted-foreground">Správná odpověď: </span>
+                                <span className="text-success font-medium">{p.correct_answer}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </AppLayout>
     );
