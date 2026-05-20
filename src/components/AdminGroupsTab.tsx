@@ -294,7 +294,7 @@ export default function AdminGroupsTab() {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
-                  <Input type="number" min={0} value={form.diploma_validity_years} onChange={e => setForm({ ...form, diploma_validity_years: Number(e.target.value) })} />
+                  <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
                   <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
                 </div>
               </div>
