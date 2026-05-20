@@ -40,6 +40,8 @@ export default function GroupFinalTest() {
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [passed, setPassed] = useState(false);
+  const [perQuestion, setPerQuestion] = useState<Array<{ question_id: string; question_text: string; correct: boolean; user_answer: string | null; correct_answer: string }>>([]);
+  const [showReview, setShowReview] = useState(false);
   const [eligibility, setEligibility] = useState<{ ok: boolean; reason?: string }>({ ok: true });
 
   useEffect(() => {
