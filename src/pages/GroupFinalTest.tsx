@@ -8,7 +8,7 @@ import AppLayout from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, CheckCircle, Trophy, AlertTriangle, Loader2, GraduationCap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Trophy, AlertTriangle, Loader2, GraduationCap, XCircle, ListChecks } from 'lucide-react';
 
 interface TestItem {
   id: string;
