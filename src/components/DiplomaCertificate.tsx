@@ -62,6 +62,7 @@ export default function DiplomaCertificate({
           <div class="udelen">UDĚLEN PRO</div>
           <div class="recipient">${safe(userName)}</div>
           <div class="divider"></div>
+          <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
           <div class="italic">${safe(groupTitle)}</div>
           ${bodyText ? `<div class="body">${safe(bodyText)}</div>` : ''}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
