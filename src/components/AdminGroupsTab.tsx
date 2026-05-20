@@ -259,7 +259,7 @@ export default function AdminGroupsTab() {
               </div>
               <div className="md:w-56">
                 <label className="text-sm font-medium">Min. skóre záv. testu (%)</label>
-                <Input type="number" min={0} max={100} value={form.final_test_passing_score} onChange={e => setForm({ ...form, final_test_passing_score: Number(e.target.value) })} />
+                <NumberField min={0} max={100} value={form.final_test_passing_score} onChange={v => setForm({ ...form, final_test_passing_score: v })} />
               </div>
             </div>
 
