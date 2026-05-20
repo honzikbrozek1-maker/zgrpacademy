@@ -235,7 +235,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Počet otázek</label>
-                  <Input type="number" min={1} max={30} value={aiCount} onChange={e => setAiCount(parseInt(e.target.value) || 1)} />
+                  <NumberField min={1} max={30} value={aiCount} onChange={v => setAiCount(v)} />
                 </div>
                 <Button onClick={generateAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
                   {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji...</> : <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat</>}
