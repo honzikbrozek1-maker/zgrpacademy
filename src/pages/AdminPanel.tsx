@@ -922,12 +922,11 @@ export default function AdminPanel() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
-                                  <Input
-                                    type="number"
+                                  <NumberField
                                     min={1}
                                     max={100}
                                     value={aiCount}
-                                    onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                                    onChange={v => setAiCount(v)}
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
                                     Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
@@ -938,11 +937,11 @@ export default function AdminPanel() {
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">🧠 Kvízových</label>
-                                  <Input type="number" min={0} max={100} value={aiQuizCount} onChange={e => setAiQuizCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                  <NumberField min={0} max={100} value={aiQuizCount} onChange={v => setAiQuizCount(v)} />
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">✏️ Doplňovacích</label>
-                                  <Input type="number" min={0} max={100} value={aiFillCount} onChange={e => setAiFillCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                  <NumberField min={0} max={100} value={aiFillCount} onChange={v => setAiFillCount(v)} />
                                 </div>
                               </div>
                             )}
