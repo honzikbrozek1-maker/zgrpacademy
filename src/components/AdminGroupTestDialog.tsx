@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Sparkles, Loader2, CheckCircle, GraduationCap, ArrowLeft } from 'lucide-react';
+import { NumberField } from './NumberField';
 
 interface Question {
   id: string;
