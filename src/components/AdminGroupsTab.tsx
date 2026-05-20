@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
 import AdminGroupTestDialog from './AdminGroupTestDialog';
+import { NumberField } from './NumberField';
 
 interface Group {
   id: string;
