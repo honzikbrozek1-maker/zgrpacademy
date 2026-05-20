@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Sparkles, Loader2, CheckCircle, GraduationCap, ArrowLeft } from 'lucide-react';
+import { NumberField } from './NumberField';
 
 interface Question {
   id: string;
@@ -126,6 +127,10 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
 
   const generateAi = async () => {
     if (!aiText.trim() || aiTypes.length === 0) return;
+    if (!Number.isFinite(aiCount)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      return;
+    }
     setAiLoading(true);
     setAiResults(null);
     try {
@@ -234,7 +239,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Počet otázek</label>
-                  <Input type="number" min={1} max={30} value={aiCount} onChange={e => setAiCount(parseInt(e.target.value) || 1)} />
+                  <NumberField min={1} max={30} value={aiCount} onChange={v => setAiCount(v)} />
                 </div>
                 <Button onClick={generateAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
                   {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji...</> : <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat</>}

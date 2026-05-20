@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AdminGroupsTab from '@/components/AdminGroupsTab';
+import { NumberField } from '@/components/NumberField';
 
 interface Level {
   id: string;
@@ -193,6 +194,14 @@ export default function AdminPanel() {
   };
 
   const saveLevel = async () => {
+    if (!levelForm.title.trim()) {
+      toast({ title: 'Chyba', description: 'Vyplňte název levelu.', variant: 'destructive' });
+      return;
+    }
+    if (!Number.isFinite(levelForm.order_index) || !Number.isFinite(levelForm.passing_score)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte pořadí a skóre pro postup.', variant: 'destructive' });
+      return;
+    }
     const payload = { ...levelForm, category };
     if (editingLevel) {
       await supabase.from('levels').update(payload).eq('id', editingLevel);
@@ -368,6 +377,15 @@ export default function AdminPanel() {
 
   const generateWithAi = async () => {
     if (!aiText.trim() || !selectedLevel) return;
+    if (aiForTest) {
+      if (!Number.isFinite(aiQuizCount) || !Number.isFinite(aiFillCount)) {
+        toast({ title: 'Chybí hodnota', description: 'Vyplňte počet kvízových a doplňovacích otázek.', variant: 'destructive' });
+        return;
+      }
+    } else if (!Number.isFinite(aiCount)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      return;
+    }
     // Build per-type targets
     const targets: { type: string; count: number }[] = aiForTest
       ? [
@@ -921,12 +939,11 @@ export default function AdminPanel() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
-                                  <Input
-                                    type="number"
+                                  <NumberField
                                     min={1}
                                     max={100}
                                     value={aiCount}
-                                    onChange={e => setAiCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                                    onChange={v => setAiCount(v)}
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
                                     Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
@@ -937,11 +954,11 @@ export default function AdminPanel() {
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">🧠 Kvízových</label>
-                                  <Input type="number" min={0} max={100} value={aiQuizCount} onChange={e => setAiQuizCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                  <NumberField min={0} max={100} value={aiQuizCount} onChange={v => setAiQuizCount(v)} />
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium mb-1 block">✏️ Doplňovacích</label>
-                                  <Input type="number" min={0} max={100} value={aiFillCount} onChange={e => setAiFillCount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                                  <NumberField min={0} max={100} value={aiFillCount} onChange={v => setAiFillCount(v)} />
                                 </div>
                               </div>
                             )}
@@ -1194,11 +1211,11 @@ export default function AdminPanel() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm text-muted-foreground">Pořadí</label>
-                            <Input type="number" value={levelForm.order_index} onChange={e => setLevelForm({ ...levelForm, order_index: parseInt(e.target.value) || 0 })} />
+                            <NumberField value={levelForm.order_index} onChange={v => setLevelForm({ ...levelForm, order_index: v })} />
                           </div>
                           <div>
                             <label className="text-sm text-muted-foreground">Skóre pro postup (%)</label>
-                            <Input type="number" value={levelForm.passing_score} onChange={e => setLevelForm({ ...levelForm, passing_score: parseInt(e.target.value) || 70 })} />
+                            <NumberField value={levelForm.passing_score} onChange={v => setLevelForm({ ...levelForm, passing_score: v })} />
                           </div>
                         </div>
                         <Button onClick={saveLevel} className="w-full">Uložit</Button>

@@ -43,7 +43,8 @@ export default function DiplomaCertificate({
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 48px; letter-spacing: 5px; margin: 4px 0 6px; font-weight: 500; }
         .udelen { font-size: 12px; letter-spacing: 6px; color: #555; margin-bottom: 14px; }
         .recipient { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; margin: 4px 0 10px; }
-        .divider { width: 40%; height: 1.5px; background: #1a1a1a; margin: 8px 0 18px; }
+        .divider { width: 40%; height: 1.5px; background: #1a1a1a; margin: 8px 0 14px; }
+        .prefix { font-size: 13px; color: #444; letter-spacing: 1px; margin-bottom: 6px; }
         .italic { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 18px; line-height: 1.4; color: #111; max-width: 120mm; margin: 0 auto; white-space: pre-line; }
         .body { font-size: 13px; line-height: 1.6; color: #2a2a2a; max-width: 120mm; margin: 16px auto 0; }
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
@@ -62,6 +63,7 @@ export default function DiplomaCertificate({
           <div class="udelen">UDĚLEN PRO</div>
           <div class="recipient">${safe(userName)}</div>
           <div class="divider"></div>
+          <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
           <div class="italic">${safe(groupTitle)}</div>
           ${bodyText ? `<div class="body">${safe(bodyText)}</div>` : ''}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
@@ -109,6 +111,9 @@ export default function DiplomaCertificate({
             {userName}
           </div>
           <div className="w-[40%] h-[1.5px] bg-foreground my-3" />
+          <p className="text-[clamp(10px,1.2vw,13px)] tracking-wide text-muted-foreground mb-1">
+            za úspěšné absolvování odborné zkoušky z
+          </p>
           <p
             className="italic font-semibold text-[clamp(12px,1.7vw,16px)] leading-snug max-w-[88%] text-foreground"
             style={{ fontFamily: '"Cormorant Garamond", serif' }}

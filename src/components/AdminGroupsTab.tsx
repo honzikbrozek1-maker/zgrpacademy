@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
 import AdminGroupTestDialog from './AdminGroupTestDialog';
+import { NumberField } from './NumberField';
 
 interface Group {
   id: string;
@@ -95,6 +96,18 @@ export default function AdminGroupsTab() {
     if (!form.title.trim()) {
       toast({ title: 'Chyba', description: 'Vyplňte název skupiny', variant: 'destructive' });
       return;
+    }
+    const numericChecks: Array<[number, string]> = [
+      [form.order_index, 'Pořadí'],
+      [form.min_average_score, 'Min. průměr'],
+      [form.final_test_passing_score, 'Min. skóre závěrečného testu'],
+      [form.diploma_validity_years, 'Platnost diplomu (roky)'],
+    ];
+    for (const [v, label] of numericChecks) {
+      if (!Number.isFinite(v)) {
+        toast({ title: 'Chybí hodnota', description: `Vyplňte pole "${label}".`, variant: 'destructive' });
+        return;
+      }
     }
     const payload = { ...form, category };
     const { error } = editingId
@@ -232,11 +245,11 @@ export default function AdminGroupsTab() {
               </div>
               <div className="md:w-24">
                 <label className="text-sm font-medium">Pořadí</label>
-                <Input type="number" value={form.order_index} onChange={e => setForm({ ...form, order_index: Number(e.target.value) })} />
+                <NumberField value={form.order_index} onChange={v => setForm({ ...form, order_index: v })} />
               </div>
               <div className="md:w-40">
                 <label className="text-sm font-medium">Min. průměr (%)</label>
-                <Input type="number" min={0} max={100} value={form.min_average_score} onChange={e => setForm({ ...form, min_average_score: Number(e.target.value) })} />
+                <NumberField min={0} max={100} value={form.min_average_score} onChange={v => setForm({ ...form, min_average_score: v })} />
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
@@ -246,7 +259,7 @@ export default function AdminGroupsTab() {
               </div>
               <div className="md:w-56">
                 <label className="text-sm font-medium">Min. skóre záv. testu (%)</label>
-                <Input type="number" min={0} max={100} value={form.final_test_passing_score} onChange={e => setForm({ ...form, final_test_passing_score: Number(e.target.value) })} />
+                <NumberField min={0} max={100} value={form.final_test_passing_score} onChange={v => setForm({ ...form, final_test_passing_score: v })} />
               </div>
             </div>
 
@@ -281,7 +294,7 @@ export default function AdminGroupsTab() {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
-                  <Input type="number" min={0} value={form.diploma_validity_years} onChange={e => setForm({ ...form, diploma_validity_years: Number(e.target.value) })} />
+                  <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
                   <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
                 </div>
               </div>
