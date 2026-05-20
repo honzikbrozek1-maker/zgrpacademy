@@ -245,11 +245,11 @@ export default function AdminGroupsTab() {
               </div>
               <div className="md:w-24">
                 <label className="text-sm font-medium">Pořadí</label>
-                <Input type="number" value={form.order_index} onChange={e => setForm({ ...form, order_index: Number(e.target.value) })} />
+                <NumberField value={form.order_index} onChange={v => setForm({ ...form, order_index: v })} />
               </div>
               <div className="md:w-40">
                 <label className="text-sm font-medium">Min. průměr (%)</label>
-                <Input type="number" min={0} max={100} value={form.min_average_score} onChange={e => setForm({ ...form, min_average_score: Number(e.target.value) })} />
+                <NumberField min={0} max={100} value={form.min_average_score} onChange={v => setForm({ ...form, min_average_score: v })} />
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
