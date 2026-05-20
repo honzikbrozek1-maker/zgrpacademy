@@ -194,6 +194,14 @@ export default function AdminPanel() {
   };
 
   const saveLevel = async () => {
+    if (!levelForm.title.trim()) {
+      toast({ title: 'Chyba', description: 'Vyplňte název levelu.', variant: 'destructive' });
+      return;
+    }
+    if (!Number.isFinite(levelForm.order_index) || !Number.isFinite(levelForm.passing_score)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte pořadí a skóre pro postup.', variant: 'destructive' });
+      return;
+    }
     const payload = { ...levelForm, category };
     if (editingLevel) {
       await supabase.from('levels').update(payload).eq('id', editingLevel);
