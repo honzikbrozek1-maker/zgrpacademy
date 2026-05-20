@@ -369,6 +369,15 @@ export default function AdminPanel() {
 
   const generateWithAi = async () => {
     if (!aiText.trim() || !selectedLevel) return;
+    if (aiForTest) {
+      if (!Number.isFinite(aiQuizCount) || !Number.isFinite(aiFillCount)) {
+        toast({ title: 'Chybí hodnota', description: 'Vyplňte počet kvízových a doplňovacích otázek.', variant: 'destructive' });
+        return;
+      }
+    } else if (!Number.isFinite(aiCount)) {
+      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      return;
+    }
     // Build per-type targets
     const targets: { type: string; count: number }[] = aiForTest
       ? [
