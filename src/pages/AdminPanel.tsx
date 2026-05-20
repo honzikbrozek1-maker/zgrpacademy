@@ -1211,11 +1211,11 @@ export default function AdminPanel() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm text-muted-foreground">Pořadí</label>
-                            <Input type="number" value={levelForm.order_index} onChange={e => setLevelForm({ ...levelForm, order_index: parseInt(e.target.value) || 0 })} />
+                            <NumberField value={levelForm.order_index} onChange={v => setLevelForm({ ...levelForm, order_index: v })} />
                           </div>
                           <div>
                             <label className="text-sm text-muted-foreground">Skóre pro postup (%)</label>
-                            <Input type="number" value={levelForm.passing_score} onChange={e => setLevelForm({ ...levelForm, passing_score: parseInt(e.target.value) || 70 })} />
+                            <NumberField value={levelForm.passing_score} onChange={v => setLevelForm({ ...levelForm, passing_score: v })} />
                           </div>
                         </div>
                         <Button onClick={saveLevel} className="w-full">Uložit</Button>
