@@ -117,9 +117,11 @@ export default function GroupFinalTest() {
         p_answers: payload,
       });
       if (error) throw error;
-      const res = data as { score: number; passed: boolean };
+      const res = data as { score: number; passed: boolean; per_question?: typeof perQuestion };
       setScore(res?.score ?? 0);
       setPassed(Boolean(res?.passed));
+      setPerQuestion(Array.isArray(res?.per_question) ? res!.per_question! : []);
+      setShowReview(false);
       setFinished(true);
 
       if (res?.passed) {
