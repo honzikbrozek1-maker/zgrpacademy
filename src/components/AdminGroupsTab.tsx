@@ -97,6 +97,18 @@ export default function AdminGroupsTab() {
       toast({ title: 'Chyba', description: 'Vyplňte název skupiny', variant: 'destructive' });
       return;
     }
+    const numericChecks: Array<[number, string]> = [
+      [form.order_index, 'Pořadí'],
+      [form.min_average_score, 'Min. průměr'],
+      [form.final_test_passing_score, 'Min. skóre závěrečného testu'],
+      [form.diploma_validity_years, 'Platnost diplomu (roky)'],
+    ];
+    for (const [v, label] of numericChecks) {
+      if (!Number.isFinite(v)) {
+        toast({ title: 'Chybí hodnota', description: `Vyplňte pole "${label}".`, variant: 'destructive' });
+        return;
+      }
+    }
     const payload = { ...form, category };
     const { error } = editingId
       ? await supabase.from('level_groups').update(payload).eq('id', editingId)
