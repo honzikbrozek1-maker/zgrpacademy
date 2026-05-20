@@ -111,6 +111,9 @@ export default function DiplomaCertificate({
             {userName}
           </div>
           <div className="w-[40%] h-[1.5px] bg-foreground my-3" />
+          <p className="text-[clamp(10px,1.2vw,13px)] tracking-wide text-muted-foreground mb-1">
+            za úspěšné absolvování odborné zkoušky z
+          </p>
           <p
             className="italic font-semibold text-[clamp(12px,1.7vw,16px)] leading-snug max-w-[88%] text-foreground"
             style={{ fontFamily: '"Cormorant Garamond", serif' }}
