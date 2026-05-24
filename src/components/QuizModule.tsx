@@ -96,6 +96,27 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
     }
   };
 
+  // Klávesové zkratky: 1-4 výběr odpovědi, Enter další, ←/→ navigace
+  useEffect(() => {
+    if (finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (!showResult && /^[1-4]$/.test(e.key)) {
+        const n = parseInt(e.key, 10);
+        if (n <= options.length) { e.preventDefault(); handleSelect(n); }
+      } else if (e.key === 'Enter' && showResult) {
+        e.preventDefault(); handleNext();
+      } else if (e.key === 'ArrowRight' && showResult) {
+        e.preventDefault(); handleNext();
+      } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault(); handlePrev();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   if (finished) {
     return (
       <Card className="shadow-elevated">
