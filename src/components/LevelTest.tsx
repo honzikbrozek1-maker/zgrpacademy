@@ -85,6 +85,21 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
     if (currentIndex > 0) setCurrentIndex(i => i - 1);
   };
 
+  useEffect(() => {
+    if (!started || finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault(); handlePrev();
+      } else if ((e.key === 'ArrowRight' || e.key === 'Enter') && answers[currentIndex] && currentIndex < items.length - 1) {
+        e.preventDefault(); handleNext();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [started, finished, currentIndex, answers, items.length]);
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
