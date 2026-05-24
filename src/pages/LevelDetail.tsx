@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Brain, ClipboardCheck, RotateCcw, Trophy, PenLine, CheckCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import QuizModule from '@/components/QuizModule';
 import FillInBlankModule from '@/components/FillInBlankModule';
 import LevelTest from '@/components/LevelTest';
