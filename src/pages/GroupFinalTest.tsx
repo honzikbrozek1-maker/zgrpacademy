@@ -272,6 +272,13 @@ export default function GroupFinalTest() {
     return (
       <AppLayout>
         <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Dashboard', to: basePath },
+              { label: 'Levely', to: `${basePath}/levels` },
+              { label: `Závěrečný test — ${group?.title ?? ''}` },
+            ]}
+          />
           <Button variant="ghost" size="sm" onClick={() => navigate(`${basePath}/levels`)}>
             <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
           </Button>
