@@ -74,9 +74,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </div>
             )}
           </header>
-          <main className="flex-1">
+          <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
             {children}
           </main>
+          <MobileBottomNav />
         </div>
       </div>
     </SidebarProvider>
