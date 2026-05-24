@@ -419,8 +419,14 @@ export default function Review() {
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
+        <Breadcrumbs
+          items={[
+            { label: 'Dashboard', to: basePath },
+            { label: 'Procvičování' },
+          ]}
+        />
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Zpět">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <RotateCcw className="h-6 w-6 text-primary" />
