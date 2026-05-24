@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -84,6 +84,21 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const handlePrev = () => {
     if (currentIndex > 0) setCurrentIndex(i => i - 1);
   };
+
+  useEffect(() => {
+    if (!started || finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault(); handlePrev();
+      } else if ((e.key === 'ArrowRight' || e.key === 'Enter') && answers[currentIndex] && currentIndex < items.length - 1) {
+        e.preventDefault(); handleNext();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [started, finished, currentIndex, answers, items.length]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -216,7 +231,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
               return (
                 <button
                   key={i}
-                  className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  className={`border-2 p-4 min-h-[56px] rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   onClick={() => handleSelect(opt)}
                 >
                   <div className="flex items-center gap-3">

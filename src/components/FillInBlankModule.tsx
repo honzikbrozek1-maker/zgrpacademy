@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -156,6 +156,25 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
     }
   };
 
+  useEffect(() => {
+    if (finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (!showResult && /^[1-4]$/.test(e.key)) {
+        const n = parseInt(e.key, 10);
+        const opt = options[n - 1];
+        if (opt) { e.preventDefault(); handleSelect(opt.index); }
+      } else if ((e.key === 'Enter' || e.key === 'ArrowRight') && showResult) {
+        e.preventDefault(); handleNext();
+      } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault(); handlePrev();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   if (finished) {
     return (
       <Card className="shadow-elevated">
@@ -206,7 +225,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
             {options.map((opt) => {
               const isThis = selected === opt.index;
               const isAnswer = correctAnswerIndex !== null && opt.index === correctAnswerIndex;
-              let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
+              let cls = 'border-2 rounded-xl p-3 min-h-[56px] text-center transition-all font-medium text-sm flex items-center justify-center ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
               } else if (isAnswer) {

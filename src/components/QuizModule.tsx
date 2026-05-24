@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -96,6 +96,27 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
     }
   };
 
+  // Klávesové zkratky: 1-4 výběr odpovědi, Enter další, ←/→ navigace
+  useEffect(() => {
+    if (finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (!showResult && /^[1-4]$/.test(e.key)) {
+        const n = parseInt(e.key, 10);
+        if (n <= options.length) { e.preventDefault(); handleSelect(n); }
+      } else if (e.key === 'Enter' && showResult) {
+        e.preventDefault(); handleNext();
+      } else if (e.key === 'ArrowRight' && showResult) {
+        e.preventDefault(); handleNext();
+      } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault(); handlePrev();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   if (finished) {
     return (
       <Card className="shadow-elevated">
@@ -128,7 +149,7 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
           <div className="space-y-3">
             {options.map((opt, i) => {
               const optNum = i + 1;
-              let cls = 'border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full';
+              let cls = 'border-2 p-4 min-h-[56px] rounded-xl cursor-pointer transition-all text-left w-full';
               if (showResult) {
                 if (optNum === correctAnswer) cls += ' border-success bg-success/10';
                 else if (optNum === selected) cls += ' border-destructive bg-destructive/10';

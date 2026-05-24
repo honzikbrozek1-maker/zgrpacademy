@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -106,6 +107,24 @@ export default function GroupFinalTest() {
   const progressPct = items.length > 0 ? ((currentIndex + 1) / items.length) * 100 : 0;
 
   const handleSelect = (txt: string) => setAnswers(a => ({ ...a, [currentIndex]: txt }));
+
+  // Klávesové zkratky: ←/→ navigace, Enter další
+  useEffect(() => {
+    if (!started || finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        setCurrentIndex(i => Math.max(0, i - 1));
+      } else if ((e.key === 'ArrowRight' || e.key === 'Enter') && answers[currentIndex] && currentIndex < items.length - 1) {
+        e.preventDefault();
+        setCurrentIndex(i => i + 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [started, finished, currentIndex, answers, items.length]);
 
   const handleSubmit = async () => {
     if (!groupId) return;
@@ -253,6 +272,13 @@ export default function GroupFinalTest() {
     return (
       <AppLayout>
         <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Dashboard', to: basePath },
+              { label: 'Levely', to: `${basePath}/levels` },
+              { label: `Závěrečný test — ${group?.title ?? ''}` },
+            ]}
+          />
           <Button variant="ghost" size="sm" onClick={() => navigate(`${basePath}/levels`)}>
             <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
           </Button>
@@ -302,7 +328,7 @@ export default function GroupFinalTest() {
                   return (
                     <button
                       key={i}
-                      className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                      className={`border-2 p-4 min-h-[56px] rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                       onClick={() => handleSelect(opt)}
                     >
                       <div className="flex items-center gap-3">

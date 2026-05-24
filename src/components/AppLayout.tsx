@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useLayoutEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import { Home, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
@@ -73,9 +74,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </div>
             )}
           </header>
-          <main className="flex-1">
+          <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
             {children}
           </main>
+          <MobileBottomNav />
         </div>
       </div>
     </SidebarProvider>
