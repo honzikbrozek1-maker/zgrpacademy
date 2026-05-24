@@ -225,7 +225,7 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
             {options.map((opt) => {
               const isThis = selected === opt.index;
               const isAnswer = correctAnswerIndex !== null && opt.index === correctAnswerIndex;
-              let cls = 'border-2 rounded-xl p-3 text-center transition-all font-medium text-sm ';
+              let cls = 'border-2 rounded-xl p-3 min-h-[56px] text-center transition-all font-medium text-sm flex items-center justify-center ';
               if (!showResult) {
                 cls += 'border-border hover:border-primary hover:bg-primary/5 cursor-pointer';
               } else if (isAnswer) {
