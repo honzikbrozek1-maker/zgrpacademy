@@ -149,7 +149,7 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
           <div className="space-y-3">
             {options.map((opt, i) => {
               const optNum = i + 1;
-              let cls = 'border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full';
+              let cls = 'border-2 p-4 min-h-[56px] rounded-xl cursor-pointer transition-all text-left w-full';
               if (showResult) {
                 if (optNum === correctAnswer) cls += ' border-success bg-success/10';
                 else if (optNum === selected) cls += ' border-destructive bg-destructive/10';
