@@ -108,6 +108,24 @@ export default function GroupFinalTest() {
 
   const handleSelect = (txt: string) => setAnswers(a => ({ ...a, [currentIndex]: txt }));
 
+  // Klávesové zkratky: ←/→ navigace, Enter další
+  useEffect(() => {
+    if (!started || finished) return;
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        setCurrentIndex(i => Math.max(0, i - 1));
+      } else if ((e.key === 'ArrowRight' || e.key === 'Enter') && answers[currentIndex] && currentIndex < items.length - 1) {
+        e.preventDefault();
+        setCurrentIndex(i => i + 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [started, finished, currentIndex, answers, items.length]);
+
   const handleSubmit = async () => {
     if (!groupId) return;
     setSubmitting(true);
