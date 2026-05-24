@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft, PenLine } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 interface ReviewItem {
   id: string;
