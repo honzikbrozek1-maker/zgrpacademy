@@ -231,7 +231,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
               return (
                 <button
                   key={i}
-                  className={`border-2 p-4 rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  className={`border-2 p-4 min-h-[56px] rounded-xl cursor-pointer transition-all text-left w-full ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   onClick={() => handleSelect(opt)}
                 >
                   <div className="flex items-center gap-3">
