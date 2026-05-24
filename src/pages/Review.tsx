@@ -28,7 +28,7 @@ interface ReviewItem {
 
 export default function Review() {
   const { user } = useAuth();
-  const { category } = useAppPath();
+  const { category, basePath } = useAppPath();
   const navigate = useNavigate();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
