@@ -76,6 +76,7 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
           onReviewItemsChange?.();
         }
       } else {
+        setAnsweredCount(c => c + 1);
         playIncorrectSound();
         if (user) {
           await supabase.from('review_items').upsert({
