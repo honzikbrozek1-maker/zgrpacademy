@@ -161,7 +161,13 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
       setCorrectAnswerIndex(null);
     } else {
       setFinished(true);
+      try { localStorage.removeItem(storageKey); } catch {}
     }
+  };
+
+  const handleSkip = () => {
+    if (showResult || checking) return;
+    handleNext();
   };
 
   const handlePrev = () => {
@@ -172,6 +178,15 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
       setIsCorrect(false);
       setCorrectAnswerIndex(null);
     }
+  };
+
+  const handleRestart = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+    setCurrentIndex(0);
+    setSelected(null);
+    setShowResult(false);
+    setIsCorrect(false);
+    setCorrectAnswerIndex(null);
   };
 
   useEffect(() => {
@@ -187,6 +202,8 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
         e.preventDefault(); handleNext();
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
         e.preventDefault(); handlePrev();
+      } else if (!showResult && (e.key === 's' || e.key === 'S') && currentIndex < questions.length - 1) {
+        e.preventDefault(); handleSkip();
       }
     };
     window.addEventListener('keydown', onKey);
