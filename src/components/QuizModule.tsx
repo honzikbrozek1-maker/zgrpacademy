@@ -69,6 +69,7 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
 
       if (result.correct) {
         setCorrectCount(c => c + 1);
+        setAnsweredCount(c => c + 1);
         playCorrectSound();
         if (user) {
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
