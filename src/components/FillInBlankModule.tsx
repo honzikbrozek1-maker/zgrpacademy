@@ -304,15 +304,22 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
-        {showResult && (
-          <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
-            {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!showResult && currentIndex < questions.length - 1 && (
+            <Button variant="ghost" onClick={handleSkip}>
+              Přeskočit <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+          {showResult && (
+            <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
+              {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
