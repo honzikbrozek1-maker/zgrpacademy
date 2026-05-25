@@ -19,6 +19,7 @@ interface Question {
 
 interface Props {
   questions: Question[];
+  levelId?: string;
   onComplete: () => void;
   onReviewItemsChange?: () => void;
 }
