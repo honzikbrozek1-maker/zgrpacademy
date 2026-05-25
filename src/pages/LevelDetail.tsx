@@ -270,7 +270,12 @@ export default function LevelDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Kvíz</h3>
-                    <p className="text-sm text-muted-foreground">{quizQuestions.length} otázek</p>
+                    <p className="text-sm text-muted-foreground">
+                      {quizQuestions.length} otázek
+                      {!completedModules.has('quiz') && quizSavedIndex > 0 && quizSavedIndex < quizQuestions.length && (
+                        <> · pokračujte na otázce {quizSavedIndex + 1}</>
+                      )}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
