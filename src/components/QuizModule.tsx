@@ -142,6 +142,8 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
         e.preventDefault(); handleNext();
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
         e.preventDefault(); handlePrev();
+      } else if (!showResult && (e.key === 's' || e.key === 'S') && currentIndex < questions.length - 1) {
+        e.preventDefault(); handleSkip();
       }
     };
     window.addEventListener('keydown', onKey);
