@@ -193,6 +193,19 @@ export default function LevelDetail() {
 
   const handleTabChange = (value: string) => setActiveTab(value);
 
+  const readSavedIndex = (module: 'quiz' | 'fillin') => {
+    try {
+      const raw = localStorage.getItem(`practice:${module}:${level?.id}`);
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw);
+      return typeof parsed.index === 'number' ? parsed.index : 0;
+    } catch { return 0; }
+  };
+  const quizSavedIndex = level ? readSavedIndex('quiz') : 0;
+  const fillinSavedIndex = level ? readSavedIndex('fillin') : 0;
+  // readSavedIndex je vyhodnoceno při každém renderu — po návratu z modulu se přehled obnoví díky setActiveTab
+
+
   if (!level) return (
     <AppLayout>
       <div className="p-8 text-center text-muted-foreground">Načítání...</div>
@@ -257,7 +270,12 @@ export default function LevelDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Kvíz</h3>
-                    <p className="text-sm text-muted-foreground">{quizQuestions.length} otázek</p>
+                    <p className="text-sm text-muted-foreground">
+                      {quizQuestions.length} otázek
+                      {!completedModules.has('quiz') && quizSavedIndex > 0 && quizSavedIndex < quizQuestions.length && (
+                        <> · pokračujte na otázce {quizSavedIndex + 1}</>
+                      )}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -276,7 +294,12 @@ export default function LevelDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Doplňování</h3>
-                    <p className="text-sm text-muted-foreground">{fillBlankQuestions.length} otázek</p>
+                    <p className="text-sm text-muted-foreground">
+                      {fillBlankQuestions.length} otázek
+                      {!completedModules.has('fillin') && fillinSavedIndex > 0 && fillinSavedIndex < fillBlankQuestions.length && (
+                        <> · pokračujte na otázce {fillinSavedIndex + 1}</>
+                      )}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
