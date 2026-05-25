@@ -128,12 +128,14 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
 
       if (correct) {
         setCorrectCount(c => c + 1);
+        setAnsweredCount(c => c + 1);
         playCorrectSound();
         if (user) {
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
       } else {
+        setAnsweredCount(c => c + 1);
         playIncorrectSound();
         if (user) {
           await supabase.from('review_items').upsert({
