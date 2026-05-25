@@ -294,7 +294,12 @@ export default function LevelDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">Doplňování</h3>
-                    <p className="text-sm text-muted-foreground">{fillBlankQuestions.length} otázek</p>
+                    <p className="text-sm text-muted-foreground">
+                      {fillBlankQuestions.length} otázek
+                      {!completedModules.has('fillin') && fillinSavedIndex > 0 && fillinSavedIndex < fillBlankQuestions.length && (
+                        <> · pokračujte na otázce {fillinSavedIndex + 1}</>
+                      )}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
