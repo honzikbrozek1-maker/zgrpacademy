@@ -169,9 +169,15 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
-        <Progress value={progress} className="h-2 flex-1" />
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground">Otázka {currentIndex + 1}/{questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1 min-w-[120px]" />
+        <span className="text-sm text-muted-foreground">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        {currentIndex > 0 && (
+          <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
+            Začít znovu
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-card">
@@ -207,15 +213,22 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
-        {showResult && (
-          <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
-            {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!showResult && currentIndex < questions.length - 1 && (
+            <Button variant="ghost" onClick={handleSkip}>
+              Přeskočit <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+          {showResult && (
+            <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
+              {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
