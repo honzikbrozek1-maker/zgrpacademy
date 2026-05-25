@@ -231,9 +231,15 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
-        <Progress value={progress} className="h-2 flex-1" />
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground">Otázka {currentIndex + 1}/{questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1 min-w-[120px]" />
+        <span className="text-sm text-muted-foreground">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        {currentIndex > 0 && (
+          <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
+            Začít znovu
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-card">
