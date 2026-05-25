@@ -23,19 +23,34 @@ interface Props {
   onReviewItemsChange?: () => void;
 }
 
-export default function QuizModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function QuizModule({ questions, levelId, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const storageKey = `practice:quiz:${levelId}`;
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.index === 'number' && parsed.index < questions.length) return parsed.index;
+      }
+    } catch {}
+    return 0;
+  });
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
   const options = [question?.option_1, question?.option_2, question?.option_3, question?.option_4].filter(Boolean);
   const progress = ((currentIndex + 1) / questions.length) * 100;
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify({ index: currentIndex })); } catch {}
+  }, [currentIndex, storageKey]);
 
   const handleSelect = async (optIndex: number) => {
     if (showResult || checking) return;
