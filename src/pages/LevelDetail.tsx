@@ -359,7 +359,7 @@ export default function LevelDetail() {
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
-              <FillInBlankModule questions={fillBlankQuestions} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
+              <FillInBlankModule questions={fillBlankQuestions} levelId={level.id} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
               <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
             )}

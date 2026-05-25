@@ -23,19 +23,34 @@ interface Props {
   onReviewItemsChange?: () => void;
 }
 
-export default function QuizModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function QuizModule({ questions, levelId, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const storageKey = `practice:quiz:${levelId}`;
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.index === 'number' && parsed.index < questions.length) return parsed.index;
+      }
+    } catch {}
+    return 0;
+  });
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [checking, setChecking] = useState(false);
 
   const question = questions[currentIndex];
   const options = [question?.option_1, question?.option_2, question?.option_3, question?.option_4].filter(Boolean);
   const progress = ((currentIndex + 1) / questions.length) * 100;
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify({ index: currentIndex })); } catch {}
+  }, [currentIndex, storageKey]);
 
   const handleSelect = async (optIndex: number) => {
     if (showResult || checking) return;
@@ -54,12 +69,14 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
 
       if (result.correct) {
         setCorrectCount(c => c + 1);
+        setAnsweredCount(c => c + 1);
         playCorrectSound();
         if (user) {
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
       } else {
+        setAnsweredCount(c => c + 1);
         playIncorrectSound();
         if (user) {
           await supabase.from('review_items').upsert({
@@ -84,7 +101,13 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
       setCorrectAnswer(null);
     } else {
       setFinished(true);
+      try { localStorage.removeItem(storageKey); } catch {}
     }
+  };
+
+  const handleSkip = () => {
+    if (showResult || checking) return;
+    handleNext();
   };
 
   const handlePrev = () => {
@@ -94,6 +117,14 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
       setShowResult(false);
       setCorrectAnswer(null);
     }
+  };
+
+  const handleRestart = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+    setCurrentIndex(0);
+    setSelected(null);
+    setShowResult(false);
+    setCorrectAnswer(null);
   };
 
   // Klávesové zkratky: 1-4 výběr odpovědi, Enter další, ←/→ navigace
@@ -111,6 +142,8 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
         e.preventDefault(); handleNext();
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
         e.preventDefault(); handlePrev();
+      } else if (!showResult && (e.key === 's' || e.key === 'S') && currentIndex < questions.length - 1) {
+        e.preventDefault(); handleSkip();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -138,9 +171,15 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
-        <Progress value={progress} className="h-2 flex-1" />
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground">Otázka {currentIndex + 1}/{questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1 min-w-[120px]" />
+        <span className="text-sm text-muted-foreground">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        {currentIndex > 0 && (
+          <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
+            Začít znovu
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-card">
@@ -176,15 +215,22 @@ export default function QuizModule({ questions, onComplete, onReviewItemsChange 
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
-        {showResult && (
-          <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
-            {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!showResult && currentIndex < questions.length - 1 && (
+            <Button variant="ghost" onClick={handleSkip}>
+              Přeskočit <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+          {showResult && (
+            <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
+              {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

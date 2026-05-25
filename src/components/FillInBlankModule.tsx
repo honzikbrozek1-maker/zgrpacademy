@@ -19,6 +19,7 @@ interface Question {
 
 interface Props {
   questions: Question[];
+  levelId?: string;
   onComplete: () => void;
   onReviewItemsChange?: () => void;
 }
@@ -32,17 +33,32 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function FillInBlankModule({ questions, levelId, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const storageKey = `practice:fillin:${levelId ?? 'default'}`;
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.index === 'number' && parsed.index < questions.length) return parsed.index;
+      }
+    } catch {}
+    return 0;
+  });
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  
+
   const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify({ index: currentIndex })); } catch {}
+  }, [currentIndex, storageKey]);
 
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -112,12 +128,14 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
 
       if (correct) {
         setCorrectCount(c => c + 1);
+        setAnsweredCount(c => c + 1);
         playCorrectSound();
         if (user) {
           await supabase.from('review_items').delete().eq('user_id', user.id).eq('question_id', question.id);
           onReviewItemsChange?.();
         }
       } else {
+        setAnsweredCount(c => c + 1);
         playIncorrectSound();
         if (user) {
           await supabase.from('review_items').upsert({
@@ -143,7 +161,13 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setCorrectAnswerIndex(null);
     } else {
       setFinished(true);
+      try { localStorage.removeItem(storageKey); } catch {}
     }
+  };
+
+  const handleSkip = () => {
+    if (showResult || checking) return;
+    handleNext();
   };
 
   const handlePrev = () => {
@@ -154,6 +178,15 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
       setIsCorrect(false);
       setCorrectAnswerIndex(null);
     }
+  };
+
+  const handleRestart = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+    setCurrentIndex(0);
+    setSelected(null);
+    setShowResult(false);
+    setIsCorrect(false);
+    setCorrectAnswerIndex(null);
   };
 
   useEffect(() => {
@@ -169,6 +202,8 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         e.preventDefault(); handleNext();
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
         e.preventDefault(); handlePrev();
+      } else if (!showResult && (e.key === 's' || e.key === 'S') && currentIndex < questions.length - 1) {
+        e.preventDefault(); handleSkip();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -196,9 +231,15 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{currentIndex + 1}/{questions.length}</span>
-        <Progress value={progress} className="h-2 flex-1" />
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground">Otázka {currentIndex + 1}/{questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1 min-w-[120px]" />
+        <span className="text-sm text-muted-foreground">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        {currentIndex > 0 && (
+          <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
+            Začít znovu
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-card">
@@ -263,15 +304,22 @@ export default function FillInBlankModule({ questions, onComplete, onReviewItems
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
         </Button>
-        {showResult && (
-          <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
-            {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!showResult && currentIndex < questions.length - 1 && (
+            <Button variant="ghost" onClick={handleSkip}>
+              Přeskočit <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+          {showResult && (
+            <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
+              {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
