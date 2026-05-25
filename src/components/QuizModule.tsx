@@ -169,12 +169,37 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
     );
   }
 
+  const handleSeek = (ratio: number) => {
+    if (checking) return;
+    const target = Math.min(questions.length - 1, Math.max(0, Math.floor(ratio * questions.length)));
+    if (target === currentIndex && !showResult) return;
+    setCurrentIndex(target);
+    setSelected(null);
+    setShowResult(false);
+    setCorrectAnswer(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm text-muted-foreground">Otázka {currentIndex + 1}/{questions.length}</span>
-        <Progress value={progress} className="h-2 flex-1 min-w-[120px]" />
-        <span className="text-sm text-muted-foreground">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">Otázka {currentIndex + 1}/{questions.length}</span>
+        <div
+          role="slider"
+          aria-label="Přejít na otázku"
+          aria-valuemin={1}
+          aria-valuemax={questions.length}
+          aria-valuenow={currentIndex + 1}
+          tabIndex={0}
+          className="h-2 flex-1 min-w-[120px] rounded-full bg-secondary cursor-pointer relative group"
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            handleSeek((e.clientX - rect.left) / rect.width);
+          }}
+        >
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full ring-2 ring-primary/40" />
+        </div>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">Zodpovězeno: {answeredCount}/{questions.length}</span>
         {currentIndex > 0 && (
           <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
             Začít znovu
