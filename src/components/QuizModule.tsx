@@ -101,7 +101,13 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
       setCorrectAnswer(null);
     } else {
       setFinished(true);
+      try { localStorage.removeItem(storageKey); } catch {}
     }
+  };
+
+  const handleSkip = () => {
+    if (showResult || checking) return;
+    handleNext();
   };
 
   const handlePrev = () => {
@@ -111,6 +117,14 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
       setShowResult(false);
       setCorrectAnswer(null);
     }
+  };
+
+  const handleRestart = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+    setCurrentIndex(0);
+    setSelected(null);
+    setShowResult(false);
+    setCorrectAnswer(null);
   };
 
   // Klávesové zkratky: 1-4 výběr odpovědi, Enter další, ←/→ navigace
