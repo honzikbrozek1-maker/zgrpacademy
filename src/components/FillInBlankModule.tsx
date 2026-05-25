@@ -229,8 +229,6 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
     );
   }
 
-  return (
-    <div className="space-y-4">
   const handleSeek = (ratio: number) => {
     if (checking) return;
     const target = Math.min(questions.length - 1, Math.max(0, Math.floor(ratio * questions.length)));
@@ -241,6 +239,7 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
     setIsCorrect(false);
     setCorrectAnswerIndex(null);
   };
+
 
   return (
     <div className="space-y-4">
