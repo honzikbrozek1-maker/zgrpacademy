@@ -33,17 +33,32 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function FillInBlankModule({ questions, onComplete, onReviewItemsChange }: Props) {
+export default function FillInBlankModule({ questions, levelId, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const storageKey = `practice:fillin:${levelId ?? 'default'}`;
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.index === 'number' && parsed.index < questions.length) return parsed.index;
+      }
+    } catch {}
+    return 0;
+  });
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [finished, setFinished] = useState(false);
-  
+
   const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify({ index: currentIndex })); } catch {}
+  }, [currentIndex, storageKey]);
 
   const question = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
