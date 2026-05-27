@@ -337,13 +337,11 @@ export default function AdminPanel() {
   };
 
   const deleteUser = async (userId: string) => {
-    await supabase.from('review_items').delete().eq('user_id', userId);
-    await supabase.rpc('admin_reset_user_progress', { p_user_id: userId });
-    await supabase.from('profiles').delete().eq('user_id', userId);
-    await supabase.from('user_roles').delete().eq('user_id', userId);
+    const { error } = await supabase.rpc('soft_delete_user', { p_user_id: userId });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     setShowDeleteUser(null);
     fetchUsers();
-    toast({ title: 'Uživatel smazán' });
+    toast({ title: 'Uživatel přesunut do koše' });
   };
 
   // Insert blank at cursor position
