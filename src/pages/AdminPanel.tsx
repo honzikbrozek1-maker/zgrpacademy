@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AdminGroupsTab from '@/components/AdminGroupsTab';
+import RecycleBinTab from '@/components/RecycleBinTab';
 import { NumberField } from '@/components/NumberField';
 
 interface Level {
