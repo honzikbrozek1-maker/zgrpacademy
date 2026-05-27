@@ -265,9 +265,10 @@ export default function AdminPanel() {
   };
 
   const deleteQuestion = async (id: string) => {
-    await supabase.from('questions').delete().eq('id', id);
+    const { error } = await supabase.rpc('soft_delete_question', { p_id: id });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     if (selectedLevel) fetchQuestions(selectedLevel.id);
-    toast({ title: 'Otázka smazána' });
+    toast({ title: 'Otázka přesunuta do koše' });
   };
 
   const toggleInLevelTest = async (q: Question, value: boolean) => {
