@@ -51,6 +51,7 @@ interface UserProfile {
   user_id: string;
   display_name: string;
   created_at: string;
+  has_paid: boolean;
 }
 
 interface AdminRequest {
