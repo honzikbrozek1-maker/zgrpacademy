@@ -521,6 +521,7 @@ export default function AdminPanel() {
   };
 
   const filteredUsers = users.filter(u => {
+    if (!showUnpaid && !u.has_paid) return false;
     if (!userSearch) return true;
     const search = userSearch.toLowerCase();
     return u.display_name?.toLowerCase().includes(search);
