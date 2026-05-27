@@ -72,6 +72,7 @@ export default function AdminPanel() {
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
   const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
   const [userSearch, setUserSearch] = useState('');
+  const [showUnpaid, setShowUnpaid] = useState(false);
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
