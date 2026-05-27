@@ -842,6 +842,7 @@ export default function AdminPanel() {
             <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
             <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> Skupiny & diplomy</TabsTrigger>
             <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
+            <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
             {adminRequests.length > 0 && (
               <TabsTrigger value="requests" className="relative">
                 <Shield className="mr-1 h-4 w-4" /> Žádosti
