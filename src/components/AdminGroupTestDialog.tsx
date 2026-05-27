@@ -120,8 +120,8 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
   };
 
   const remove = async (id: string) => {
-    if (!confirm('Smazat otázku?')) return;
-    await supabase.from('questions').delete().eq('id', id);
+    if (!confirm('Přesunout otázku do koše?')) return;
+    await supabase.rpc('soft_delete_question', { p_id: id });
     load();
   };
 

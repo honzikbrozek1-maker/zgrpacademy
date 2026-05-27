@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AdminGroupsTab from '@/components/AdminGroupsTab';
+import RecycleBinTab from '@/components/RecycleBinTab';
 import { NumberField } from '@/components/NumberField';
 
 interface Level {
@@ -50,6 +51,7 @@ interface UserProfile {
   user_id: string;
   display_name: string;
   created_at: string;
+  has_paid: boolean;
 }
 
 interface AdminRequest {
@@ -70,6 +72,7 @@ export default function AdminPanel() {
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
   const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
   const [userSearch, setUserSearch] = useState('');
+  const [showUnpaid, setShowUnpaid] = useState(false);
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [showDeleteUser, setShowDeleteUser] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ quiz: true, flashcard: true, fill_blank: true });
@@ -216,10 +219,11 @@ export default function AdminPanel() {
   };
 
   const deleteLevel = async (id: string) => {
-    await supabase.from('levels').delete().eq('id', id);
+    const { error } = await supabase.rpc('soft_delete_level', { p_id: id });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     fetchLevels();
     if (selectedLevel?.id === id) setSelectedLevel(null);
-    toast({ title: 'Level smazán' });
+    toast({ title: 'Level přesunut do koše' });
   };
 
   const editLevel = (level: Level) => {
@@ -261,9 +265,10 @@ export default function AdminPanel() {
   };
 
   const deleteQuestion = async (id: string) => {
-    await supabase.from('questions').delete().eq('id', id);
+    const { error } = await supabase.rpc('soft_delete_question', { p_id: id });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     if (selectedLevel) fetchQuestions(selectedLevel.id);
-    toast({ title: 'Otázka smazána' });
+    toast({ title: 'Otázka přesunuta do koše' });
   };
 
   const toggleInLevelTest = async (q: Question, value: boolean) => {
@@ -332,13 +337,11 @@ export default function AdminPanel() {
   };
 
   const deleteUser = async (userId: string) => {
-    await supabase.from('review_items').delete().eq('user_id', userId);
-    await supabase.rpc('admin_reset_user_progress', { p_user_id: userId });
-    await supabase.from('profiles').delete().eq('user_id', userId);
-    await supabase.from('user_roles').delete().eq('user_id', userId);
+    const { error } = await supabase.rpc('soft_delete_user', { p_user_id: userId });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     setShowDeleteUser(null);
     fetchUsers();
-    toast({ title: 'Uživatel smazán' });
+    toast({ title: 'Uživatel přesunut do koše' });
   };
 
   // Insert blank at cursor position
@@ -518,6 +521,7 @@ export default function AdminPanel() {
   };
 
   const filteredUsers = users.filter(u => {
+    if (!showUnpaid && !u.has_paid) return false;
     if (!userSearch) return true;
     const search = userSearch.toLowerCase();
     return u.display_name?.toLowerCase().includes(search);
@@ -838,6 +842,7 @@ export default function AdminPanel() {
             <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
             <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> Skupiny & diplomy</TabsTrigger>
             <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
+            <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
             {adminRequests.length > 0 && (
               <TabsTrigger value="requests" className="relative">
                 <Shield className="mr-1 h-4 w-4" /> Žádosti
@@ -1268,6 +1273,16 @@ export default function AdminPanel() {
               />
             </div>
 
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">Zobrazit i nezaplacené uživatele</p>
+                <p className="text-xs text-muted-foreground">
+                  Ve výchozím nastavení jsou skryti registrovaní uživatelé, kteří ještě neuhradili poplatek.
+                </p>
+              </div>
+              <Switch checked={showUnpaid} onCheckedChange={setShowUnpaid} />
+            </div>
+
             {myInvitedUsers.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vaši pozvaní uživatelé</h3>
@@ -1285,6 +1300,10 @@ export default function AdminPanel() {
             {filteredUsers.length === 0 && (
               <p className="text-muted-foreground text-center py-8">Žádní uživatelé nenalezeni.</p>
             )}
+          </TabsContent>
+
+          <TabsContent value="trash" className="mt-6">
+            <RecycleBinTab />
           </TabsContent>
 
           {adminRequests.length > 0 && (

@@ -123,13 +123,13 @@ export default function AdminGroupsTab() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm('Smazat skupinu? Levely zůstanou, jen se odpojí.')) return;
-    const { error } = await supabase.from('level_groups').delete().eq('id', id);
+    if (!confirm('Přesunout skupinu do koše? Skupina, její levely i otázky budou obnovitelné 7 dní.')) return;
+    const { error } = await supabase.rpc('soft_delete_group', { p_id: id });
     if (error) {
       toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Smazáno' });
+    toast({ title: 'Přesunuto do koše' });
     load();
   };
 
