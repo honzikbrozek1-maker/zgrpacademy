@@ -219,10 +219,11 @@ export default function AdminPanel() {
   };
 
   const deleteLevel = async (id: string) => {
-    await supabase.from('levels').delete().eq('id', id);
+    const { error } = await supabase.rpc('soft_delete_level', { p_id: id });
+    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     fetchLevels();
     if (selectedLevel?.id === id) setSelectedLevel(null);
-    toast({ title: 'Level smazán' });
+    toast({ title: 'Level přesunut do koše' });
   };
 
   const editLevel = (level: Level) => {
