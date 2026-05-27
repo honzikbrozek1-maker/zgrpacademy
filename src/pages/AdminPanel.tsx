@@ -1273,6 +1273,16 @@ export default function AdminPanel() {
               />
             </div>
 
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">Zobrazit i nezaplacené uživatele</p>
+                <p className="text-xs text-muted-foreground">
+                  Ve výchozím nastavení jsou skryti registrovaní uživatelé, kteří ještě neuhradili poplatek.
+                </p>
+              </div>
+              <Switch checked={showUnpaid} onCheckedChange={setShowUnpaid} />
+            </div>
+
             {myInvitedUsers.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vaši pozvaní uživatelé</h3>
@@ -1290,6 +1300,10 @@ export default function AdminPanel() {
             {filteredUsers.length === 0 && (
               <p className="text-muted-foreground text-center py-8">Žádní uživatelé nenalezeni.</p>
             )}
+          </TabsContent>
+
+          <TabsContent value="trash" className="mt-6">
+            <RecycleBinTab />
           </TabsContent>
 
           {adminRequests.length > 0 && (
