@@ -68,6 +68,39 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_items: {
+        Row: {
+          deleted_at: string
+          deleted_by: string | null
+          entity_id: string
+          entity_type: string
+          expires_at: string
+          id: string
+          label: string | null
+          payload: Json
+        }
+        Insert: {
+          deleted_at?: string
+          deleted_by?: string | null
+          entity_id: string
+          entity_type: string
+          expires_at?: string
+          id?: string
+          label?: string | null
+          payload: Json
+        }
+        Update: {
+          deleted_at?: string
+          deleted_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string
+          id?: string
+          label?: string | null
+          payload?: Json
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           code: string
@@ -720,11 +753,17 @@ export type Database = {
           used_by: string
         }[]
       }
+      purge_expired_deleted_items: { Args: never; Returns: number }
       reset_my_progress: { Args: never; Returns: undefined }
+      restore_deleted_item: { Args: { p_id: string }; Returns: Json }
       set_completed_modules: {
         Args: { p_level_id: string; p_modules: Json }
         Returns: undefined
       }
+      soft_delete_group: { Args: { p_id: string }; Returns: string }
+      soft_delete_level: { Args: { p_id: string }; Returns: string }
+      soft_delete_question: { Args: { p_id: string }; Returns: string }
+      soft_delete_user: { Args: { p_user_id: string }; Returns: string }
       submit_quiz_test: { Args: { p_question_answers: Json }; Returns: Json }
     }
     Enums: {
