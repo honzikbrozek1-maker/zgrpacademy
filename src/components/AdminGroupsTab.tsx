@@ -290,7 +290,7 @@ export default function AdminGroupsTab() {
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">Podpisující osoba</label>
-                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} placeholder="MUDr. Gabriela Hanslianová" />
+                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
