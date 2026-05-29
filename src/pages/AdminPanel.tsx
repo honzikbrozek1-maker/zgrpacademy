@@ -838,18 +838,20 @@ export default function AdminPanel() {
         </h1>
 
         <Tabs defaultValue="content">
-          <TabsList>
-            <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
-            <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> Skupiny & diplomy</TabsTrigger>
-            <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
-            <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
-            {adminRequests.length > 0 && (
-              <TabsTrigger value="requests" className="relative">
-                <Shield className="mr-1 h-4 w-4" /> Žádosti
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{adminRequests.length}</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
+          <div className="-mx-4 md:mx-0 overflow-x-auto scrollbar-none">
+            <TabsList className="inline-flex w-max md:w-auto mx-4 md:mx-0">
+              <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
+              <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Skupiny & diplomy</span><span className="sm:hidden">Skupiny</span></TabsTrigger>
+              <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
+              <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
+              {adminRequests.length > 0 && (
+                <TabsTrigger value="requests" className="relative">
+                  <Shield className="mr-1 h-4 w-4" /> Žádosti
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{adminRequests.length}</span>
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
 
           <TabsContent value="content" className="mt-6 space-y-6">
             {selectedLevel ? (
