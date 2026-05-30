@@ -1,0 +1,7 @@
+# ZGRP Academy
+
+> Vzdělávací platforma pro partnery ZinzinoGroup. Levely, kvízy, doplňování, závěrečné testy a diplomy. Přístup k obsahu vyžaduje přihlášení a aktivní předplatné.
+
+## Pages
+
+- [Přihlášení / Registrace](/auth): Vstup do platformy přes e-mail nebo Google.

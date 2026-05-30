@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
@@ -67,13 +68,21 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <main className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Helmet>
+        <title>Přihlášení – ZGRP Academy</title>
+        <meta name="description" content="Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup." />
+        <link rel="canonical" href="https://zgrpacademy.lovable.app/auth" />
+        <meta property="og:title" content="Přihlášení – ZGRP Academy" />
+        <meta property="og:description" content="Vstup do vzdělávací platformy ZGRP Academy." />
+        <meta property="og:url" content="https://zgrpacademy.lovable.app/auth" />
+      </Helmet>
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-2">
             <GraduationCap className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">ZGRP Academy</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Přihlášení do ZGRP Academy</h1>
           <CardDescription>Vzdělávací platforma pro partnery ZinzinoGroup</CardDescription>
         </CardHeader>
         <CardContent>
@@ -139,6 +148,6 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

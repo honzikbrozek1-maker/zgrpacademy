@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -42,45 +43,59 @@ export default function InvitePage() {
     navigate('/');
   };
 
+  const inviteHead = (
+    <Helmet>
+      <title>Pozvánka do ZGRP Academy</title>
+      <meta name="description" content="Přijměte pozvánku do ZGRP Academy a získejte přístup k obsahu platformy." />
+      <meta name="robots" content="noindex" />
+      <link rel="canonical" href="https://zgrpacademy.lovable.app/invite" />
+      <meta property="og:title" content="Pozvánka do ZGRP Academy" />
+      <meta property="og:description" content="Pozvánka k registraci v ZGRP Academy." />
+      <meta property="og:url" content="https://zgrpacademy.lovable.app/invite" />
+    </Helmet>
+  );
+
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <main className="min-h-screen flex items-center justify-center bg-background p-4">
+        {inviteHead}
         <Card className="max-w-md w-full shadow-elevated">
           <CardContent className="p-8 text-center space-y-4">
             <GraduationCap className="h-12 w-12 mx-auto text-primary" />
-            <h2 className="text-xl font-bold">Pozvánka do ZGRP Academy</h2>
+            <h1 className="text-xl font-bold">Pozvánka do ZGRP Academy</h1>
             <p className="text-muted-foreground">Pro přijetí pozvánky se nejprve přihlaste nebo zaregistrujte.</p>
             <Button onClick={() => navigate('/auth')} className="gradient-primary text-primary-foreground">
               Přihlásit se
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <main className="min-h-screen flex items-center justify-center bg-background p-4">
+      {inviteHead}
       <Card className="max-w-md w-full shadow-elevated">
         <CardContent className="p-8 text-center space-y-4">
           {status === 'loading' && <p>Načítání...</p>}
           {status === 'invalid' && (
             <>
-              <p className="text-lg font-semibold">Neplatná pozvánka</p>
+              <h1 className="text-lg font-semibold">Neplatná pozvánka</h1>
               <p className="text-muted-foreground">Tato pozvánka neexistuje nebo vypršela.</p>
               <Button onClick={() => navigate('/')}>Zpět</Button>
             </>
           )}
           {status === 'used' && (
             <>
-              <p className="text-lg font-semibold">Pozvánka již byla použita</p>
+              <h1 className="text-lg font-semibold">Pozvánka již byla použita</h1>
               <Button onClick={() => navigate('/')}>Zpět</Button>
             </>
           )}
           {status === 'valid' && invite && (
             <>
               <CheckCircle className="h-12 w-12 mx-auto text-success" />
-              <h2 className="text-xl font-bold">Pozvánka do ZGRP Academy</h2>
+              <h1 className="text-xl font-bold">Pozvánka do ZGRP Academy</h1>
               <p className="text-muted-foreground">
                 Budete přidáni jako <strong>{invite.role === 'admin' ? 'Administrátor' : 'Uživatel'}</strong>.
               </p>
@@ -91,6 +106,6 @@ export default function InvitePage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
