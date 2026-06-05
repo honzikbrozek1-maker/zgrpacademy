@@ -586,37 +586,80 @@ export default function AdminPanel() {
   }
 
   const renderUserCard = (u: UserProfile) => (
-    <Card key={u.user_id} className="shadow-card">
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <Users className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="font-medium">{u.display_name || 'Bez jména'}</p>
-            <div className="flex gap-3 text-xs text-muted-foreground">
-              <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
+  const renderUserCard = (u: UserProfile) => {
+    const userIsAdmin = adminList.some(a => a.user_id === u.user_id);
+    const isSelf = user?.id === u.user_id;
+    return (
+      <Card key={u.user_id} className="shadow-card">
+        <CardContent className="p-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${userIsAdmin ? 'bg-primary/15' : 'bg-muted'}`}>
+              {userIsAdmin
+                ? <Shield className="h-5 w-5 text-primary" />
+                : <Users className="h-5 w-5 text-muted-foreground" />}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium truncate">{u.display_name || 'Bez jména'}</p>
+                {userIsAdmin
+                  ? <Badge className="gap-1"><Shield className="h-3 w-3" /> Admin</Badge>
+                  : <Badge variant="secondary">Uživatel</Badge>}
+                {!u.has_paid && <Badge variant="outline" className="text-muted-foreground">Nezaplaceno</Badge>}
+              </div>
+              <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
+                <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" onClick={() => toggleAdmin(u.user_id, false)}>
-            <Shield className="mr-1 h-3 w-3" /> Admin
-          </Button>
-          {showDeleteUser === u.user_id ? (
-            <div className="flex items-center gap-1">
-              <Button variant="destructive" size="sm" onClick={() => deleteUser(u.user_id)}>Potvrdit</Button>
-              <Button variant="outline" size="sm" onClick={() => setShowDeleteUser(null)}>Zrušit</Button>
-            </div>
-          ) : (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setShowDeleteUser(u.user_id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+          <div className="flex items-center gap-1 shrink-0">
+            {!isSelf && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  {userIsAdmin ? (
+                    <Button variant="outline" size="sm">
+                      <XCircle className="mr-1 h-3 w-3" /> Odebrat admina
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm">
+                      <Shield className="mr-1 h-3 w-3" /> Přidělit admina
+                    </Button>
+                  )}
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {userIsAdmin ? 'Odebrat admin oprávnění?' : 'Přidělit admin oprávnění?'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {userIsAdmin
+                        ? `Uživateli ${u.display_name || 'bez jména'} bude odebrána role administrátora.`
+                        : `Uživatel ${u.display_name || 'bez jména'} získá plný administrátorský přístup k aplikaci.`}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => toggleAdmin(u.user_id, userIsAdmin)}>
+                      Potvrdit
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            {showDeleteUser === u.user_id ? (
+              <div className="flex items-center gap-1">
+                <Button variant="destructive" size="sm" onClick={() => deleteUser(u.user_id)}>Potvrdit</Button>
+                <Button variant="outline" size="sm" onClick={() => setShowDeleteUser(null)}>Zrušit</Button>
+              </div>
+            ) : (
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setShowDeleteUser(u.user_id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const renderQuestionForm = () => (
     <div className="space-y-4">
