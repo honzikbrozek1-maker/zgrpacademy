@@ -585,7 +585,6 @@ export default function AdminPanel() {
     );
   }
 
-  const renderUserCard = (u: UserProfile) => (
   const renderUserCard = (u: UserProfile) => {
     const userIsAdmin = adminList.some(a => a.user_id === u.user_id);
     const isSelf = user?.id === u.user_id;
