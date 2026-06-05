@@ -330,11 +330,14 @@ export default function AdminPanel() {
 
   const toggleAdmin = async (userId: string, isCurrentlyAdmin: boolean) => {
     if (isCurrentlyAdmin) {
-      await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
+      if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     } else {
-      await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+      if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
     }
     toast({ title: isCurrentlyAdmin ? 'Admin role odebrána' : 'Admin role přidělena' });
+    fetchAdminList();
   };
 
   const deleteUser = async (userId: string) => {
