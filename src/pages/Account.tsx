@@ -14,6 +14,7 @@ import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
 import { InvoicesList } from '@/components/InvoicesList';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function Account() {
   const { user, profile, refreshProfile, signOut } = useAuth();
