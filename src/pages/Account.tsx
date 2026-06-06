@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, Palette, Volume2, Trash2, Receipt } from 'lucide-react';
+import { User, Mail, Lock, Palette, Volume2, Trash2, Receipt, RotateCcw } from 'lucide-react';
 import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
 import { InvoicesList } from '@/components/InvoicesList';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function Account() {
   const { user, profile, refreshProfile, signOut } = useAuth();
@@ -192,6 +193,31 @@ export default function Account() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> Faktury</div>
             <InvoicesList />
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> Aplikace</div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <RotateCcw className="mr-1 h-3 w-3" /> Obnovit aplikaci
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Obnovit aplikaci?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Stránka se znovu načte a veškerá neuložená data mohou být ztracena.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => window.location.reload()}>Obnovit</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
 
