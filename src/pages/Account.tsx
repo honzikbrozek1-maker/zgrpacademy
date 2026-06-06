@@ -196,6 +196,31 @@ export default function Account() {
           </CardContent>
         </Card>
 
+        <Card className="shadow-card">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> Aplikace</div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <RotateCcw className="mr-1 h-3 w-3" /> Obnovit aplikaci
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Obnovit aplikaci?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Stránka se znovu načte a veškerá neuložená data mohou být ztracena.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => window.location.reload()}>Obnovit</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Smazání účtu</div>
