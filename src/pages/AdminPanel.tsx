@@ -125,6 +125,7 @@ export default function AdminPanel() {
       fetchUsers();
       fetchAdminRequests();
       fetchInvitedUsers();
+      fetchAdminList();
     } else if (user) {
       fetchMyRequest();
       fetchAdminList();
