@@ -42,6 +42,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const [submitting, setSubmitting] = useState(false);
   const [testScore, setTestScore] = useState<number | null>(null);
   const [testPassed, setTestPassed] = useState(false);
+  const [reviewData, setReviewData] = useState<Array<{ question: TestItem; userAnswer: string; correct: boolean; correctAnswerText?: string }>>([]);
 
   const startTest = async () => {
     setLoading(true);
