@@ -210,32 +210,78 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
 
   if (finished && testScore !== null) {
     return (
-      <Card className="shadow-elevated">
-        <CardContent className="p-8 text-center space-y-4">
-          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
-            {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
-          </div>
-          <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
-          <p className="text-2xl font-bold">{testScore}%</p>
-          <p className="text-muted-foreground">
-            {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
-              Zpět na levely
-            </Button>
-            {!testPassed && (
-              <Button
-                onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); }}
-                className="gradient-primary text-primary-foreground"
-              >
-                Zkusit znovu
+      <div className="space-y-4">
+        <Card className="shadow-elevated">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
+              {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
+            </div>
+            <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
+            <p className="text-2xl font-bold">{testScore}%</p>
+            <p className="text-muted-foreground">
+              {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
+                Zpět na levely
               </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
+              {!testPassed && (
+                <Button
+                  onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); setReviewData([]); }}
+                  className="gradient-primary text-primary-foreground"
+                >
+                  Zkusit znovu
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {reviewData.length > 0 && (
+          <Card className="shadow-card">
+            <CardContent className="p-6 space-y-4">
+              <h4 className="text-lg font-semibold">Přehled odpovědí</h4>
+              <div className="space-y-3">
+                {reviewData.map((r, idx) => (
+                  <div
+                    key={r.question.id}
+                    className={`rounded-xl border-2 p-4 ${r.correct ? 'border-success/40 bg-success/5' : 'border-destructive/40 bg-destructive/5'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {r.correct
+                        ? <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                        : <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />}
+                      <div className="flex-1 space-y-1.5">
+                        <p className="font-medium">
+                          <span className="text-muted-foreground mr-2">{idx + 1}.</span>
+                          {r.question.question_text}
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground">Vaše odpověď: </span>
+                          <span className={r.correct ? 'text-success font-medium' : 'text-destructive font-medium'}>
+                            {r.userAnswer || <em className="opacity-70">(bez odpovědi)</em>}
+                          </span>
+                        </p>
+                        {!r.correct && r.correctAnswerText && (
+                          <p className="text-sm">
+                            <span className="text-muted-foreground">Správná odpověď: </span>
+                            <span className="text-success font-medium">{r.correctAnswerText}</span>
+                          </p>
+                        )}
+                        {!r.correct && !r.correctAnswerText && (
+                          <p className="text-xs text-muted-foreground italic">
+                            Správnou odpověď najdete v procvičování nebo opakování.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
   }
 
   if (!item) return null;
