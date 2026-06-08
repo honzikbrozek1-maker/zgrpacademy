@@ -126,6 +126,30 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       setTestScore(score);
       setTestPassed(passed);
 
+      // Build review data with correct answers for incorrect quiz questions
+      const perQuestionMap = new Map<string, boolean>();
+      (result?.per_question || []).forEach(r => perQuestionMap.set(r.question_id, r.correct));
+
+      const review = await Promise.all(items.map(async (q, i) => {
+        const userAnswer = answers[i] ?? '';
+        const correct = perQuestionMap.get(q.id) ?? false;
+        let correctAnswerText: string | undefined;
+        if (!correct && q.type === 'quiz') {
+          try {
+            const { data: chk } = await supabase.rpc('check_quiz_answer', {
+              p_question_id: q.id,
+              p_answer: 1,
+            });
+            const ca = (chk as any)?.correct_answer;
+            if (typeof ca === 'number' && q.options[ca - 1]) {
+              correctAnswerText = q.options[ca - 1];
+            }
+          } catch {}
+        }
+        return { question: q, userAnswer, correct, correctAnswerText };
+      }));
+      setReviewData(review);
+
       if (user && Array.isArray(result?.per_question)) {
         for (const r of result.per_question) {
           if (r.correct) {
