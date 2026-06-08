@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface TestItem {
   id: string;
