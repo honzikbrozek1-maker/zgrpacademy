@@ -282,6 +282,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
           </Card>
         )}
       </div>
+    );
   }
 
   if (!item) return null;
