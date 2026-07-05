@@ -185,7 +185,7 @@ export default function Levels() {
           const hasDiploma = diplomaGroupIds.has(group.id);
 
           return (
-            <section key={group.id} className="space-y-3">
+            <section key={group.id} className="space-y-2 md:space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
@@ -206,14 +206,14 @@ export default function Levels() {
                 </Card>
               ) : (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {groupLevels.map(l => renderLevelCard(l, true))}
                     {groupLevels.length === 0 && (
                       <Card className="shadow-card"><CardContent className="p-6 text-center text-muted-foreground text-sm">Ve skupině zatím nejsou levely.</CardContent></Card>
                     )}
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-2 md:gap-3 md:grid-cols-2">
                     <Card className={`shadow-card transition-all ${allLevelsPassed ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${groupPassed ? 'ring-2 ring-success/30' : ''}`}
                       onClick={() => allLevelsPassed && navigate(`${basePath}/group/${group.id}/test`)}>
                       <CardContent className="p-3 md:p-4 flex items-center gap-3">
@@ -259,7 +259,7 @@ export default function Levels() {
         {ungrouped.length > 0 && (
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Ostatní levely</h2>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {ungrouped.map(l => renderLevelCard(l, true))}
             </div>
           </section>
