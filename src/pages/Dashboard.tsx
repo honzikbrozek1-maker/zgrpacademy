@@ -198,7 +198,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <Card className="shadow-card">
+        <Card className="shadow-card hidden md:block">
           <CardContent className="p-3 md:p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium">Celkový postup</span>
@@ -207,6 +207,7 @@ export default function Dashboard() {
             <Progress value={progressPercent} className="h-2" />
           </CardContent>
         </Card>
+
 
         {reviewCount > 0 && (
           <Link to={`${basePath}/review`}>
