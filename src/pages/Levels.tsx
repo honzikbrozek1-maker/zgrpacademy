@@ -216,7 +216,7 @@ export default function Levels() {
                   <div className="grid gap-3 md:grid-cols-2">
                     <Card className={`shadow-card transition-all ${allLevelsPassed ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${groupPassed ? 'ring-2 ring-success/30' : ''}`}
                       onClick={() => allLevelsPassed && navigate(`${basePath}/group/${group.id}/test`)}>
-                      <CardContent className="p-4 flex items-center gap-3">
+                      <CardContent className="p-3 md:p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${allLevelsPassed ? 'bg-primary/15' : 'bg-muted'}`}>
                           {allLevelsPassed ? <Trophy className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
@@ -236,7 +236,7 @@ export default function Levels() {
 
                     <Card className={`shadow-card transition-all ${hasDiploma ? 'cursor-pointer hover:shadow-elevated ring-2 ring-success/30' : 'opacity-60'}`}
                       onClick={() => hasDiploma && navigate(`${basePath}/diplomas`)}>
-                      <CardContent className="p-4 flex items-center gap-3">
+                      <CardContent className="p-3 md:p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasDiploma ? 'bg-primary/15' : 'bg-muted'}`}>
                           {hasDiploma ? <GraduationCap className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
