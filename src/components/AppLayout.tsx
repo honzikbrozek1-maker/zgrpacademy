@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 flex items-center justify-between border-b bg-card/80 backdrop-blur-md sticky top-0 z-50 px-3">
-            <SidebarTrigger />
+            <SidebarTrigger className="h-11 w-11 md:h-9 md:w-9" />
             {isMobile && (
               <div className="flex items-center gap-1">
                 {!isOnDashboard && (
