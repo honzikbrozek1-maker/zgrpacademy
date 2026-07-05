@@ -140,7 +140,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 md:space-y-6 animate-slide-up">
         <div className="flex items-center gap-3">
           {headerIcon}
           <div>
@@ -153,7 +153,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="shadow-card">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 md:p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
                 <Trophy className="h-5 w-5 text-amber-500" />
               </div>
@@ -164,7 +164,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           <Card className="shadow-card">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 md:p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                 <Layers className="h-5 w-5 text-primary" />
               </div>
@@ -175,7 +175,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           <Card className="shadow-card">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 md:p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
                 <BookOpen className="h-5 w-5 text-emerald-500" />
               </div>
@@ -186,7 +186,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           <Card className="shadow-card cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate(`${basePath}/review`)}>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-3 md:p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
                 <RotateCcw className="h-5 w-5 text-orange-500" />
               </div>
@@ -198,8 +198,8 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <Card className="shadow-card">
-          <CardContent className="p-4">
+        <Card className="shadow-card hidden md:block">
+          <CardContent className="p-3 md:p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium">Celkový postup</span>
               <span className="text-sm text-muted-foreground">{Math.round(progressPercent)}%</span>
@@ -207,6 +207,7 @@ export default function Dashboard() {
             <Progress value={progressPercent} className="h-2" />
           </CardContent>
         </Card>
+
 
         {reviewCount > 0 && (
           <Link to={`${basePath}/review`}>

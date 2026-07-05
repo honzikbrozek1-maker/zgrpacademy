@@ -125,7 +125,7 @@ export default function Levels() {
         className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
         onClick={() => unlocked && navigate(`${basePath}/level/${level.id}`)}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -173,8 +173,9 @@ export default function Levels() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-slide-up">
-        <h1 className="text-2xl font-bold">Levely</h1>
+      <div className="p-3 md:p-8 max-w-4xl mx-auto space-y-3 md:space-y-8 animate-slide-up">
+        <h1 className="text-xl md:text-2xl font-bold">Levely</h1>
+
 
         {groups.map((group, idx) => {
           const unlocked = isGroupUnlocked(group, idx);
@@ -185,7 +186,7 @@ export default function Levels() {
           const hasDiploma = diplomaGroupIds.has(group.id);
 
           return (
-            <section key={group.id} className="space-y-3">
+            <section key={group.id} className="space-y-2 md:space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
@@ -206,17 +207,17 @@ export default function Levels() {
                 </Card>
               ) : (
                 <>
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {groupLevels.map(l => renderLevelCard(l, true))}
                     {groupLevels.length === 0 && (
                       <Card className="shadow-card"><CardContent className="p-6 text-center text-muted-foreground text-sm">Ve skupině zatím nejsou levely.</CardContent></Card>
                     )}
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-2 md:gap-3 md:grid-cols-2">
                     <Card className={`shadow-card transition-all ${allLevelsPassed ? 'cursor-pointer hover:shadow-elevated' : 'opacity-60'} ${groupPassed ? 'ring-2 ring-success/30' : ''}`}
                       onClick={() => allLevelsPassed && navigate(`${basePath}/group/${group.id}/test`)}>
-                      <CardContent className="p-4 flex items-center gap-3">
+                      <CardContent className="p-3 md:p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${allLevelsPassed ? 'bg-primary/15' : 'bg-muted'}`}>
                           {allLevelsPassed ? <Trophy className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
@@ -236,7 +237,7 @@ export default function Levels() {
 
                     <Card className={`shadow-card transition-all ${hasDiploma ? 'cursor-pointer hover:shadow-elevated ring-2 ring-success/30' : 'opacity-60'}`}
                       onClick={() => hasDiploma && navigate(`${basePath}/diplomas`)}>
-                      <CardContent className="p-4 flex items-center gap-3">
+                      <CardContent className="p-3 md:p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasDiploma ? 'bg-primary/15' : 'bg-muted'}`}>
                           {hasDiploma ? <GraduationCap className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
@@ -259,7 +260,7 @@ export default function Levels() {
         {ungrouped.length > 0 && (
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Ostatní levely</h2>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {ungrouped.map(l => renderLevelCard(l, true))}
             </div>
           </section>
