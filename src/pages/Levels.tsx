@@ -125,7 +125,7 @@ export default function Levels() {
         className={`shadow-card transition-all ${!unlocked ? 'opacity-60' : 'hover:shadow-elevated cursor-pointer'}`}
         onClick={() => unlocked && navigate(`${basePath}/level/${level.id}`)}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
