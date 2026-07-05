@@ -199,7 +199,7 @@ export default function Dashboard() {
         </div>
 
         <Card className="shadow-card">
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium">Celkový postup</span>
               <span className="text-sm text-muted-foreground">{Math.round(progressPercent)}%</span>
