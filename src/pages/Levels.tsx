@@ -173,7 +173,7 @@ export default function Levels() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-slide-up">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-5 md:space-y-8 animate-slide-up">
         <h1 className="text-2xl font-bold">Levely</h1>
 
         {groups.map((group, idx) => {
