@@ -25,6 +25,18 @@ export default function DiplomaCertificate({
   const validUntil = new Date(issued);
   validUntil.setFullYear(validUntil.getFullYear() + (validityYears || 0));
 
+  const interpolate = (s: string) =>
+    (s || '')
+      .replace(/\{user_name\}/gi, userName)
+      .replace(/\{group_title\}/gi, groupTitle)
+      .replace(/\{score\}/gi, `${score}%`)
+      .replace(/\{date\}/gi, fmtDate(issued))
+      .replace(/\{valid_until\}/gi, validityYears > 0 ? fmtDate(validUntil) : '');
+
+  const resolvedBody = interpolate(bodyText);
+
+
+
   const handlePrint = () => {
     const win = window.open('', '_blank');
     if (!win) return;
@@ -65,7 +77,7 @@ export default function DiplomaCertificate({
           <div class="divider"></div>
           <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
           <div class="italic">${safe(groupTitle)}</div>
-          ${bodyText ? `<div class="body">${safe(bodyText)}</div>` : ''}
+          ${resolvedBody ? `<div class="body">${safe(resolvedBody)}</div>` : ''}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
@@ -120,9 +132,9 @@ export default function DiplomaCertificate({
           >
             {groupTitle}
           </p>
-          {bodyText && (
+          {resolvedBody && (
             <p className="text-[clamp(10px,1.25vw,13px)] leading-relaxed max-w-[88%] text-foreground/85 mt-3 whitespace-pre-line">
-              {bodyText}
+              {resolvedBody}
             </p>
           )}
           <div className="text-[clamp(10px,1.25vw,12px)] text-muted-foreground mt-4 space-y-0.5">
