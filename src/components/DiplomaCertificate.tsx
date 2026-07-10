@@ -25,6 +25,18 @@ export default function DiplomaCertificate({
   const validUntil = new Date(issued);
   validUntil.setFullYear(validUntil.getFullYear() + (validityYears || 0));
 
+  const interpolate = (s: string) =>
+    (s || '')
+      .replace(/\{user_name\}/gi, userName)
+      .replace(/\{group_title\}/gi, groupTitle)
+      .replace(/\{score\}/gi, `${score}%`)
+      .replace(/\{date\}/gi, fmtDate(issued))
+      .replace(/\{valid_until\}/gi, validityYears > 0 ? fmtDate(validUntil) : '');
+
+  const resolvedBody = interpolate(bodyText);
+
+
+
   const handlePrint = () => {
     const win = window.open('', '_blank');
     if (!win) return;
