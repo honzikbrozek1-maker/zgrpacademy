@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
 import AdminGroupTestDialog from './AdminGroupTestDialog';
 import { NumberField } from './NumberField';
+import DiplomaCertificate from './DiplomaCertificate';
+import { useAuth } from '@/lib/auth';
 
 interface Group {
   id: string;
