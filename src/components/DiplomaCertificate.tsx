@@ -40,8 +40,32 @@ export default function DiplomaCertificate({
 
 
   const handlePrint = () => {
-    const win = window.open('', '_blank');
-    if (!win) return;
+    // Use a hidden iframe instead of window.open — on iOS Safari a new tab
+    // gets stuck on the diploma after the print sheet is dismissed, with no
+    // way to navigate back. An iframe keeps the user on the current page.
+    const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    const logoUrl = new URL(logoSpolek, window.location.origin).href;
+    const borderUrl = new URL(diplomaBorder, window.location.origin).href;
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const cleanup = () => {
+      setTimeout(() => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 500);
+    };
+
+    const doc = iframe.contentDocument;
+    if (!doc) { cleanup(); return; }
+    const html = `
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
