@@ -152,15 +152,28 @@ export default function DiplomaCertificate({
 
   // Preview renders at the SAME fixed pixel dimensions as the print output
   // (A4 at ~96dpi ≈ 794 × 1123 px, matching the 210×297mm print page and its
-  // absolute px font sizes). We then visually scale it down with CSS transform
-  // so layout and line-breaks are 1:1 with the printed diploma on every device.
+  // absolute px font sizes). We visually scale it down with CSS transform,
+  // measuring the actual container width so layout/line-breaks are 1:1 with
+  // the printed diploma on every device (incl. narrow iPhone viewports).
   const A4_W = 794;
   const A4_H = 1123;
-  const scale = maxWidth / A4_W;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [wrapperW, setWrapperW] = useState(maxWidth);
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const el = wrapperRef.current;
+    const update = () => setWrapperW(el.clientWidth || maxWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [maxWidth]);
+  const scale = wrapperW / A4_W;
 
   return (
     <div className="space-y-4">
       <div
+        ref={wrapperRef}
         className="relative mx-auto"
         style={{ width: '100%', maxWidth, height: A4_H * scale }}
       >
