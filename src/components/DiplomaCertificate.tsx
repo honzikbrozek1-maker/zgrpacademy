@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import logoSpolek from '@/assets/logo-spolek.png';
