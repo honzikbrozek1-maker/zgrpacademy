@@ -280,12 +280,52 @@ export default function AdminGroupsTab() {
               </div>
               <div>
                 <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
+                <div className="flex flex-wrap gap-1.5 mt-1 mb-1.5">
+                  {[
+                    { label: 'Uživatelské jméno', token: '{user_name}' },
+                    { label: 'Název kurzu', token: '{group_title}' },
+                    { label: 'Skóre', token: '{score}' },
+                    { label: 'Datum vydání', token: '{date}' },
+                    { label: 'Platnost do', token: '{valid_until}' },
+                  ].map(({ label, token }) => (
+                    <Button
+                      key={token}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        const el = document.getElementById('diploma-body-text') as HTMLTextAreaElement | null;
+                        const cur = form.diploma_body_text ?? '';
+                        if (el) {
+                          const start = el.selectionStart ?? cur.length;
+                          const end = el.selectionEnd ?? cur.length;
+                          const next = cur.slice(0, start) + token + cur.slice(end);
+                          setForm({ ...form, diploma_body_text: next });
+                          requestAnimationFrame(() => {
+                            el.focus();
+                            const pos = start + token.length;
+                            el.setSelectionRange(pos, pos);
+                          });
+                        } else {
+                          setForm({ ...form, diploma_body_text: cur + token });
+                        }
+                      }}
+                    >
+                      + {label}
+                    </Button>
+                  ))}
+                </div>
                 <Textarea
+                  id="diploma-body-text"
                   rows={3}
                   value={form.diploma_body_text}
                   onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
                   placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí ČLK..."
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tlačítka vloží zástupný text, který se na diplomu automaticky nahradí skutečnou hodnotou.
+                </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
