@@ -54,6 +54,7 @@ const emptyForm = {
 export default function AdminGroupsTab() {
   const { category } = useAppPath();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [showDialog, setShowDialog] = useState(false);
