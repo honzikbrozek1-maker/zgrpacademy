@@ -152,11 +152,13 @@ export default function DiplomaCertificate({
           </div>
         </div>
       </div>
-      <div className="flex justify-center">
-        <Button onClick={handlePrint} className="gradient-primary text-primary-foreground">
-          <Printer className="mr-1 h-4 w-4" /> Vytisknout diplom
-        </Button>
-      </div>
+      {!hidePrint && (
+        <div className="flex justify-center">
+          <Button onClick={handlePrint} className="gradient-primary text-primary-foreground">
+            <Printer className="mr-1 h-4 w-4" /> Vytisknout diplom
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
