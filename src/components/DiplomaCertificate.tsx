@@ -77,7 +77,7 @@ export default function DiplomaCertificate({
           <div class="divider"></div>
           <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
           <div class="italic">${safe(groupTitle)}</div>
-          ${bodyText ? `<div class="body">${safe(bodyText)}</div>` : ''}
+          ${resolvedBody ? `<div class="body">${safe(resolvedBody)}</div>` : ''}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
