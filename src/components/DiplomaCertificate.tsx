@@ -149,60 +149,82 @@ export default function DiplomaCertificate({
   };
 
 
+  // Preview renders at the SAME fixed pixel dimensions as the print output
+  // (A4 at ~96dpi ≈ 794 × 1123 px, matching the 210×297mm print page and its
+  // absolute px font sizes). We then visually scale it down with CSS transform
+  // so layout and line-breaks are 1:1 with the printed diploma on every device.
+  const A4_W = 794;
+  const A4_H = 1123;
+  const scale = maxWidth / A4_W;
+
   return (
     <div className="space-y-4">
       <div
-        className="relative mx-auto bg-white shadow-elevated overflow-hidden"
-        style={{ width: '100%', maxWidth, aspectRatio: '210 / 297' }}
+        className="relative mx-auto"
+        style={{ width: '100%', maxWidth, height: A4_H * scale }}
       >
-        <img
-          src={diplomaBorder}
-          alt=""
-          className="absolute inset-0 w-full h-full pointer-events-none select-none"
-        />
-        {/* Safe area well inside the gold border */}
-        <div className="absolute inset-[14%_18%_12%_18%] flex flex-col items-center text-center text-foreground">
-          <img src={logoSpolek} alt="Spolek v Rovnováze z.s." className="h-24 w-auto mb-2" />
-          <h1
-            className="text-[clamp(22px,4.6vw,42px)] tracking-[0.14em] font-medium leading-none mt-1"
-            style={{ fontFamily: '"Cormorant Garamond", "Times New Roman", serif' }}
-          >
-            {title.toUpperCase()}
-          </h1>
-          <div className="text-[clamp(9px,1.1vw,11px)] tracking-[0.4em] text-muted-foreground mt-3 mb-2">
-            UDĚLEN PRO
-          </div>
-          <div
-            className="font-semibold text-[clamp(16px,2.6vw,24px)]"
-            style={{ fontFamily: '"Cormorant Garamond", serif' }}
-          >
-            {userName}
-          </div>
-          <div className="w-[40%] h-[1.5px] bg-foreground my-3" />
-          <p className="text-[clamp(10px,1.2vw,13px)] tracking-wide text-muted-foreground mb-1">
-            za úspěšné absolvování odborné zkoušky z
-          </p>
-          <p
-            className="italic font-semibold text-[clamp(12px,1.7vw,16px)] leading-snug max-w-[88%] text-foreground"
-            style={{ fontFamily: '"Cormorant Garamond", serif' }}
-          >
-            {groupTitle}
-          </p>
-          {resolvedBody && (
-            <p className="text-[clamp(10px,1.25vw,13px)] leading-relaxed max-w-[88%] text-foreground/85 mt-3 whitespace-pre-line">
-              {resolvedBody}
-            </p>
-          )}
-          <div className="text-[clamp(10px,1.25vw,12px)] text-muted-foreground mt-4 space-y-0.5">
-            <div>Datum vydání: <span className="text-foreground font-medium">{fmtDate(issued)}</span></div>
-            {validityYears > 0 && (
-              <div>Platnost do: <span className="text-foreground font-medium">{fmtDate(validUntil)}</span></div>
-            )}
-            {subtitle && <div className="pt-1 tracking-widest text-[10px]">{subtitle}</div>}
-          </div>
-          <div className="mt-auto pt-3 w-full flex flex-col items-center">
-            <div className="w-[50%] border-t border-foreground/50 mb-1" />
-            <div className="text-[clamp(11px,1.4vw,14px)] text-foreground">{signatory}</div>
+        <div
+          className="bg-white shadow-elevated overflow-hidden"
+          style={{
+            width: A4_W,
+            height: A4_H,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        >
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <img
+              src={diplomaBorder}
+              alt=""
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', userSelect: 'none' }}
+            />
+            {/* Safe area — matches print .safe: inset 38mm 40mm 32mm 40mm ≈ 144px 151px 121px 151px */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 144, right: 151, bottom: 121, left: 151,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                color: '#1a1a1a',
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}
+            >
+              <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
+              <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 48, letterSpacing: 5, margin: '4px 0 6px', fontWeight: 500, lineHeight: 1 }}>
+                {title.toUpperCase()}
+              </div>
+              <div style={{ fontSize: 12, letterSpacing: 6, color: '#555', marginBottom: 14 }}>UDĚLEN PRO</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 600, margin: '4px 0 10px' }}>
+                {userName}
+              </div>
+              <div style={{ width: '40%', height: 1.5, background: '#1a1a1a', margin: '8px 0 14px' }} />
+              <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                {groupTitle}
+              </div>
+              {resolvedBody && (
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: '#2a2a2a', maxWidth: 454, margin: '16px auto 0', whiteSpace: 'pre-line' }}>
+                  {resolvedBody}
+                </div>
+              )}
+              <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
+                Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
+              </div>
+              {validityYears > 0 && (
+                <div style={{ fontSize: 12, color: '#444' }}>
+                  Platnost do: <strong style={{ color: '#111' }}>{fmtDate(validUntil)}</strong>
+                </div>
+              )}
+              {subtitle && (
+                <div style={{ fontSize: 11, color: '#666', marginTop: 6, letterSpacing: 1 }}>{subtitle}</div>
+              )}
+              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ width: 220, borderTop: '1px solid #555', margin: '0 auto 4px' }} />
+                <div style={{ fontSize: 13, color: '#111' }}>{signatory}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
