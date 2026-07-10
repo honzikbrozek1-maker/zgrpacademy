@@ -1,45 +1,41 @@
-## Cíl
-Po dokončení závěrečného testu levelu zobrazit přehled odpovědí s barevným označením (zelená = správně, červená = špatně) a se správnou odpovědí u chybných otázek. Během testu samotného nic neprozrazovat — uživatel se učí až z výsledku.
+# Propojení Google Search Console
 
-## Co se změní
+Cíl: propojit projekt s Google Search Console, ověřit vlastnictví domény `zgrpacademy.lovable.app` a odeslat sitemap. Indexace zůstává povolená (žádné změny v `robots.txt` ani `sitemap.xml`).
 
-Soubor: `src/components/LevelTest.tsx`
+## Kroky
 
-### 1. Rozšířit ukládání výsledku
-RPC `complete_level_v2` už dnes vrací `per_question: [{ question_id, correct }]`. Doplníme stav, který si zapamatuje:
-- mapování `question_id → correct` (z RPC),
-- správnou odpověď pro chybné otázky.
+1. **Spustit propojení s Google Search Console**
+   - Otevře se ti přihlašovací okno Googlu, kde vybereš účet a odsouhlasíš přístup.
+   - Použij ten Google účet, přes který chceš mít Search Console spravovanou (typicky tvůj hlavní).
 
-Správnou odpověď získáme tak, že pro každou chybně zodpovězenou otázku zavoláme existující RPC `check_quiz_answer` (vrací `correct_answer` jako index 1–4) — stejnou cestou jako `QuizModule`. U otázek typu `flashcard` / `fill_in` se `check_quiz_answer` použít nedá; tam zobrazíme jen označení „špatně“ bez prozrazení textu (aby si je uživatel musel dohledat ve studijním režimu — proto „ne až moc jednoduché“).
+2. **Získat ověřovací meta tag**
+   - Google vrátí unikátní `<meta name="google-site-verification" content="...">` tag.
 
-Alternativně (čistší): rozšířit RPC `complete_level_v2`, aby vracela i `correct_answer_text` pro každou otázku. To bych ale dělat nechtěl bez tvého svolení — vyžaduje migraci.
+3. **Vložit ověřovací tag do `index.html`**
+   - Přidám ho do `<head>` webu, aby ho Google mohl při ověření najít.
 
-**Navrhuji první variantu** (žádná migrace, jen klient): u kvízových otázek dotáhneme správnou variantu přes `check_quiz_answer`, u kartiček/doplňování ukážeme jen „špatně / správně“ bez prozrazení textu.
+4. **Publikovat změny**
+   - Bez publikace Google tag neuvidí. Po propojení tě vyzvu, ať klikneš na Publish → Update.
 
-### 2. Nová obrazovka „Přehled odpovědí“
-Po dokončení testu (vedle dnešního skóre) přidat sbalitelnou sekci „Zobrazit přehled odpovědí“ (collapsible, defaultně rozbalená). Pro každou otázku:
-- text otázky,
-- ikona ✓ (success) nebo ✗ (destructive),
-- tvoje odpověď (zeleně pokud správně, červeně pokud špatně),
-- u kvízu navíc „Správná odpověď: …“ pokud byla otázka špatně,
-- u flashcard/fill_in jen poznámka „Správnou odpověď najdeš v procvičování / opakování“.
+5. **Ověřit vlastnictví u Googlu**
+   - Zavolám Google API pro ověření domény `https://zgrpacademy.lovable.app/`.
 
-Tlačítka „Zpět na levely“ a (pokud neprošel) „Zkusit znovu“ zůstávají.
+6. **Přidat property a odeslat sitemap**
+   - Přidám `zgrpacademy.lovable.app` jako property v Search Console.
+   - Odešlu `https://zgrpacademy.lovable.app/sitemap.xml`, aby Google věděl, které stránky procházet.
 
-### 3. Drobnost – „aby to nebylo až moc jednoduché“
-- Během testu žádné průběžné zvýrazňování (zůstává jako dnes).
-- Přehled se ukáže až po odeslání.
-- U chybných otázek typu kvíz se ukáže správná varianta — to je didakticky to hlavní. U kartiček/doplňování záměrně neprozrazujeme, aby uživatel musel projít procvičováním (tyto otázky se navíc už automaticky přidávají do `review_items`, takže se vrátí v opakování).
+7. **Označit SEO nález jako vyřešený**
+   - V panelu SEO & AI search zmizí varování „Google Search Console isn't fully set up".
 
 ## Co se NEmění
-- Logika hodnocení a `passing_score`.
-- Chování `QuizModule` (procvičování) — to už feedback dává hned.
-- Backend / RLS / migrace.
 
-## Technické detaily
-- Přidat stav `reviewData: Array<{ question: TestItem; userAnswer: string; correct: boolean; correctAnswerText?: string }>`.
-- Po `complete_level_v2` projít `per_question`; pro každou nesprávnou kvízovou otázku zavolat `supabase.rpc('check_quiz_answer', { p_question_id, p_answer: 1 })` jen pokud potřebujeme získat `correct_answer` index, a namapovat na text z `item.options[correct_answer-1]`. (Pozn.: `check_quiz_answer` vrací `correct_answer` vždy v poli odpovědí — ověřím, že vrací i když `correct=true`; pokud ne, zavoláme jen pro nesprávné.)
-- Typ otázky odlišíme podle `item.type` (`quiz` | `flashcard` | `fill_in`).
-- Použít existující design tokeny: `text-success`, `bg-success/10`, `text-destructive`, `bg-destructive/10`, ikony `CheckCircle` / `XCircle` z lucide-react.
+- `public/robots.txt` — indexace zůstává povolená pro všechny roboty.
+- `public/sitemap.xml` — ponechán beze změn.
+- Žádná úprava aplikační logiky ani UI.
 
-Pokud ti přístup sedí, přepnu do build módu a implementuji.
+## Co budu potřebovat od tebe
+
+- **Krok 1:** kliknout v propojovacím okně na tvůj Google účet a schválit přístup.
+- **Krok 4:** kliknout na tlačítko Publish → Update, aby se ověřovací meta tag dostal na živý web.
+
+Po schválení tohoto plánu spustím krok 1.
