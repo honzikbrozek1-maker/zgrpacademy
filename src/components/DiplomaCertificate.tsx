@@ -13,13 +13,15 @@ interface Props {
   groupTitle: string;     // auto: course / group name
   score: number;          // auto: achieved %
   issuedAt: string;       // auto: ISO date
+  hidePrint?: boolean;    // when embedded as a live preview
+  maxWidth?: number;      // override default 720 preview width
 }
 
 const fmtDate = (d: Date) => d.toLocaleDateString('cs-CZ');
 
 export default function DiplomaCertificate({
   title, subtitle, bodyText, signatory, validityYears,
-  userName, groupTitle, score, issuedAt,
+  userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
   const issued = new Date(issuedAt);
   const validUntil = new Date(issued);
