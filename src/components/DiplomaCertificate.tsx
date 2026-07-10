@@ -99,7 +99,7 @@ export default function DiplomaCertificate({
     <div className="space-y-4">
       <div
         className="relative mx-auto bg-white shadow-elevated overflow-hidden"
-        style={{ width: '100%', maxWidth: 720, aspectRatio: '210 / 297' }}
+        style={{ width: '100%', maxWidth, aspectRatio: '210 / 297' }}
       >
         <img
           src={diplomaBorder}
