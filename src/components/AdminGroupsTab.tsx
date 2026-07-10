@@ -42,7 +42,7 @@ const emptyForm = {
   order_index: 1,
   diploma_title: 'CERTIFIKÁT',
   diploma_subtitle: 'ZGRP Academy',
-  diploma_body_text: '',
+  diploma_body_text: 'Tímto potvrzujeme, že {user_name} úspěšně absolvoval/a vzdělávací kurz „{group_title}" v rámci platformy ZGRP Academy s celkovým výsledkem {score}.',
   diploma_signatory: 'MUDr. Gabriela Hanslianová',
   diploma_validity_years: 1,
   min_average_score: 70,
