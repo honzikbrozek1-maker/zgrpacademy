@@ -132,9 +132,9 @@ export default function DiplomaCertificate({
           >
             {groupTitle}
           </p>
-          {bodyText && (
+          {resolvedBody && (
             <p className="text-[clamp(10px,1.25vw,13px)] leading-relaxed max-w-[88%] text-foreground/85 mt-3 whitespace-pre-line">
-              {bodyText}
+              {resolvedBody}
             </p>
           )}
           <div className="text-[clamp(10px,1.25vw,12px)] text-muted-foreground mt-4 space-y-0.5">
