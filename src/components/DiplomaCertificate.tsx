@@ -40,12 +40,32 @@ export default function DiplomaCertificate({
 
 
   const handlePrint = () => {
-    const win = window.open('', '_blank');
-    if (!win) return;
+    // Use a hidden iframe instead of window.open — on iOS Safari a new tab
+    // gets stuck on the diploma after the print sheet is dismissed, with no
+    // way to navigate back. An iframe keeps the user on the current page.
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
-    win.document.write(`
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const cleanup = () => {
+      setTimeout(() => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 500);
+    };
+
+    const doc = iframe.contentDocument;
+    if (!doc) { cleanup(); return; }
+    const html = `
       <html><head><title>${safe(title)} - ${safe(groupTitle)}</title>
       <style>
         @page { size: A4 portrait; margin: 0; }
@@ -90,10 +110,44 @@ export default function DiplomaCertificate({
         </div>
       </div>
       </body></html>
-    `);
-    win.document.close();
-    setTimeout(() => win.print(), 400);
+    `;
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const triggerPrint = () => {
+      try {
+        const win = iframe.contentWindow;
+        if (!win) { cleanup(); return; }
+        win.focus();
+        win.print();
+      } catch {
+        // ignore
+      } finally {
+        // Clean up shortly after the print dialog closes.
+        const onAfter = () => cleanup();
+        try {
+          iframe.contentWindow?.addEventListener('afterprint', onAfter, { once: true });
+        } catch { /* noop */ }
+        // Fallback cleanup in case afterprint doesn't fire.
+        setTimeout(cleanup, 60_000);
+      }
+    };
+
+    // Wait for images (border + logo) to load so layout matches print output.
+    const imgs = Array.from(doc.images || []);
+    if (imgs.length === 0) {
+      setTimeout(triggerPrint, 200);
+    } else {
+      let remaining = imgs.length;
+      const done = () => { if (--remaining <= 0) setTimeout(triggerPrint, 100); };
+      imgs.forEach(img => {
+        if (img.complete) done();
+        else { img.addEventListener('load', done); img.addEventListener('error', done); }
+      });
+    }
   };
+
 
   return (
     <div className="space-y-4">
