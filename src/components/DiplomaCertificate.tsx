@@ -13,13 +13,15 @@ interface Props {
   groupTitle: string;     // auto: course / group name
   score: number;          // auto: achieved %
   issuedAt: string;       // auto: ISO date
+  hidePrint?: boolean;    // when embedded as a live preview
+  maxWidth?: number;      // override default 720 preview width
 }
 
 const fmtDate = (d: Date) => d.toLocaleDateString('cs-CZ');
 
 export default function DiplomaCertificate({
   title, subtitle, bodyText, signatory, validityYears,
-  userName, groupTitle, score, issuedAt,
+  userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
   const issued = new Date(issuedAt);
   const validUntil = new Date(issued);
@@ -97,7 +99,7 @@ export default function DiplomaCertificate({
     <div className="space-y-4">
       <div
         className="relative mx-auto bg-white shadow-elevated overflow-hidden"
-        style={{ width: '100%', maxWidth: 720, aspectRatio: '210 / 297' }}
+        style={{ width: '100%', maxWidth, aspectRatio: '210 / 297' }}
       >
         <img
           src={diplomaBorder}
@@ -150,11 +152,13 @@ export default function DiplomaCertificate({
           </div>
         </div>
       </div>
-      <div className="flex justify-center">
-        <Button onClick={handlePrint} className="gradient-primary text-primary-foreground">
-          <Printer className="mr-1 h-4 w-4" /> Vytisknout diplom
-        </Button>
-      </div>
+      {!hidePrint && (
+        <div className="flex justify-center">
+          <Button onClick={handlePrint} className="gradient-primary text-primary-foreground">
+            <Printer className="mr-1 h-4 w-4" /> Vytisknout diplom
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

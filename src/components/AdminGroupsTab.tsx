@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
 import AdminGroupTestDialog from './AdminGroupTestDialog';
 import { NumberField } from './NumberField';
+import DiplomaCertificate from './DiplomaCertificate';
+import { useAuth } from '@/lib/auth';
 
 interface Group {
   id: string;
@@ -52,6 +54,7 @@ const emptyForm = {
 export default function AdminGroupsTab() {
   const { category } = useAppPath();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -352,6 +355,28 @@ export default function AdminGroupsTab() {
                   <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
                   <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
                 </div>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-sm font-medium mb-2">Živý náhled diplomu</p>
+                <div className="rounded-lg border bg-muted/30 p-3 flex justify-center">
+                  <DiplomaCertificate
+                    hidePrint
+                    maxWidth={420}
+                    title={form.diploma_title || 'CERTIFIKÁT'}
+                    subtitle={form.diploma_subtitle}
+                    bodyText={form.diploma_body_text}
+                    signatory={form.diploma_signatory}
+                    validityYears={form.diploma_validity_years}
+                    userName={profile?.display_name || 'Jan Novák'}
+                    groupTitle={form.title || 'Název kurzu'}
+                    score={95}
+                    issuedAt={new Date().toISOString()}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Ukázkové skóre 95 % a dnešní datum. Skutečné hodnoty se doplní při vydání diplomu uživateli.
+                </p>
               </div>
             </div>
           </div>
