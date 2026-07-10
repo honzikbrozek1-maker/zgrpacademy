@@ -356,6 +356,28 @@ export default function AdminGroupsTab() {
                   <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
                 </div>
               </div>
+
+              <div className="pt-2">
+                <p className="text-sm font-medium mb-2">Živý náhled diplomu</p>
+                <div className="rounded-lg border bg-muted/30 p-3 flex justify-center">
+                  <DiplomaCertificate
+                    hidePrint
+                    maxWidth={420}
+                    title={form.diploma_title || 'CERTIFIKÁT'}
+                    subtitle={form.diploma_subtitle}
+                    bodyText={form.diploma_body_text}
+                    signatory={form.diploma_signatory}
+                    validityYears={form.diploma_validity_years}
+                    userName={profile?.display_name || 'Jan Novák'}
+                    groupTitle={form.title || 'Název kurzu'}
+                    score={95}
+                    issuedAt={new Date().toISOString()}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Ukázkové skóre 95 % a dnešní datum. Skutečné hodnoty se doplní při vydání diplomu uživateli.
+                </p>
+              </div>
             </div>
           </div>
           <div className="flex justify-end gap-2 px-6 py-4 border-t bg-background">
