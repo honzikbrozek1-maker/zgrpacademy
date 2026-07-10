@@ -694,10 +694,6 @@ export type Database = {
         Args: { p_answers: Json; p_group_id: string }
         Returns: Json
       }
-      complete_level: {
-        Args: { p_level_id: string; p_question_answers: Json }
-        Returns: Json
-      }
       complete_level_v2: {
         Args: { p_answers: Json; p_level_id: string }
         Returns: Json
@@ -764,7 +760,6 @@ export type Database = {
       soft_delete_level: { Args: { p_id: string }; Returns: string }
       soft_delete_question: { Args: { p_id: string }; Returns: string }
       soft_delete_user: { Args: { p_user_id: string }; Returns: string }
-      submit_quiz_test: { Args: { p_question_answers: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
