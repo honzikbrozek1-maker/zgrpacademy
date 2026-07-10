@@ -109,6 +109,21 @@ export default function AdminGroupsTab() {
         return;
       }
     }
+    const body = (form.diploma_body_text ?? '').toLowerCase();
+    const recommended: Array<[string, string]> = [
+      ['{user_name}', 'Uživatelské jméno'],
+      ['{group_title}', 'Název kurzu'],
+      ['{score}', 'Skóre'],
+      ['{date}', 'Datum vydání'],
+    ];
+    const missing = recommended.filter(([tok]) => !body.includes(tok));
+    if (body.trim() && missing.length > 0) {
+      const list = missing.map(([, l]) => `• ${l}`).join('\n');
+      const ok = window.confirm(
+        `V popisu diplomu chybí tyto zástupné texty:\n\n${list}\n\nOpravdu chcete pokračovat a uložit bez nich?`
+      );
+      if (!ok) return;
+    }
     const payload = { ...form, category };
     const { error } = editingId
       ? await supabase.from('level_groups').update(payload).eq('id', editingId)
