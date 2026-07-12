@@ -683,7 +683,7 @@ export type Database = {
         Returns: undefined
       }
       award_points_for_question: {
-        Args: { p_category?: string; p_question_id: string }
+        Args: { p_answer: number; p_category?: string; p_question_id: string }
         Returns: Json
       }
       check_quiz_answer: {
