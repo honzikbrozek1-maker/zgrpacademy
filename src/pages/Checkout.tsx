@@ -12,6 +12,13 @@ export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [stripePromise] = useState(() => {
+    try {
+      return getStripe();
+    } catch {
+      return null;
+    }
+  });
 
   // Re-check profile on mount in case webhook already ran
   useEffect(() => {
@@ -51,16 +58,6 @@ export default function Checkout() {
       throw error;
     }
   }, [user.email, user.id]);
-
-  const stripePromise = useMemo(() => {
-    try {
-      return getStripe();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Platby nejsou správně nastavené";
-      setCheckoutError(message);
-      return null;
-    }
-  }, []);
 
   const checkoutOptions = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
 

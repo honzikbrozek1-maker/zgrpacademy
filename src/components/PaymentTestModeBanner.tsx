@@ -1,6 +1,14 @@
 const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN;
 
 export function PaymentTestModeBanner() {
+  if (!clientToken) {
+    return (
+      <div className="w-full bg-destructive/10 border-b border-destructive/30 px-4 py-2 text-center text-sm text-destructive">
+        Produkční platby nejsou v této verzi aplikace nastavené. Dokončete nastavení plateb a aplikaci znovu publikujte.
+      </div>
+    );
+  }
+
   if (!clientToken?.startsWith("pk_test_")) return null;
 
   return (
