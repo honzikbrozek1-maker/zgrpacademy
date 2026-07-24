@@ -49,7 +49,15 @@ export default function DiplomaCertificate({
   const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
   const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
   const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
-  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
+  let bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
+
+  // Extract the "Vydává ..." line so it can be rendered at the bottom of the page.
+  const ISSUER_RE = /(^|\n)\s*(Vydává[^\n]*)/i;
+  const issuerMatch = bodyAfter.match(ISSUER_RE);
+  const issuerLine = issuerMatch ? issuerMatch[2].trim() : '';
+  if (issuerMatch) {
+    bodyAfter = bodyAfter.replace(ISSUER_RE, '').replace(/\s+$/, '').replace(/\n{2,}/g, '\n\n');
+  }
 
   // Split a body chunk around the recipient name so it can be styled larger.
   // Returns segments in order: text, name, text, name, ...
@@ -107,7 +115,7 @@ export default function DiplomaCertificate({
         .frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
         .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
-        .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 48px; letter-spacing: 5px; margin: 4px 0 6px; font-weight: 500; }
+        .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 56px; letter-spacing: 8px; margin: 6px 0 8px; font-weight: 600; text-transform: uppercase; color: #111; }
         .eyebrow { font-size: 12px; letter-spacing: 8px; color: #888; margin: 2px 0 10px; text-transform: uppercase; }
         .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
         .headline { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 12px; color: #111; text-transform: uppercase; max-width: 160mm; }
@@ -124,13 +132,14 @@ export default function DiplomaCertificate({
         .sig-line { width: 220px; max-width: 100%; border-top: 1px solid #555; margin: 0 auto 4px; }
         .sig-name { font-size: 13px; color: #111; text-align: center; }
         .sig-role { font-size: 10px; color: #666; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
+        .issuer { margin-top: 14px; font-size: 12px; letter-spacing: 3px; color: #333; text-transform: uppercase; text-align: center; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
       <div class="page">
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
-          <div class="eyebrow">Certifikát</div>
+          <div class="title">Certifikát</div>
           ${highlightMatch
             ? `${bodyBefore ? `<div class="body-lead">${renderSegmentsHtml(splitByName(bodyBefore))}</div>` : ''}
                <div class="headline">${safe(bodyHighlight)}</div>
@@ -142,7 +151,7 @@ export default function DiplomaCertificate({
                 : `<div class="body-lead">za úspěšné absolvování odborné zkoušky z</div>
                    <div class="italic">${safe(groupTitle)}</div>`)}
 
-          <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
+          <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
           <div class="sig-row">
@@ -159,6 +168,7 @@ export default function DiplomaCertificate({
               <div class="sig-role">za spolek</div>
             </div>
           </div>
+          ${issuerLine ? `<div class="issuer">${safe(issuerLine)}</div>` : ''}
         </div>
       </div>
       </body></html>
@@ -257,7 +267,7 @@ export default function DiplomaCertificate({
               }}
             >
               <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
-              <div style={{ fontSize: 12, letterSpacing: 8, color: '#888', margin: '2px 0 10px', textTransform: 'uppercase' }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 56, letterSpacing: 8, margin: '6px 0 8px', fontWeight: 600, textTransform: 'uppercase', color: '#111' }}>
                 Certifikát
               </div>
               {highlightMatch ? (
@@ -296,7 +306,7 @@ export default function DiplomaCertificate({
               )}
 
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
-                Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
+                Datum absolvování: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
               </div>
               {validityYears > 0 && (
                 <div style={{ fontSize: 12, color: '#444' }}>
@@ -321,6 +331,11 @@ export default function DiplomaCertificate({
                   <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
                 </div>
               </div>
+              {issuerLine && (
+                <div style={{ marginTop: 14, fontSize: 12, letterSpacing: 3, color: '#333', textTransform: 'uppercase', textAlign: 'center' }}>
+                  {issuerLine}
+                </div>
+              )}
             </div>
           </div>
         </div>
