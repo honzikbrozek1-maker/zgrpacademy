@@ -76,8 +76,8 @@ export default function Diplomas() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Moje diplomy</h1>
-            <p className="text-sm text-muted-foreground">Diplomy získané za dokončené skupiny levelů.</p>
+            <h1 className="text-2xl font-bold">Moje certifikáty</h1>
+            <p className="text-sm text-muted-foreground">Certifikáty získané za dokončené skupiny levelů.</p>
           </div>
         </div>
 
@@ -87,7 +87,7 @@ export default function Diplomas() {
           <Card className="shadow-card">
             <CardContent className="p-8 text-center space-y-3">
               <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground" />
-              <p className="text-muted-foreground">Zatím nemáte žádný diplom. Dokončete všechny levely ve skupině s požadovaným skóre.</p>
+              <p className="text-muted-foreground">Zatím nemáte žádný certifikát. Dokončete všechny levely ve skupině s požadovaným skóre.</p>
             </CardContent>
           </Card>
         ) : (
