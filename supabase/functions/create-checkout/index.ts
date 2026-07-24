@@ -137,38 +137,11 @@ Deno.serve(async (req) => {
       userId: effectiveUserId,
     });
 
-    // Resolve or create a 21% inclusive Czech VAT tax rate (cached by lookup via metadata)
-    const taxRateLookupKey = "cz_vat_21_inclusive";
-    let taxRateId: string | null = null;
-    try {
-      const existingRates = await stripe.taxRates.list({ active: true, limit: 100 });
-      const found = existingRates.data.find(
-        (r: any) => r.metadata?.lookup_key === taxRateLookupKey,
-      );
-      if (found) {
-        taxRateId = found.id;
-      } else {
-        const created = await stripe.taxRates.create({
-          display_name: "DPH",
-          description: "DPH 21 %",
-          jurisdiction: "CZ",
-          country: "CZ",
-          percentage: 21,
-          inclusive: true,
-          tax_type: "vat",
-          metadata: { lookup_key: taxRateLookupKey },
-        });
-        taxRateId = created.id;
-      }
-    } catch (e) {
-      console.error("tax rate setup failed:", e);
-    }
-
+    // Účet příjemce není plátce DPH — daň se nepřipočítává ani neuvádí.
     const lineItem = stripePrice
       ? {
           price: stripePrice.id,
           quantity: 1,
-          ...(taxRateId && { tax_rates: [taxRateId] }),
         }
       : {
           price_data: {
@@ -176,12 +149,11 @@ Deno.serve(async (req) => {
             unit_amount: REGISTRATION_FEE_AMOUNT,
             product_data: {
               name: REGISTRATION_FEE_NAME,
-              tax_code: "txcd_10000000",
             },
           },
           quantity: 1,
-          ...(taxRateId && { tax_rates: [taxRateId] }),
         };
+
 
     const session = await stripe.checkout.sessions.create({
       line_items: [lineItem],
@@ -196,10 +168,10 @@ Deno.serve(async (req) => {
         enabled: true,
         invoice_data: {
           description: REGISTRATION_FEE_NAME,
-          footer: "Vystavila: Viveka s.r.o. — Děkujeme za registraci.",
-          rendering_options: { amount_tax_display: "include_inclusive_tax" },
+          footer: "Vystavila: Viveka s.r.o. — Neplátce DPH. Děkujeme za registraci.",
         },
       },
+
       ...(customerId && {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
