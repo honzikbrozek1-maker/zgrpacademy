@@ -181,7 +181,7 @@ export default function AdminGroupsTab() {
                         </h3>
                         {g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}
                         <p className="text-xs text-muted-foreground mt-1">
-                          Diplom: <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
+                          Certifikát: <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
                         </p>
                       </div>
                     </div>
