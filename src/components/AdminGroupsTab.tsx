@@ -269,13 +269,13 @@ export default function AdminGroupsTab() {
             </div>
 
             <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-medium">Konfigurace diplomu</p>
+              <p className="text-sm font-medium">Konfigurace certifikátu</p>
               <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
                 ✨ Jméno absolventa, název kurzu, datum vydání i platnost se doplní <strong>automaticky</strong>.
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Nadpis diplomu</label>
+                  <label className="text-sm font-medium">Nadpis certifikátu</label>
                   <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
                 </div>
                 <div>
