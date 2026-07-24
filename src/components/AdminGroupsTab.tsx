@@ -38,13 +38,15 @@ interface Level {
   category: string;
 }
 
+const DEFAULT_BODY_TEXT = 'Certifikát o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+
 const emptyForm = {
   title: '',
   description: '',
   order_index: 1,
   diploma_title: 'CERTIFIKÁT',
   diploma_subtitle: 'ZGRP Academy',
-  diploma_body_text: 'Tímto potvrzujeme, že {user_name} úspěšně absolvoval/a vzdělávací kurz „{group_title}" v rámci platformy ZGRP Academy s celkovým výsledkem {score}.',
+  diploma_body_text: DEFAULT_BODY_TEXT,
   diploma_signatory: 'MUDr. Gabriela Hanslianová',
   diploma_validity_years: 1,
   min_average_score: 70,
