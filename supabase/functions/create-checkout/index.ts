@@ -168,10 +168,10 @@ Deno.serve(async (req) => {
         enabled: true,
         invoice_data: {
           description: REGISTRATION_FEE_NAME,
-          footer: "Vystavila: Viveka s.r.o. — Děkujeme za registraci.",
-          rendering_options: { amount_tax_display: "include_inclusive_tax" },
+          footer: "Vystavila: Viveka s.r.o. — Neplátce DPH. Děkujeme za registraci.",
         },
       },
+
       ...(customerId && {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
