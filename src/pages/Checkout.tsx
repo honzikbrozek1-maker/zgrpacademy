@@ -25,25 +25,14 @@ export default function Checkout() {
     refreshProfile();
   }, []);
 
-  if (loading || (user && !profile)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Načítání...</p>
-      </div>
-    );
-  }
-
-  if (!user) return <Navigate to="/auth" replace />;
-  if (profile?.has_paid) return <Navigate to="/" replace />;
-
   const fetchClientSecret = useCallback(async (): Promise<string> => {
     setCheckoutError(null);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           priceId: "registration_fee_v7_100czk",
-          customerEmail: user.email,
-          userId: user.id,
+          customerEmail: user?.email,
+          userId: user?.id,
           returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
           environment: getStripeEnvironment(),
         },
@@ -57,9 +46,21 @@ export default function Checkout() {
       setCheckoutError(message);
       throw error;
     }
-  }, [user.email, user.id]);
+  }, [user?.email, user?.id]);
 
   const checkoutOptions = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
+
+  if (loading || (user && !profile)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Načítání...</p>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+  if (profile?.has_paid) return <Navigate to="/" replace />;
+
 
   return (
     <div className="min-h-screen bg-background">
