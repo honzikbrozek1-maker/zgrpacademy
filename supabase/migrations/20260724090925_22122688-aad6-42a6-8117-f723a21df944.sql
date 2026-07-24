@@ -1,0 +1,2 @@
+UPDATE public.level_groups
+SET diploma_body_text = E'Certifikát o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
