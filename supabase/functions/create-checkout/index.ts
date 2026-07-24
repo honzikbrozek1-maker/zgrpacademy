@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
       }),
-      customer_update: customerId ? undefined : undefined,
+      
       metadata: { userId: effectiveUserId },
     });
 
