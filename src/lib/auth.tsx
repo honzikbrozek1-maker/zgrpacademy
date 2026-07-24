@@ -26,10 +26,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<AuthContextType['profile']>(null);
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).single();
-    if (data) setProfile(data);
+  const fetchProfile = async (userId: string, retries = 8) => {
+    for (let i = 0; i < retries; i++) {
+      const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
+      if (data) {
+        setProfile(data);
+        return;
+      }
+      // Profile row may not exist yet right after signup (trigger race). Retry with backoff.
+      await new Promise((r) => setTimeout(r, 500 + i * 250));
+    }
   };
+
 
   const checkAdmin = async (userId: string) => {
     const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin');
