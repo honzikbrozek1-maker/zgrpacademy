@@ -306,7 +306,7 @@ export default function DiplomaCertificate({
               )}
 
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
-                Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
+                Datum absolvování: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
               </div>
               {validityYears > 0 && (
                 <div style={{ fontSize: 12, color: '#444' }}>
