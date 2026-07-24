@@ -128,9 +128,21 @@ export default function Auth() {
             </TabsContent>
             <TabsContent value="register">
               <form onSubmit={handleRegister} className="space-y-4 mt-4">
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Jméno" value={displayName} onChange={e => setDisplayName(e.target.value)} className="pl-10" required />
+                <div className="space-y-1">
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Např. Jan Brožek"
+                      value={displayName}
+                      onChange={e => setDisplayName(e.target.value)}
+                      className="pl-10"
+                      autoComplete="name"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-1">
+                    Zadejte své celé jméno a příjmení – bude uvedeno na certifikátu.
+                  </p>
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
