@@ -172,6 +172,7 @@ Deno.serve(async (req) => {
       line_items: [lineItem],
       mode: "payment",
       ui_mode: "embedded_page",
+      locale: "cs",
       return_url: returnUrl,
       payment_method_types: ["card"],
       billing_address_collection: "required",
@@ -181,7 +182,7 @@ Deno.serve(async (req) => {
         enabled: true,
         invoice_data: {
           description: REGISTRATION_FEE_NAME,
-          footer: "Vystavila: Viveka s.r.o. — Neplátce DPH. Děkujeme za registraci.",
+          footer: "Neplátce DPH.",
         },
       },
 
@@ -189,8 +190,16 @@ Deno.serve(async (req) => {
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
       }),
+      
       metadata: { userId: effectiveUserId },
     });
+
+    // Nastav češtinu jako preferovaný jazyk zákazníka (ovlivňuje jazyk faktury)
+    if (session.customer && typeof session.customer === "string") {
+      try {
+        await stripe.customers.update(session.customer, { preferred_locales: ["cs"] });
+      } catch (_) { /* ignore */ }
+    }
 
     return new Response(JSON.stringify({ clientSecret: session.client_secret }), {
       status: 200,
