@@ -290,7 +290,7 @@ export default function GroupFinalTest() {
               <h2 className="text-xl font-bold">Závěrečný test skupiny</h2>
               <p className="text-muted-foreground">{group?.title}</p>
               <p className="text-sm text-muted-foreground">
-                Pro získání diplomu potřebujete alespoň <strong>{group?.final_test_passing_score}%</strong> správných odpovědí.
+                Pro získání certifikátu potřebujete alespoň <strong>{group?.final_test_passing_score}%</strong> správných odpovědí.
               </p>
               <Button onClick={startTest} className="gradient-primary text-primary-foreground">
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Načítám...</> : <>Začít test <ArrowRight className="ml-1 h-4 w-4" /></>}
