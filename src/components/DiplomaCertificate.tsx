@@ -49,7 +49,15 @@ export default function DiplomaCertificate({
   const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
   const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
   const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
-  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
+  let bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
+
+  // Extract the "Vydává ..." line so it can be rendered at the bottom of the page.
+  const ISSUER_RE = /(^|\n)\s*(Vydává[^\n]*)/i;
+  const issuerMatch = bodyAfter.match(ISSUER_RE);
+  const issuerLine = issuerMatch ? issuerMatch[2].trim() : '';
+  if (issuerMatch) {
+    bodyAfter = bodyAfter.replace(ISSUER_RE, '').replace(/\s+$/, '').replace(/\n{2,}/g, '\n\n');
+  }
 
   // Split a body chunk around the recipient name so it can be styled larger.
   // Returns segments in order: text, name, text, name, ...
