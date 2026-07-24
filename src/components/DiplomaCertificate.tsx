@@ -238,15 +238,27 @@ export default function DiplomaCertificate({
               }}
             >
               <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
-              <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 48, letterSpacing: 5, margin: '4px 0 6px', fontWeight: 500, lineHeight: 1 }}>
-                {title.toUpperCase()}
+              <div style={{ fontSize: 12, letterSpacing: 8, color: '#888', margin: '2px 0 10px', textTransform: 'uppercase' }}>
+                Certifikát
               </div>
-              <div style={{ fontSize: 12, letterSpacing: 6, color: '#555', marginBottom: 14 }}>UDĚLEN PRO</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 600, margin: '4px 0 10px' }}>
-                {userName}
-              </div>
-              <div style={{ width: '40%', height: 1.5, background: '#1a1a1a', margin: '8px 0 14px' }} />
-              {resolvedBody ? (
+              {highlightMatch ? (
+                <>
+                  {bodyBefore && (
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
+                      {bodyBefore}
+                    </div>
+                  )}
+                  <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontWeight: 700, fontSize: 44, letterSpacing: 4, lineHeight: 1.1, margin: '14px auto 12px', color: '#111', textTransform: 'uppercase', maxWidth: 605 }}>
+                    {bodyHighlight}
+                  </div>
+                  <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 10px' }} />
+                  {bodyAfter && (
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
+                      {bodyAfter}
+                    </div>
+                  )}
+                </>
+              ) : resolvedBody ? (
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                   {resolvedBody}
                 </div>
@@ -258,6 +270,7 @@ export default function DiplomaCertificate({
                   </div>
                 </>
               )}
+
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
                 Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
               </div>
