@@ -132,13 +132,14 @@ export default function DiplomaCertificate({
         .sig-line { width: 220px; max-width: 100%; border-top: 1px solid #555; margin: 0 auto 4px; }
         .sig-name { font-size: 13px; color: #111; text-align: center; }
         .sig-role { font-size: 10px; color: #666; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
+        .issuer { margin-top: 14px; font-size: 12px; letter-spacing: 3px; color: #333; text-transform: uppercase; text-align: center; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
       <div class="page">
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
-          <div class="eyebrow">Certifikát</div>
+          <div class="title">Certifikát</div>
           ${highlightMatch
             ? `${bodyBefore ? `<div class="body-lead">${renderSegmentsHtml(splitByName(bodyBefore))}</div>` : ''}
                <div class="headline">${safe(bodyHighlight)}</div>
@@ -150,7 +151,7 @@ export default function DiplomaCertificate({
                 : `<div class="body-lead">za úspěšné absolvování odborné zkoušky z</div>
                    <div class="italic">${safe(groupTitle)}</div>`)}
 
-          <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
+          <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
           <div class="sig-row">
@@ -167,6 +168,7 @@ export default function DiplomaCertificate({
               <div class="sig-role">za spolek</div>
             </div>
           </div>
+          ${issuerLine ? `<div class="issuer">${safe(issuerLine)}</div>` : ''}
         </div>
       </div>
       </body></html>
