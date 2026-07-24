@@ -26,9 +26,10 @@ const corsHeaders = {
 const REGISTRATION_FEE_PRICE_IDS = new Set([
   "registration_fee_v4_10czk",
   "registration_fee_v5_15czk",
+  "registration_fee_v6_20czk",
 ]);
-const REGISTRATION_FEE_PRICE_ID = "registration_fee_v5_15czk";
-const REGISTRATION_FEE_AMOUNT = 1500;
+const REGISTRATION_FEE_PRICE_ID = "registration_fee_v6_20czk";
+const REGISTRATION_FEE_AMOUNT = 2000;
 const REGISTRATION_FEE_CURRENCY = "czk";
 const REGISTRATION_FEE_NAME = "Registrační poplatek ZGRP Academy";
 
