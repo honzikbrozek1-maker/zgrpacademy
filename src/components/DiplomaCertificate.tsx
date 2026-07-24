@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import logoSpolek from '@/assets/logo-spolek.png';
 import diplomaBorder from '@/assets/diploma-border.png';
+import signatureBrozekAsset from '@/assets/signature-brozek.png.asset.json';
+
+const signatureBrozek = signatureBrozekAsset.url;
+const SECONDARY_SIGNATORY = 'Ing. Tomáš Brožek, MBA';
 
 interface Props {
   title: string;          // "CERTIFIKÁT"
