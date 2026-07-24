@@ -331,6 +331,11 @@ export default function DiplomaCertificate({
                   <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
                 </div>
               </div>
+              {issuerLine && (
+                <div style={{ marginTop: 14, fontSize: 12, letterSpacing: 3, color: '#333', textTransform: 'uppercase', textAlign: 'center' }}>
+                  {issuerLine}
+                </div>
+              )}
             </div>
           </div>
         </div>
