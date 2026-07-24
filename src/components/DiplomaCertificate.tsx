@@ -42,6 +42,16 @@ export default function DiplomaCertificate({
 
   const resolvedBody = interpolate(bodyText);
 
+  // Split body text around the highlight phrase "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
+  // so we can render it as a large graphic headline.
+  const HIGHLIGHT_RE = /SPECIALISTA\s+ZDRAVOTNÍHO\s+PROTOKOLU/i;
+  const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
+  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).trim().replace(/[,\s]+$/, '') : '';
+  const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
+  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).trim().replace(/^[,\s]+/, '') : '';
+
+
+
 
 
   const handlePrint = () => {
@@ -81,12 +91,12 @@ export default function DiplomaCertificate({
         .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 48px; letter-spacing: 5px; margin: 4px 0 6px; font-weight: 500; }
-        .udelen { font-size: 12px; letter-spacing: 6px; color: #555; margin-bottom: 14px; }
-        .recipient { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; margin: 4px 0 10px; }
-        .divider { width: 40%; height: 1.5px; background: #1a1a1a; margin: 8px 0 14px; }
-        .prefix { font-size: 13px; color: #444; letter-spacing: 1px; margin-bottom: 6px; }
-        .italic { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 18px; line-height: 1.4; color: #111; max-width: 120mm; margin: 0 auto; white-space: pre-line; }
-        .body { font-size: 13px; line-height: 1.6; color: #2a2a2a; max-width: 120mm; margin: 16px auto 0; }
+        .eyebrow { font-size: 12px; letter-spacing: 8px; color: #888; margin: 2px 0 10px; text-transform: uppercase; }
+        .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; }
+        .headline { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 12px; color: #111; text-transform: uppercase; max-width: 160mm; }
+        .headline-accent { display: block; width: 60px; height: 3px; background: #1a1a1a; margin: 10px auto; }
+        .body-tail { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; }
+        .italic { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 18px; line-height: 1.4; color: #111; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
         .meta strong { color: #111; }
         .sub { font-size: 11px; color: #666; margin-top: 6px; letter-spacing: 1px; }
@@ -102,14 +112,17 @@ export default function DiplomaCertificate({
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
-          <div class="title">${safe(title.toUpperCase())}</div>
-          <div class="udelen">UDĚLEN PRO</div>
-          <div class="recipient">${safe(userName)}</div>
-          <div class="divider"></div>
-          ${resolvedBody
-            ? `<div class="italic" style="max-width:140mm">${safe(resolvedBody)}</div>`
-            : `<div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
-               <div class="italic">${safe(groupTitle)}</div>`}
+          <div class="eyebrow">Certifikát</div>
+          ${highlightMatch
+            ? `${bodyBefore ? `<div class="body-lead">${safe(bodyBefore)}</div>` : ''}
+               <div class="headline">${safe(bodyHighlight)}</div>
+               <span class="headline-accent"></span>
+               ${bodyAfter ? `<div class="body-tail">${safe(bodyAfter)}</div>` : ''}`
+            : (resolvedBody
+                ? `<div class="italic">${safe(resolvedBody)}</div>`
+                : `<div class="body-lead">za úspěšné absolvování odborné zkoušky z</div>
+                   <div class="italic">${safe(groupTitle)}</div>`)}
+
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
@@ -225,15 +238,27 @@ export default function DiplomaCertificate({
               }}
             >
               <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
-              <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 48, letterSpacing: 5, margin: '4px 0 6px', fontWeight: 500, lineHeight: 1 }}>
-                {title.toUpperCase()}
+              <div style={{ fontSize: 12, letterSpacing: 8, color: '#888', margin: '2px 0 10px', textTransform: 'uppercase' }}>
+                Certifikát
               </div>
-              <div style={{ fontSize: 12, letterSpacing: 6, color: '#555', marginBottom: 14 }}>UDĚLEN PRO</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 600, margin: '4px 0 10px' }}>
-                {userName}
-              </div>
-              <div style={{ width: '40%', height: 1.5, background: '#1a1a1a', margin: '8px 0 14px' }} />
-              {resolvedBody ? (
+              {highlightMatch ? (
+                <>
+                  {bodyBefore && (
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
+                      {bodyBefore}
+                    </div>
+                  )}
+                  <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontWeight: 700, fontSize: 44, letterSpacing: 4, lineHeight: 1.1, margin: '14px auto 12px', color: '#111', textTransform: 'uppercase', maxWidth: 605 }}>
+                    {bodyHighlight}
+                  </div>
+                  <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 10px' }} />
+                  {bodyAfter && (
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
+                      {bodyAfter}
+                    </div>
+                  )}
+                </>
+              ) : resolvedBody ? (
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                   {resolvedBody}
                 </div>
@@ -245,6 +270,7 @@ export default function DiplomaCertificate({
                   </div>
                 </>
               )}
+
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
                 Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
               </div>
