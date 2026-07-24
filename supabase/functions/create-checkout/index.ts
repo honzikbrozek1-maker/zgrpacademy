@@ -24,7 +24,7 @@ const corsHeaders = {
 };
 
 const REGISTRATION_FEE_PRICE_ID = "registration_fee_v3";
-const REGISTRATION_FEE_AMOUNT = 10000;
+const REGISTRATION_FEE_AMOUNT = 1000;
 const REGISTRATION_FEE_CURRENCY = "czk";
 const REGISTRATION_FEE_NAME = "Registrační poplatek ZGRP Academy";
 
