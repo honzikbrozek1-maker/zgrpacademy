@@ -1,0 +1,1 @@
+UPDATE public.profiles SET has_paid = false WHERE id = '5ca82dba-86b4-4e99-884f-808060aef2f6';
