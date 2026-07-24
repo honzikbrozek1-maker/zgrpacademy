@@ -233,14 +233,17 @@ export default function DiplomaCertificate({
                 {userName}
               </div>
               <div style={{ width: '40%', height: 1.5, background: '#1a1a1a', margin: '8px 0 14px' }} />
-              <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                {groupTitle}
-              </div>
-              {resolvedBody && (
-                <div style={{ fontSize: 13, lineHeight: 1.6, color: '#2a2a2a', maxWidth: 454, margin: '16px auto 0', whiteSpace: 'pre-line' }}>
+              {resolvedBody ? (
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                   {resolvedBody}
                 </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                    {groupTitle}
+                  </div>
+                </>
               )}
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
                 Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
@@ -253,9 +256,20 @@ export default function DiplomaCertificate({
               {subtitle && (
                 <div style={{ fontSize: 11, color: '#666', marginTop: 6, letterSpacing: 1 }}>{subtitle}</div>
               )}
-              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: 220, borderTop: '1px solid #555', margin: '0 auto 4px' }} />
-                <div style={{ fontSize: 13, color: '#111' }}>{signatory}</div>
+              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', gap: 20 }}>
+                {signatory && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
+                    <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{signatory}</div>
+                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                  <img src={signatureBrozek} alt="" style={{ height: 50, width: 'auto', maxWidth: 220, objectFit: 'contain', marginBottom: -6 }} />
+                  <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
+                  <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{SECONDARY_SIGNATORY}</div>
+                  <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                </div>
               </div>
             </div>
           </div>
