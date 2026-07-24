@@ -74,6 +74,8 @@ export default function DiplomaCertificate({
     // gets stuck on the diploma after the print sheet is dismissed, with no
     // way to navigate back. An iframe keeps the user on the current page.
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    const renderSegmentsHtml = (segs: Array<{ kind: 'text' | 'name'; value: string }>) =>
+      segs.map(s => s.kind === 'name' ? `<span class="recipient-name">${safe(s.value)}</span>` : safe(s.value)).join('');
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
     const sigBrozekUrl = new URL(signatureBrozek, window.location.origin).href;
