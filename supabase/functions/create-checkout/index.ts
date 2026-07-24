@@ -23,8 +23,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const REGISTRATION_FEE_PRICE_ID = "registration_fee_v4_10czk";
-const REGISTRATION_FEE_AMOUNT = 1000;
+const REGISTRATION_FEE_PRICE_IDS = new Set([
+  "registration_fee_v4_10czk",
+  "registration_fee_v5_15czk",
+]);
+const REGISTRATION_FEE_PRICE_ID = "registration_fee_v5_15czk";
+const REGISTRATION_FEE_AMOUNT = 1500;
 const REGISTRATION_FEE_CURRENCY = "czk";
 const REGISTRATION_FEE_NAME = "Registrační poplatek ZGRP Academy";
 
@@ -125,10 +129,11 @@ Deno.serve(async (req) => {
     const env: StripeEnv = environment;
     const stripe = createStripeClient(env);
 
-    const prices = await stripe.prices.list({ lookup_keys: [priceId] });
+    const isRegistrationFee = REGISTRATION_FEE_PRICE_IDS.has(priceId);
+    const prices = isRegistrationFee ? { data: [] } : await stripe.prices.list({ lookup_keys: [priceId] });
     const stripePrice = prices.data[0];
 
-    if (!stripePrice && priceId !== REGISTRATION_FEE_PRICE_ID) {
+    if (!stripePrice && !isRegistrationFee) {
       throw new Error(`Price not found: ${priceId} (${env})`);
     }
 
@@ -138,12 +143,9 @@ Deno.serve(async (req) => {
     });
 
     // Účet příjemce není plátce DPH — daň se nepřipočítává ani neuvádí.
-    const lineItem = stripePrice
+    // Registrační poplatek posíláme jako dynamickou cenu, aby se nepoužila stará uložená cena ve Stripe.
+    const lineItem = isRegistrationFee
       ? {
-          price: stripePrice.id,
-          quantity: 1,
-        }
-      : {
           price_data: {
             currency: REGISTRATION_FEE_CURRENCY,
             unit_amount: REGISTRATION_FEE_AMOUNT,
@@ -152,7 +154,17 @@ Deno.serve(async (req) => {
             },
           },
           quantity: 1,
-        };
+        }
+      : stripePrice
+      ? {
+          price: stripePrice.id,
+          quantity: 1,
+        }
+      : null;
+
+    if (!lineItem) {
+      throw new Error(`Price not found: ${priceId} (${env})`);
+    }
 
 
     const session = await stripe.checkout.sessions.create({
