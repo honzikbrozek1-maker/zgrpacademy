@@ -151,8 +151,8 @@ export default function AdminGroupsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">Skupiny levelů a diplomy</h2>
-          <p className="text-sm text-muted-foreground">Diplom se vydá po dokončení všech levelů ve skupině.</p>
+          <h2 className="text-xl font-bold">Skupiny levelů a certifikáty</h2>
+          <p className="text-sm text-muted-foreground">Certifikát se vydá po dokončení všech levelů ve skupině.</p>
         </div>
         <Button onClick={startCreate} className="gradient-primary text-primary-foreground">
           <Plus className="mr-1 h-4 w-4" /> Nová skupina
