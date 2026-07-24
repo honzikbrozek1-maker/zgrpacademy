@@ -51,6 +51,7 @@ export default function DiplomaCertificate({
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
+    const sigBrozekUrl = new URL(signatureBrozek, window.location.origin).href;
 
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
