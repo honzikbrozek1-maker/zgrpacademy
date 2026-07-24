@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
         enabled: true,
         invoice_data: {
           description: REGISTRATION_FEE_NAME,
-          footer: "Neplátce DPH. IČO: 08720746",
+          footer: "Neplátce DPH.\nIČO: 08720746",
         },
       },
 
