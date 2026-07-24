@@ -23,6 +23,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const REGISTRATION_FEE_PRICE_ID = "registration_fee_v3";
+const REGISTRATION_FEE_AMOUNT = 10000;
+const REGISTRATION_FEE_CURRENCY = "czk";
+const REGISTRATION_FEE_NAME = "Registrační poplatek ZGRP Academy";
+
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
   options: { email?: string; userId?: string },
@@ -121,8 +126,11 @@ Deno.serve(async (req) => {
     const stripe = createStripeClient(env);
 
     const prices = await stripe.prices.list({ lookup_keys: [priceId] });
-    if (!prices.data.length) throw new Error("Price not found");
     const stripePrice = prices.data[0];
+
+    if (!stripePrice && priceId !== REGISTRATION_FEE_PRICE_ID) {
+      throw new Error(`Price not found: ${priceId} (${env})`);
+    }
 
     const customerId = await resolveOrCreateCustomer(stripe, {
       email: effectiveEmail,
@@ -156,22 +164,38 @@ Deno.serve(async (req) => {
       console.error("tax rate setup failed:", e);
     }
 
+    const lineItem = stripePrice
+      ? {
+          price: stripePrice.id,
+          quantity: 1,
+          ...(taxRateId && { tax_rates: [taxRateId] }),
+        }
+      : {
+          price_data: {
+            currency: REGISTRATION_FEE_CURRENCY,
+            unit_amount: REGISTRATION_FEE_AMOUNT,
+            product_data: {
+              name: REGISTRATION_FEE_NAME,
+              tax_code: "txcd_10000000",
+            },
+          },
+          quantity: 1,
+          ...(taxRateId && { tax_rates: [taxRateId] }),
+        };
+
     const session = await stripe.checkout.sessions.create({
-      line_items: [{
-        price: stripePrice.id,
-        quantity: 1,
-        ...(taxRateId && { tax_rates: [taxRateId] }),
-      }],
+      line_items: [lineItem],
       mode: "payment",
       ui_mode: "embedded_page",
       return_url: returnUrl,
       payment_method_types: ["card"],
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
+      payment_intent_data: { description: REGISTRATION_FEE_NAME },
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: "Registrační poplatek ZGRP Academy",
+          description: REGISTRATION_FEE_NAME,
           footer: "Vystavila: Viveka s.r.o. — Děkujeme za registraci.",
           rendering_options: { amount_tax_display: "include_inclusive_tax" },
         },
