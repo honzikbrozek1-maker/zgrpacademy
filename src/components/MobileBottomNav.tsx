@@ -12,7 +12,7 @@ export default function MobileBottomNav() {
   const items = [
     { to: basePath, icon: Home, label: 'Domů', exact: true },
     { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
-    { to: `${basePath}/diplomas`, icon: GraduationCap, label: 'Diplomy' },
+    { to: `${basePath}/diplomas`, icon: GraduationCap, label: 'Certifikáty' },
     ...(isAdmin ? [{ to: `${basePath}/admin`, icon: Shield, label: 'Admin' }] : []),
     { to: `${basePath}/account`, icon: UserCog, label: 'Účet' },
   ];

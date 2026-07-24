@@ -38,13 +38,15 @@ interface Level {
   category: string;
 }
 
+const DEFAULT_BODY_TEXT = 'Certifikát o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+
 const emptyForm = {
   title: '',
   description: '',
   order_index: 1,
   diploma_title: 'CERTIFIKÁT',
   diploma_subtitle: 'ZGRP Academy',
-  diploma_body_text: 'Tímto potvrzujeme, že {user_name} úspěšně absolvoval/a vzdělávací kurz „{group_title}" v rámci platformy ZGRP Academy s celkovým výsledkem {score}.',
+  diploma_body_text: DEFAULT_BODY_TEXT,
   diploma_signatory: 'MUDr. Gabriela Hanslianová',
   diploma_validity_years: 1,
   min_average_score: 70,
@@ -149,8 +151,8 @@ export default function AdminGroupsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">Skupiny levelů a diplomy</h2>
-          <p className="text-sm text-muted-foreground">Diplom se vydá po dokončení všech levelů ve skupině.</p>
+          <h2 className="text-xl font-bold">Skupiny levelů a certifikáty</h2>
+          <p className="text-sm text-muted-foreground">Certifikát se vydá po dokončení všech levelů ve skupině.</p>
         </div>
         <Button onClick={startCreate} className="gradient-primary text-primary-foreground">
           <Plus className="mr-1 h-4 w-4" /> Nová skupina
@@ -179,7 +181,7 @@ export default function AdminGroupsTab() {
                         </h3>
                         {g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}
                         <p className="text-xs text-muted-foreground mt-1">
-                          Diplom: <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
+                          Certifikát: <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
                         </p>
                       </div>
                     </div>
@@ -267,13 +269,13 @@ export default function AdminGroupsTab() {
             </div>
 
             <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-medium">Konfigurace diplomu</p>
+              <p className="text-sm font-medium">Konfigurace certifikátu</p>
               <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
                 ✨ Jméno absolventa, název kurzu, datum vydání i platnost se doplní <strong>automaticky</strong>.
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Nadpis diplomu</label>
+                  <label className="text-sm font-medium">Nadpis certifikátu</label>
                   <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
                 </div>
                 <div>
@@ -332,8 +334,9 @@ export default function AdminGroupsTab() {
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Podpisující osoba</label>
+                  <label className="text-sm font-medium">Podpisující osoba (za spolek)</label>
                   <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
+                  <p className="text-xs text-muted-foreground mt-1">Druhý podpis (Ing. Tomáš Brožek, MBA) je na certifikát doplněn automaticky.</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
@@ -343,7 +346,7 @@ export default function AdminGroupsTab() {
               </div>
 
               <div className="pt-2">
-                <p className="text-sm font-medium mb-2">Živý náhled diplomu</p>
+                <p className="text-sm font-medium mb-2">Živý náhled certifikátu</p>
                 <div className="rounded-lg border bg-muted/30 p-3 flex justify-center">
                   <DiplomaCertificate
                     hidePrint

@@ -145,7 +145,7 @@ export default function GroupFinalTest() {
 
       if (res?.passed) {
         await supabase.rpc('issue_diploma_if_eligible', { p_group_id: groupId });
-        toast({ title: '🎓 Získali jste diplom!', description: 'Diplom najdete v sekci Moje diplomy.' });
+        toast({ title: '🎓 Získali jste certifikát!', description: 'Certifikát najdete v sekci Moje certifikáty.' });
       }
     } catch (e: any) {
       toast({ title: 'Chyba', description: e.message || 'Nepodařilo se odeslat test', variant: 'destructive' });
@@ -187,11 +187,11 @@ export default function GroupFinalTest() {
               <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
                 {passed ? <GraduationCap className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
               </div>
-              <h2 className="text-2xl font-bold">{passed ? 'Gratulujeme — diplom je váš! 🎓' : 'Bohužel neprošlo'}</h2>
+              <h2 className="text-2xl font-bold">{passed ? 'Gratulujeme — certifikát je váš! 🎓' : 'Bohužel neprošlo'}</h2>
               <p className="text-3xl font-extrabold text-primary">{score}%</p>
               <p className="text-muted-foreground">
                 {passed
-                  ? 'Úspěšně jste dokončili celou skupinu. Diplom najdete v sekci Moje diplomy.'
+                  ? 'Úspěšně jste dokončili celou skupinu. Certifikát najdete v sekci Moje certifikáty.'
                   : `Pro splnění potřebujete alespoň ${group?.final_test_passing_score}%. Můžete to zkusit znovu.`}
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
@@ -206,7 +206,7 @@ export default function GroupFinalTest() {
                 )}
                 {passed ? (
                   <Button onClick={() => navigate(`${basePath}/diplomas`)} className="gradient-primary text-primary-foreground">
-                    Moje diplomy
+                    Moje certifikáty
                   </Button>
                 ) : (
                   <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setScore(null); setPerQuestion([]); setShowReview(false); }} className="gradient-primary text-primary-foreground">
@@ -290,7 +290,7 @@ export default function GroupFinalTest() {
               <h2 className="text-xl font-bold">Závěrečný test skupiny</h2>
               <p className="text-muted-foreground">{group?.title}</p>
               <p className="text-sm text-muted-foreground">
-                Pro získání diplomu potřebujete alespoň <strong>{group?.final_test_passing_score}%</strong> správných odpovědí.
+                Pro získání certifikátu potřebujete alespoň <strong>{group?.final_test_passing_score}%</strong> správných odpovědí.
               </p>
               <Button onClick={startTest} className="gradient-primary text-primary-foreground">
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Načítám...</> : <>Začít test <ArrowRight className="ml-1 h-4 w-4" /></>}

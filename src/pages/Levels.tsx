@@ -242,9 +242,9 @@ export default function Levels() {
                           {hasDiploma ? <GraduationCap className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-sm">Diplom</h3>
+                          <h3 className="font-semibold text-sm">Certifikát</h3>
                           <p className="text-xs text-muted-foreground">
-                            {hasDiploma ? 'Získán — zobrazit v Mých diplomech' : 'Dostupný po splnění závěr. testu skupiny'}
+                            {hasDiploma ? 'Získán — zobrazit v Mých certifikátech' : 'Dostupný po splnění závěr. testu skupiny'}
                           </p>
                         </div>
                         {hasDiploma && <ArrowRight className="h-4 w-4 text-muted-foreground" />}

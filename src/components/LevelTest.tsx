@@ -219,7 +219,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
             <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
             <p className="text-2xl font-bold">{testScore}%</p>
             <p className="text-muted-foreground">
-              {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj diplom...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+              {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj certifikát...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
             </p>
             <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>

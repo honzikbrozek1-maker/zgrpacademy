@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import logoSpolek from '@/assets/logo-spolek.png';
 import diplomaBorder from '@/assets/diploma-border.png';
+import signatureBrozekAsset from '@/assets/signature-brozek.png.asset.json';
+
+const signatureBrozek = signatureBrozekAsset.url;
+const SECONDARY_SIGNATORY = 'Ing. Tomáš Brožek, MBA';
 
 interface Props {
   title: string;          // "CERTIFIKÁT"
@@ -47,6 +51,7 @@ export default function DiplomaCertificate({
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
+    const sigBrozekUrl = new URL(signatureBrozek, window.location.origin).href;
 
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
@@ -85,9 +90,12 @@ export default function DiplomaCertificate({
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
         .meta strong { color: #111; }
         .sub { font-size: 11px; color: #666; margin-top: 6px; letter-spacing: 1px; }
-        .sig { margin-top: auto; padding-top: 18px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .sig-line { width: 220px; border-top: 1px solid #555; margin: 0 auto 4px; }
-        .sig-name { font-size: 13px; color: #111; }
+        .sig-row { margin-top: auto; padding-top: 18px; width: 100%; display: flex; justify-content: space-around; align-items: flex-end; gap: 20px; }
+        .sig-block { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+        .sig-img { height: 50px; width: auto; max-width: 220px; object-fit: contain; margin-bottom: -6px; }
+        .sig-line { width: 220px; max-width: 100%; border-top: 1px solid #555; margin: 0 auto 4px; }
+        .sig-name { font-size: 13px; color: #111; text-align: center; }
+        .sig-role { font-size: 10px; color: #666; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
       <div class="page">
@@ -98,15 +106,26 @@ export default function DiplomaCertificate({
           <div class="udelen">UDĚLEN PRO</div>
           <div class="recipient">${safe(userName)}</div>
           <div class="divider"></div>
-          <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
-          <div class="italic">${safe(groupTitle)}</div>
-          ${resolvedBody ? `<div class="body">${safe(resolvedBody)}</div>` : ''}
+          ${resolvedBody
+            ? `<div class="italic" style="max-width:140mm">${safe(resolvedBody)}</div>`
+            : `<div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
+               <div class="italic">${safe(groupTitle)}</div>`}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
-          <div class="sig">
-            <div class="sig-line"></div>
-            <div class="sig-name">${safe(signatory)}</div>
+          <div class="sig-row">
+            ${signatory ? `
+              <div class="sig-block">
+                <div class="sig-line"></div>
+                <div class="sig-name">${safe(signatory)}</div>
+                <div class="sig-role">za spolek</div>
+              </div>` : ''}
+            <div class="sig-block">
+              <img class="sig-img" src="${sigBrozekUrl}" alt="" />
+              <div class="sig-line"></div>
+              <div class="sig-name">${safe(SECONDARY_SIGNATORY)}</div>
+              <div class="sig-role">za spolek</div>
+            </div>
           </div>
         </div>
       </div>
@@ -214,14 +233,17 @@ export default function DiplomaCertificate({
                 {userName}
               </div>
               <div style={{ width: '40%', height: 1.5, background: '#1a1a1a', margin: '8px 0 14px' }} />
-              <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                {groupTitle}
-              </div>
-              {resolvedBody && (
-                <div style={{ fontSize: 13, lineHeight: 1.6, color: '#2a2a2a', maxWidth: 454, margin: '16px auto 0', whiteSpace: 'pre-line' }}>
+              {resolvedBody ? (
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                   {resolvedBody}
                 </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                    {groupTitle}
+                  </div>
+                </>
               )}
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
                 Datum vydání: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
@@ -234,9 +256,20 @@ export default function DiplomaCertificate({
               {subtitle && (
                 <div style={{ fontSize: 11, color: '#666', marginTop: 6, letterSpacing: 1 }}>{subtitle}</div>
               )}
-              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: 220, borderTop: '1px solid #555', margin: '0 auto 4px' }} />
-                <div style={{ fontSize: 13, color: '#111' }}>{signatory}</div>
+              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', gap: 20 }}>
+                {signatory && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
+                    <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{signatory}</div>
+                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                  <img src={signatureBrozek} alt="" style={{ height: 50, width: 'auto', maxWidth: 220, objectFit: 'contain', marginBottom: -6 }} />
+                  <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
+                  <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{SECONDARY_SIGNATORY}</div>
+                  <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                </div>
               </div>
             </div>
           </div>
