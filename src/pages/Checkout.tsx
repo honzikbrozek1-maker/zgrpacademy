@@ -71,7 +71,7 @@ export default function Checkout() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">
-              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>15 Kč</strong> (dočasně snížená cena). Po platbě obdržíš fakturu.
+              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>20 Kč</strong> (dočasně snížená cena). Po platbě obdržíš fakturu.
             </p>
             <p className="text-sm text-muted-foreground">
               Přihlášen jako: <span className="font-medium">{user.email}</span>{" "}
