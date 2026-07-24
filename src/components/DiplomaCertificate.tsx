@@ -47,7 +47,7 @@ export default function DiplomaCertificate({
   // paragraphs like "Vydává SPOLEK V ROVNOVÁZE Z.S." render on their own row.
   const HIGHLIGHT_RE = /SPECIALISTA\s+ZDRAVOTNÍHO\s+PROTOKOLU/i;
   const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
-  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
+  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/^\s*certifik[áa]t[^\S\n]*/i, '').replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
   const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
   let bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
 
