@@ -42,6 +42,16 @@ export default function DiplomaCertificate({
 
   const resolvedBody = interpolate(bodyText);
 
+  // Split body text around the highlight phrase "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
+  // so we can render it as a large graphic headline.
+  const HIGHLIGHT_RE = /SPECIALISTA\s+ZDRAVOTNÍHO\s+PROTOKOLU/i;
+  const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
+  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).trim().replace(/[,\s]+$/, '') : '';
+  const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
+  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).trim().replace(/^[,\s]+/, '') : '';
+
+
+
 
 
   const handlePrint = () => {
