@@ -90,9 +90,12 @@ export default function DiplomaCertificate({
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
         .meta strong { color: #111; }
         .sub { font-size: 11px; color: #666; margin-top: 6px; letter-spacing: 1px; }
-        .sig { margin-top: auto; padding-top: 18px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .sig-line { width: 220px; border-top: 1px solid #555; margin: 0 auto 4px; }
-        .sig-name { font-size: 13px; color: #111; }
+        .sig-row { margin-top: auto; padding-top: 18px; width: 100%; display: flex; justify-content: space-around; align-items: flex-end; gap: 20px; }
+        .sig-block { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+        .sig-img { height: 50px; width: auto; max-width: 220px; object-fit: contain; margin-bottom: -6px; }
+        .sig-line { width: 220px; max-width: 100%; border-top: 1px solid #555; margin: 0 auto 4px; }
+        .sig-name { font-size: 13px; color: #111; text-align: center; }
+        .sig-role { font-size: 10px; color: #666; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
         @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
       <div class="page">
