@@ -115,7 +115,7 @@ export default function DiplomaCertificate({
         .frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
         .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
-        .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 48px; letter-spacing: 5px; margin: 4px 0 6px; font-weight: 500; }
+        .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 56px; letter-spacing: 8px; margin: 6px 0 8px; font-weight: 600; text-transform: uppercase; color: #111; }
         .eyebrow { font-size: 12px; letter-spacing: 8px; color: #888; margin: 2px 0 10px; text-transform: uppercase; }
         .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
         .headline { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 12px; color: #111; text-transform: uppercase; max-width: 160mm; }
