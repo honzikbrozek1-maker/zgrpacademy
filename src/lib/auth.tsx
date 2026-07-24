@@ -19,6 +19,12 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const getDisplayName = (authUser: User) => {
+  const metadataName = authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || authUser.user_metadata?.name;
+  if (typeof metadataName === 'string' && metadataName.trim()) return metadataName.trim();
+  return authUser.email?.split('@')[0] || 'Uživatel';
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -26,16 +32,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<AuthContextType['profile']>(null);
 
-  const fetchProfile = async (userId: string, retries = 8) => {
+  const fetchProfile = async (authUser: User, retries = 8) => {
     for (let i = 0; i < retries; i++) {
-      const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
+      const { data } = await supabase.from('profiles').select('*').eq('user_id', authUser.id).maybeSingle();
       if (data) {
         setProfile(data);
         return;
       }
+
+      if (i === 1) {
+        await supabase
+          .from('profiles')
+          .insert({ user_id: authUser.id, display_name: getDisplayName(authUser), has_paid: false });
+
+        await supabase
+          .from('section_profiles')
+          .upsert([
+            { user_id: authUser.id, category: 'products' },
+            { user_id: authUser.id, category: 'backoffice' },
+          ], { onConflict: 'user_id,category', ignoreDuplicates: true });
+      }
+
       // Profile row may not exist yet right after signup (trigger race). Retry with backoff.
       await new Promise((r) => setTimeout(r, 500 + i * 250));
     }
+    setProfile({
+      display_name: getDisplayName(authUser),
+      total_points: 0,
+      current_level: 1,
+      avatar_url: null,
+      has_paid: false,
+    });
   };
 
 
@@ -45,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchProfile(user);
   };
 
   useEffect(() => {
@@ -54,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => {
-          fetchProfile(session.user.id);
+          fetchProfile(session.user);
           checkAdmin(session.user.id);
         }, 0);
       } else {
@@ -68,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
         checkAdmin(session.user.id);
       }
       setLoading(false);
