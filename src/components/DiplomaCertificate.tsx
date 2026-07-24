@@ -267,7 +267,7 @@ export default function DiplomaCertificate({
               }}
             >
               <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
-              <div style={{ fontSize: 12, letterSpacing: 8, color: '#888', margin: '2px 0 10px', textTransform: 'uppercase' }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 56, letterSpacing: 8, margin: '6px 0 8px', fontWeight: 600, textTransform: 'uppercase', color: '#111' }}>
                 Certifikát
               </div>
               {highlightMatch ? (
