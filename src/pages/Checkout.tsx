@@ -41,7 +41,7 @@ export default function Checkout() {
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
-          priceId: "registration_fee_v3",
+          priceId: "registration_fee_v4_10czk",
           customerEmail: user.email,
           userId: user.id,
           returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
