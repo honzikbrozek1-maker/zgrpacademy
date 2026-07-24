@@ -263,8 +263,10 @@ export default function DiplomaCertificate({
               {highlightMatch ? (
                 <>
                   {bodyBefore && (
-                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
-                      {bodyBefore}
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                      {splitByName(bodyBefore).map((s, i) => s.kind === 'name'
+                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 700, fontSize: 30, letterSpacing: 1, color: '#111', padding: '0 4px', borderBottom: '1.5px solid #1a1a1a', lineHeight: 1.1 }}>{s.value}</span>
+                        : <span key={i}>{s.value}</span>)}
                     </div>
                   )}
                   <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontWeight: 700, fontSize: 44, letterSpacing: 4, lineHeight: 1.1, margin: '14px auto 12px', color: '#111', textTransform: 'uppercase', maxWidth: 605 }}>
@@ -272,11 +274,14 @@ export default function DiplomaCertificate({
                   </div>
                   <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 10px' }} />
                   {bodyAfter && (
-                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto' }}>
-                      {bodyAfter}
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                      {splitByName(bodyAfter).map((s, i) => s.kind === 'name'
+                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 700, fontSize: 30, letterSpacing: 1, color: '#111', padding: '0 4px', borderBottom: '1.5px solid #1a1a1a', lineHeight: 1.1 }}>{s.value}</span>
+                        : <span key={i}>{s.value}</span>)}
                     </div>
                   )}
                 </>
+
               ) : resolvedBody ? (
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                   {resolvedBody}
