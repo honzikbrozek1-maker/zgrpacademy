@@ -405,7 +405,7 @@ export default function LevelDetail() {
                 if (level.group_id) {
                   toast({
                     title: 'Level dokončen! 🎉',
-                    description: 'Po dokončení všech levelů ve skupině můžete absolvovat závěrečný test skupiny a získat diplom.',
+                    description: 'Po dokončení všech levelů ve skupině můžete absolvovat závěrečný test skupiny a získat certifikát.',
                   });
                 }
               }}
