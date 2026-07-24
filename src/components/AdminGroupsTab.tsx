@@ -38,7 +38,7 @@ interface Level {
   category: string;
 }
 
-const DEFAULT_BODY_TEXT = 'Certifikát o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+const DEFAULT_BODY_TEXT = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
 
 const emptyForm = {
   title: '',
