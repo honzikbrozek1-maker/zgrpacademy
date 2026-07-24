@@ -31,7 +31,7 @@ export default function Checkout() {
   const fetchClientSecret = async (): Promise<string> => {
     const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: {
-        priceId: "registration_fee_v2",
+        priceId: "registration_fee_v3",
         customerEmail: user.email,
         userId: user.id,
         returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
@@ -54,7 +54,7 @@ export default function Checkout() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">
-              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>15 Kč</strong>. Po platbě obdržíš fakturu.
+              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>100 Kč</strong>. Po platbě obdržíš fakturu.
             </p>
             <p className="text-sm text-muted-foreground">
               Přihlášen jako: <span className="font-medium">{user.email}</span>{" "}
