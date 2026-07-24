@@ -132,7 +132,7 @@ export default function Auth() {
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Např. Jan Brožek"
+                      placeholder="Např. Tomáš Fuk"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
                       className="pl-10"
