@@ -38,7 +38,7 @@ interface Level {
   category: string;
 }
 
-const DEFAULT_BODY_TEXT = 'Certifikát o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+const DEFAULT_BODY_TEXT = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
 
 const emptyForm = {
   title: '',
@@ -290,7 +290,7 @@ export default function AdminGroupsTab() {
                     { label: 'Uživatelské jméno', token: '{user_name}' },
                     { label: 'Název kurzu', token: '{group_title}' },
                     { label: 'Skóre', token: '{score}' },
-                    { label: 'Datum vydání', token: '{date}' },
+                    { label: 'Datum absolvování', token: '{date}' },
                     { label: 'Platnost do', token: '{valid_until}' },
                   ].map(({ label, token }) => (
                     <Button
