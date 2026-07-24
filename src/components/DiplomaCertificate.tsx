@@ -43,12 +43,27 @@ export default function DiplomaCertificate({
   const resolvedBody = interpolate(bodyText);
 
   // Split body text around the highlight phrase "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
-  // so we can render it as a large graphic headline.
+  // so we can render it as a large graphic headline. Preserve line breaks so
+  // paragraphs like "Vydává SPOLEK V ROVNOVÁZE Z.S." render on their own row.
   const HIGHLIGHT_RE = /SPECIALISTA\s+ZDRAVOTNÍHO\s+PROTOKOLU/i;
   const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
-  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).trim().replace(/[,\s]+$/, '') : '';
+  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
   const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
-  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).trim().replace(/^[,\s]+/, '') : '';
+  const bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
+
+  // Split a body chunk around the recipient name so it can be styled larger.
+  // Returns segments in order: text, name, text, name, ...
+  const splitByName = (chunk: string): Array<{ kind: 'text' | 'name'; value: string }> => {
+    if (!chunk || !userName) return chunk ? [{ kind: 'text', value: chunk }] : [];
+    const parts = chunk.split(userName);
+    const out: Array<{ kind: 'text' | 'name'; value: string }> = [];
+    parts.forEach((p, i) => {
+      if (p) out.push({ kind: 'text', value: p });
+      if (i < parts.length - 1) out.push({ kind: 'name', value: userName });
+    });
+    return out;
+  };
+
 
 
 
