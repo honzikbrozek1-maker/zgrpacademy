@@ -290,7 +290,7 @@ export default function AdminGroupsTab() {
                     { label: 'Uživatelské jméno', token: '{user_name}' },
                     { label: 'Název kurzu', token: '{group_title}' },
                     { label: 'Skóre', token: '{score}' },
-                    { label: 'Datum vydání', token: '{date}' },
+                    { label: 'Datum absolvování', token: '{date}' },
                     { label: 'Platnost do', token: '{valid_until}' },
                   ].map(({ label, token }) => (
                     <Button
