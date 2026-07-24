@@ -106,15 +106,26 @@ export default function DiplomaCertificate({
           <div class="udelen">UDĚLEN PRO</div>
           <div class="recipient">${safe(userName)}</div>
           <div class="divider"></div>
-          <div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
-          <div class="italic">${safe(groupTitle)}</div>
-          ${resolvedBody ? `<div class="body">${safe(resolvedBody)}</div>` : ''}
+          ${resolvedBody
+            ? `<div class="italic" style="max-width:140mm">${safe(resolvedBody)}</div>`
+            : `<div class="prefix">za úspěšné absolvování odborné zkoušky z</div>
+               <div class="italic">${safe(groupTitle)}</div>`}
           <div class="meta" style="margin-top:16px">Datum vydání: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
-          <div class="sig">
-            <div class="sig-line"></div>
-            <div class="sig-name">${safe(signatory)}</div>
+          <div class="sig-row">
+            ${signatory ? `
+              <div class="sig-block">
+                <div class="sig-line"></div>
+                <div class="sig-name">${safe(signatory)}</div>
+                <div class="sig-role">za spolek</div>
+              </div>` : ''}
+            <div class="sig-block">
+              <img class="sig-img" src="${sigBrozekUrl}" alt="" />
+              <div class="sig-line"></div>
+              <div class="sig-name">${safe(SECONDARY_SIGNATORY)}</div>
+              <div class="sig-role">za spolek</div>
+            </div>
           </div>
         </div>
       </div>
