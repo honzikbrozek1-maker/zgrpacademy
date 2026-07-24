@@ -107,10 +107,11 @@ export default function DiplomaCertificate({
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 48px; letter-spacing: 5px; margin: 4px 0 6px; font-weight: 500; }
         .eyebrow { font-size: 12px; letter-spacing: 8px; color: #888; margin: 2px 0 10px; text-transform: uppercase; }
-        .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; }
+        .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
         .headline { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 12px; color: #111; text-transform: uppercase; max-width: 160mm; }
         .headline-accent { display: block; width: 60px; height: 3px; background: #1a1a1a; margin: 10px auto; }
-        .body-tail { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; }
+        .body-tail { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
+        .recipient-name { display: inline-block; font-family: 'Cormorant Garamond', serif; font-style: normal; font-weight: 700; font-size: 30px; letter-spacing: 1px; color: #111; padding: 0 4px; border-bottom: 1.5px solid #1a1a1a; line-height: 1.1; }
         .italic { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 18px; line-height: 1.4; color: #111; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
         .meta strong { color: #111; }
@@ -129,10 +130,11 @@ export default function DiplomaCertificate({
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
           <div class="eyebrow">Certifikát</div>
           ${highlightMatch
-            ? `${bodyBefore ? `<div class="body-lead">${safe(bodyBefore)}</div>` : ''}
+            ? `${bodyBefore ? `<div class="body-lead">${renderSegmentsHtml(splitByName(bodyBefore))}</div>` : ''}
                <div class="headline">${safe(bodyHighlight)}</div>
                <span class="headline-accent"></span>
-               ${bodyAfter ? `<div class="body-tail">${safe(bodyAfter)}</div>` : ''}`
+               ${bodyAfter ? `<div class="body-tail">${renderSegmentsHtml(splitByName(bodyAfter))}</div>` : ''}`
+
             : (resolvedBody
                 ? `<div class="italic">${safe(resolvedBody)}</div>`
                 : `<div class="body-lead">za úspěšné absolvování odborné zkoušky z</div>
