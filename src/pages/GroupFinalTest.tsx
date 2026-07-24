@@ -145,7 +145,7 @@ export default function GroupFinalTest() {
 
       if (res?.passed) {
         await supabase.rpc('issue_diploma_if_eligible', { p_group_id: groupId });
-        toast({ title: '🎓 Získali jste diplom!', description: 'Diplom najdete v sekci Moje diplomy.' });
+        toast({ title: '🎓 Získali jste certifikát!', description: 'Certifikát najdete v sekci Moje certifikáty.' });
       }
     } catch (e: any) {
       toast({ title: 'Chyba', description: e.message || 'Nepodařilo se odeslat test', variant: 'destructive' });
