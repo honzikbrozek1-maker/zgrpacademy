@@ -1,40 +1,27 @@
-## Stav
-✅ Krok 1 hotový — starý Stripe účet je odpojený (Payments dashboard to potvrzuje: „no payment integration enabled").
+## Kde najdeš claim link
 
-## Další kroky
+Claim link (odkaz pro propojení s novým Stripe účtem) se generuje **v Payments dashboardu v Lovable**, ne přes chat.
 
-### Krok 2 — Spustím enable Stripe (já, po schválení)
-Zavolám `enable_stripe_payments`. Objeví se ti **formulář v Lovable**, kde vyplníš:
-- email (může být jiný než tvůj Lovable účet — např. účet nové firmy)
-- jméno / název podnikatele
-- základní údaje
+### Postup
+1. Otevři **Payments dashboard** (tlačítko níže).
+2. Uvidíš sekci **Go live** s 5 kroky.
+3. Klikni na **Krok 1 — Claim your Stripe account** → objeví se tlačítko / odkaz, který tě zavede na Stripe stránku „Create a Stripe account to claim this sandbox from Lovable".
+4. Tam se přihlásíš do **nového** Stripe účtu (nebo si založíš nový) a projdeš onboarding — viz kroky, které jsem popsal minule (ověření podnikatele, banka, 2FA, „Choose what to copy" → zaškrtnout **Lovable app**).
 
-Po odeslání Lovable vytvoří **testovací Stripe účet** a vygeneruje **claim link**.
+<presentation-actions>
+<presentation-open-payments>Otevřít Payments dashboard</presentation-open-payments>
+</presentation-actions>
 
-### Krok 3 — Claim + go-live wizard (ty, ve Stripe)
-1. Klikneš na claim link → přihlásíš se do **nového** Stripe účtu (nebo si založíš nový).
-2. Ověříš email.
-3. Projdeš go-live wizardem ve Stripe:
-   - ověření podnikatele (jméno, IČO, adresa)
-   - bankovní účet pro výplaty
-   - dvoufázové ověření (2FA)
-4. Na obrazovce **„Choose what to copy"** ze sandboxu zaškrtni **Lovable app** (jinak nedostanu live klíče).
-5. Odešleš k aktivaci.
+### Co jsem už udělal
+- ✅ Znovu jsem zapnul built-in payments (nový test účet je vytvořený).
+- ✅ Vytvořil jsem produkt `registration_fee` s cenou `registration_fee_v3` = **100 Kč (10 000 haléřů)**.
 
-Lovable pak automaticky vygeneruje nové live klíče a webhooky a přepíše je v projektu. Kód se ručně upravovat nemusí.
-
-### Krok 4 — Nová cena 100 Kč (já)
-- Vytvořím produkt / cenu `registration_fee_v3` = **10 000 haléřů (100 Kč)**.
-- V `src/pages/Checkout.tsx` přepnu `priceId` z `registration_fee_v2` → `registration_fee_v3`.
-- Text „15 Kč" v UI přepíšu na „100 Kč".
-- Starou cenu `registration_fee_v2` nemažu (historické platby na ni odkazují).
-
-### Krok 5 — Ověření (já)
-- `payments--get_go_live_status` že všechny kroky svítí zeleně.
-- Testovací platba kartou `4242 4242 4242 4242` v sandboxu na 100 Kč.
-- Kontrola, že webhook `checkout.session.completed` dorazí a v tabulce `payments` vznikne záznam.
+### Zbývá udělat po tvém claim
+1. Ty projdeš onboarding v Stripe (kroky 1–3 v Payments dashboardu).
+2. Lovable automaticky vygeneruje live klíče (krok 4 — automat).
+3. Já přepnu v `src/pages/Checkout.tsx` `priceId` z `registration_fee_v2` na `registration_fee_v3` a text „15 Kč" → „100 Kč".
+4. Otestuji platbu kartou `4242 4242 4242 4242`.
 
 ---
 
-## Co teď potřebuji od tebe
-Schval tento plán tlačítkem **„Implement plan"**. Jakmile schválíš, hned spustím `enable_stripe_payments` a zobrazí se ti formulář z kroku 2.
+Schval tento plán tlačítkem **„Implement plan"**, abych mohl mezitím přepnout `priceId` a text v Checkout stránce (funguje to hned v test režimu — nemusíš čekat na dokončení go-live).
