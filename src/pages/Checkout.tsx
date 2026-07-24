@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Re-check profile on mount in case webhook already ran
   useEffect(() => {
@@ -28,21 +29,40 @@ export default function Checkout() {
   if (!user) return <Navigate to="/auth" replace />;
   if (profile?.has_paid) return <Navigate to="/" replace />;
 
-  const fetchClientSecret = async (): Promise<string> => {
-    const { data, error } = await supabase.functions.invoke("create-checkout", {
-      body: {
-        priceId: "registration_fee_v3",
-        customerEmail: user.email,
-        userId: user.id,
-        returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-        environment: getStripeEnvironment(),
-      },
-    });
-    if (error || !data?.clientSecret) {
-      throw new Error(error?.message || "Nepodařilo se vytvořit platbu");
+  const fetchClientSecret = useCallback(async (): Promise<string> => {
+    setCheckoutError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          priceId: "registration_fee_v3",
+          customerEmail: user.email,
+          userId: user.id,
+          returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if (error || !data?.clientSecret) {
+        throw new Error(error?.message || "Nepodařilo se vytvořit platbu");
+      }
+      return data.clientSecret;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nepodařilo se vytvořit platbu";
+      setCheckoutError(message);
+      throw error;
     }
-    return data.clientSecret;
-  };
+  }, [user.email, user.id]);
+
+  const stripePromise = useMemo(() => {
+    try {
+      return getStripe();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Platby nejsou správně nastavené";
+      setCheckoutError(message);
+      return null;
+    }
+  }, []);
+
+  const checkoutOptions = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,10 +97,20 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
+        {checkoutError && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="pt-6 text-sm text-destructive">
+              Platební okno se nepodařilo načíst. Zkuste stránku obnovit, případně nás kontaktujte.
+            </CardContent>
+          </Card>
+        )}
+
         <div id="checkout">
-          <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
-            <EmbeddedCheckout />
-          </EmbeddedCheckoutProvider>
+          {stripePromise ? (
+            <EmbeddedCheckoutProvider stripe={stripePromise} options={checkoutOptions}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          ) : null}
         </div>
       </div>
     </div>
