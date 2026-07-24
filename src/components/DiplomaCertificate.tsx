@@ -265,7 +265,7 @@ export default function DiplomaCertificate({
                   {bodyBefore && (
                     <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
                       {splitByName(bodyBefore).map((s, i) => s.kind === 'name'
-                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 700, fontSize: 30, letterSpacing: 1, color: '#111', padding: '0 4px', borderBottom: '1.5px solid #1a1a1a', lineHeight: 1.1 }}>{s.value}</span>
+                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 600, fontSize: 32, letterSpacing: 2, color: '#111', padding: '2px 6px 0', lineHeight: 1.1 }}>{s.value}</span>
                         : <span key={i}>{s.value}</span>)}
                     </div>
                   )}
