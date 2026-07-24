@@ -334,8 +334,9 @@ export default function AdminGroupsTab() {
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Podpisující osoba</label>
+                  <label className="text-sm font-medium">Podpisující osoba (za spolek)</label>
                   <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
+                  <p className="text-xs text-muted-foreground mt-1">Druhý podpis (Ing. Tomáš Brožek, MBA) je na certifikát doplněn automaticky.</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Platnost (roky)</label>
@@ -345,7 +346,7 @@ export default function AdminGroupsTab() {
               </div>
 
               <div className="pt-2">
-                <p className="text-sm font-medium mb-2">Živý náhled diplomu</p>
+                <p className="text-sm font-medium mb-2">Živý náhled certifikátu</p>
                 <div className="rounded-lg border bg-muted/30 p-3 flex justify-center">
                   <DiplomaCertificate
                     hidePrint
