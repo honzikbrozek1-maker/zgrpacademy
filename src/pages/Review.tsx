@@ -51,7 +51,7 @@ export default function Review() {
     }
     const levelIds = levelsData.map(l => l.id);
     // Get questions for these levels
-    const { data: questionIds } = await supabase.from('questions_safe' as any).select('id, question_text, back_text, option_1, option_2, option_3, option_4, type').in('level_id', levelIds).eq('in_practice', true);
+    const { data: questionIds } = await supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds });
     if (!questionIds || questionIds.length === 0) {
       setItems([]);
       setLoading(false);

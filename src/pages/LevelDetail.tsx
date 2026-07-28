@@ -50,10 +50,7 @@ export default function LevelDetail() {
   const refreshReviewCount = useCallback(async () => {
     if (!user || !level) return;
     const { data: levelQuestionIds } = await supabase
-      .from('questions_safe' as any)
-      .select('id')
-      .eq('level_id', level.id)
-      .eq('in_practice', true);
+      .rpc('get_practice_questions' as any, { p_level_ids: [level.id] });
 
     if (!levelQuestionIds || levelQuestionIds.length === 0) {
       setReviewCount(0);
