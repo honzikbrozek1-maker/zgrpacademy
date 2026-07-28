@@ -456,13 +456,6 @@ export type Database = {
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "review_items_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       section_profiles: {
@@ -600,81 +593,7 @@ export type Database = {
       }
     }
     Views: {
-      questions_safe: {
-        Row: {
-          back_text: string | null
-          created_at: string | null
-          group_id: string | null
-          id: string | null
-          in_level_test: boolean | null
-          in_practice: boolean | null
-          level_id: string | null
-          option_1: string | null
-          option_2: string | null
-          option_3: string | null
-          option_4: string | null
-          order_index: number | null
-          question_text: string | null
-          type: string | null
-          wrong_option_1: string | null
-          wrong_option_2: string | null
-          wrong_option_3: string | null
-        }
-        Insert: {
-          back_text?: string | null
-          created_at?: string | null
-          group_id?: string | null
-          id?: string | null
-          in_level_test?: boolean | null
-          in_practice?: boolean | null
-          level_id?: string | null
-          option_1?: string | null
-          option_2?: string | null
-          option_3?: string | null
-          option_4?: string | null
-          order_index?: number | null
-          question_text?: string | null
-          type?: string | null
-          wrong_option_1?: string | null
-          wrong_option_2?: string | null
-          wrong_option_3?: string | null
-        }
-        Update: {
-          back_text?: string | null
-          created_at?: string | null
-          group_id?: string | null
-          id?: string | null
-          in_level_test?: boolean | null
-          in_practice?: boolean | null
-          level_id?: string | null
-          option_1?: string | null
-          option_2?: string | null
-          option_3?: string | null
-          option_4?: string | null
-          order_index?: number | null
-          question_text?: string | null
-          type?: string | null
-          wrong_option_1?: string | null
-          wrong_option_2?: string | null
-          wrong_option_3?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questions_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "level_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_level_id_fkey"
-            columns: ["level_id"]
-            isOneToOne: false
-            referencedRelation: "levels"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
@@ -701,6 +620,28 @@ export type Database = {
       delete_my_account: { Args: never; Returns: undefined }
       get_group_test: { Args: { p_group_id: string }; Returns: Json }
       get_level_test: { Args: { p_level_id: string }; Returns: Json }
+      get_practice_questions: {
+        Args: { p_level_ids: string[] }
+        Returns: {
+          back_text: string
+          created_at: string
+          group_id: string
+          id: string
+          in_level_test: boolean
+          in_practice: boolean
+          level_id: string
+          option_1: string
+          option_2: string
+          option_3: string
+          option_4: string
+          order_index: number
+          question_text: string
+          type: string
+          wrong_option_1: string
+          wrong_option_2: string
+          wrong_option_3: string
+        }[]
+      }
       handle_admin_request: {
         Args: { p_approve: boolean; p_request_id: string }
         Returns: undefined
