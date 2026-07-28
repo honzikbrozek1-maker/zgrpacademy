@@ -86,7 +86,7 @@ export default function LevelDetail() {
     setLevel(lvl);
 
     const [questionsRes, progressRes] = await Promise.all([
-      supabase.from('questions_safe' as any).select('id, level_id, type, question_text, option_1, option_2, option_3, option_4, back_text, order_index').eq('level_id', lvl.id).eq('in_practice', true).order('order_index'),
+      supabase.rpc('get_practice_questions' as any, { p_level_ids: [lvl.id] }),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
     if (questionsRes.data) setQuestions(questionsRes.data as unknown as Question[]);
