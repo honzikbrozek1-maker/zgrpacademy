@@ -42,10 +42,14 @@ export default function LevelDetail() {
   const { toast } = useToast();
   const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionsLoaded, setQuestionsLoaded] = useState(false);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+  const [reloading, setReloading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [moduleMarkers, setModuleMarkers] = useState<string[]>([]);
+
 
   const refreshReviewCount = useCallback(async () => {
     if (!user || !level) return;
@@ -89,7 +93,10 @@ export default function LevelDetail() {
       supabase.rpc('get_practice_questions' as any, { p_level_ids: [lvl.id] }),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
-    if (questionsRes.data) setQuestions(questionsRes.data as unknown as Question[]);
+    setQuestions((questionsRes.data as unknown as Question[]) ?? []);
+    setQuestionsError(questionsRes.error ? questionsRes.error.message : null);
+    setQuestionsLoaded(true);
+
 
     if (progressRes.data) {
       const prog = progressRes.data;
