@@ -93,7 +93,10 @@ export default function LevelDetail() {
       supabase.rpc('get_practice_questions' as any, { p_level_ids: [lvl.id] }),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
-    if (questionsRes.data) setQuestions(questionsRes.data as unknown as Question[]);
+    setQuestions((questionsRes.data as unknown as Question[]) ?? []);
+    setQuestionsError(questionsRes.error ? questionsRes.error.message : null);
+    setQuestionsLoaded(true);
+
 
     if (progressRes.data) {
       const prog = progressRes.data;
