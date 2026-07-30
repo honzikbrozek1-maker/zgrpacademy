@@ -42,10 +42,14 @@ export default function LevelDetail() {
   const { toast } = useToast();
   const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionsLoaded, setQuestionsLoaded] = useState(false);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+  const [reloading, setReloading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [moduleMarkers, setModuleMarkers] = useState<string[]>([]);
+
 
   const refreshReviewCount = useCallback(async () => {
     if (!user || !level) return;
