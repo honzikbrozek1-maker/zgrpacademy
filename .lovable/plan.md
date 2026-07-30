@@ -1,15 +1,25 @@
-Stav jsem ověřil: Stripe testovací prostředí je v projektu vytvořené a krok **Connect your sandbox to a new or existing Stripe account** je rozpracovaný. Nejde o běžný seznam účtů v aplikaci — propojení se dělá přes tlačítko v Payments dashboardu.
+## Jak mi umožnit klikací testování
 
-Postup:
-1. Otevři Payments dashboard:
+Mohu aplikaci proklikat automatizovaným prohlížečem, ale potřebuji přihlášenou relaci. Ta se mi předává jen tehdy, když jste **přihlášený v Lovable náhledu** (okno Preview vpravo). Teď je stav relace „odhlášen“, proto jsem minule testoval jen databázi.
 
-<presentation-actions><presentation-open-payments>Go to payments</presentation-open-payments></presentation-actions>
+### Co uděláte vy (30 sekund)
+1. V náhledu (Preview) se přihlaste účtem, pod kterým chcete testovat – ideálně **zaplaceným ne-adminem** (např. „Zkouška“), protože to je běžný uživatel. Když chci ověřit i admin sekci, přihlaste se na admina.
+2. Zůstaňte přihlášený a napište mi zprávu (např. „jsem přihlášený, testuj“). Relace se mi předá až s tou další zprávou.
 
-2. Přepni se na část **Live / Go live**.
-3. V kroku 1 klikni na **Claim / Connect your sandbox to a new or existing Stripe account**.
-4. Stripe tě přesměruje na svou stránku, kde buď:
-   - založíš nový Stripe účet, nebo
-   - se přihlásíš do existujícího Stripe účtu.
-5. Po dokončení se vrať do Lovable Payments — další kroky se odemknou automaticky.
+Pozn.: Pokud chcete testovat ostrou doménu zgrpacademy.lovable.app, přihlášení se mi tam nepředává – tam testuji jen náhled, který běží nad stejnou databází.
 
-Pokud v Payments dashboardu vůbec nevidíš krok **Claim / Connect**, pošli mi prosím screenshot této obrazovky; podle aktuálního stavu integrace by tam měl být dostupný.
+### Co pak proklikám já
+- Přihlášení → výběr sekce → Dashboard (načtení bodů, levelů)
+- Level: karta Kvíz a Doplňování – že se opravdu zobrazí otázky, přeskakování, posuvník, uložení pozice a návrat na rozdělanou otázku
+- Závěrečný test levelu: odeslání, barevné vyhodnocení, zápis skóre
+- Závěrečný test skupiny: odemčení, kontrola odpovědí po testu
+- Certifikát: náhled + tisk/PDF
+- Procvičování (Review), Účet, faktury
+- Mobilní rozlišení (393×706) – spodní navigace, tap-targety, scrollování
+- Konzole a síťové požadavky: hlídám chyby, 401/403, prázdné odpovědi
+
+### Výstup
+Sepíšu nález bod po bodu se snímky obrazovky a rovnou navrhnu (nebo po vašem odsouhlasení opravím) vše, co nebude fungovat.
+
+### Technická poznámka
+Testování probíhá headless prohlížečem proti běžícímu náhledu na stejné databázi. Nic v datech nemažu; pokud test zapíše postup (např. dokončený test u účtu „Zkouška“), po dokončení ho můžu vrátit resetem postupu daného účtu.
