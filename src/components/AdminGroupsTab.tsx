@@ -23,7 +23,10 @@ interface Group {
   order_index: number;
   diploma_title: string;
   diploma_subtitle: string;
-  diploma_body_text: string;
+  diploma_intro_text: string;
+  diploma_award_title: string;
+  diploma_note_text: string;
+  diploma_issuer: string;
   diploma_signatory: string;
   diploma_validity_years: number;
   min_average_score: number;
@@ -38,7 +41,9 @@ interface Level {
   category: string;
 }
 
-const DEFAULT_BODY_TEXT = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+const DEFAULT_INTRO = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu';
+const DEFAULT_AWARD = 'SPECIALISTA ZDRAVOTNÍHO PROTOKOLU';
+const DEFAULT_ISSUER = 'SPOLEK V ROVNOVÁZE Z.S.';
 
 const emptyForm = {
   title: '',
@@ -46,7 +51,10 @@ const emptyForm = {
   order_index: 1,
   diploma_title: 'CERTIFIKÁT',
   diploma_subtitle: 'ZGRP Academy',
-  diploma_body_text: DEFAULT_BODY_TEXT,
+  diploma_intro_text: DEFAULT_INTRO,
+  diploma_award_title: DEFAULT_AWARD,
+  diploma_note_text: '',
+  diploma_issuer: DEFAULT_ISSUER,
   diploma_signatory: 'MUDr. Gabriela Hanslianová',
   diploma_validity_years: 1,
   min_average_score: 70,
