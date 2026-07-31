@@ -71,6 +71,8 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
+  const pendingAdminRequests = adminRequests.filter(r => r.status === 'pending');
+
   const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [showUnpaid, setShowUnpaid] = useState(false);
@@ -163,9 +165,10 @@ export default function AdminPanel() {
   };
 
   const fetchAdminRequests = async () => {
-    const { data } = await supabase.from('admin_requests').select('*').eq('status', 'pending').order('created_at');
+    const { data } = await supabase.from('admin_requests').select('*').order('created_at', { ascending: false });
     if (data) setAdminRequests(data);
   };
+
 
   const fetchMyRequest = async () => {
     if (!user) return;
@@ -891,12 +894,15 @@ export default function AdminPanel() {
               <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Skupiny & certifikáty</span><span className="sm:hidden">Skupiny</span></TabsTrigger>
               <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
               <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
-              {adminRequests.length > 0 && (
+              {isAdmin && (
                 <TabsTrigger value="requests" className="relative">
                   <Shield className="mr-1 h-4 w-4" /> Žádosti
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{adminRequests.length}</span>
+                  {pendingAdminRequests.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{pendingAdminRequests.length}</span>
+                  )}
                 </TabsTrigger>
               )}
+
             </TabsList>
           </div>
 
@@ -1355,33 +1361,50 @@ export default function AdminPanel() {
             <RecycleBinTab />
           </TabsContent>
 
-          {adminRequests.length > 0 && (
+          {isAdmin && (
             <TabsContent value="requests" className="mt-6">
-              <div className="space-y-3">
-                {adminRequests.map(req => {
-                  const reqUser = users.find(u => u.user_id === req.user_id);
-                  return (
-                    <Card key={req.id} className="shadow-card">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{reqUser?.display_name || 'Neznámý uživatel'}</p>
-                          <p className="text-xs text-muted-foreground">Odesláno: {new Date(req.created_at).toLocaleDateString('cs')}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-success" onClick={() => handleAdminRequest(req.id, req.user_id, true)}>
-                            <CheckCircle className="mr-1 h-3 w-3" /> Schválit
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleAdminRequest(req.id, req.user_id, false)}>
-                            <XCircle className="mr-1 h-3 w-3" /> Zamítnout
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              {adminRequests.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Zatím nejsou žádné žádosti o admin oprávnění.</p>
+              ) : (
+                <div className="space-y-3">
+                  {adminRequests.map(req => {
+                    const reqUser = users.find(u => u.user_id === req.user_id);
+                    const isPending = req.status === 'pending';
+                    const statusLabel = isPending ? 'Čeká' : req.status === 'approved' ? 'Schváleno' : 'Zamítnuto';
+                    const statusClass = isPending
+                      ? 'bg-warning/15 text-warning'
+                      : req.status === 'approved'
+                        ? 'bg-success/15 text-success'
+                        : 'bg-destructive/15 text-destructive';
+                    return (
+                      <Card key={req.id} className="shadow-card">
+                        <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="font-medium flex items-center gap-2">
+                              {reqUser?.display_name || 'Neznámý uživatel'}
+                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusClass}`}>{statusLabel}</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground">Odesláno: {new Date(req.created_at).toLocaleDateString('cs')}</p>
+                          </div>
+                          {isPending && (
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-success" onClick={() => handleAdminRequest(req.id, req.user_id, true)}>
+                                <CheckCircle className="mr-1 h-3 w-3" /> Schválit
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleAdminRequest(req.id, req.user_id, false)}>
+                                <XCircle className="mr-1 h-3 w-3" /> Zamítnout
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
           )}
+
         </Tabs>
       </div>
     </AppLayout>
