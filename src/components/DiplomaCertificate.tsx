@@ -10,9 +10,12 @@ const SECONDARY_SIGNATORY = 'Ing. Tomáš Brožek, MBA';
 
 interface Props {
   title: string;          // "CERTIFIKÁT"
-  subtitle: string;       // small line under name (e.g. "ZGRP Academy")
-  bodyText: string;       // italic event description (free text, no placeholders)
-  signatory: string;      // person who signs the diploma
+  subtitle: string;       // small line under the date (e.g. "ZGRP Academy")
+  introText: string;      // intro sentence above the award title
+  awardTitle: string;     // big highlighted title (e.g. "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU")
+  noteText?: string;      // optional sentence under the recipient name
+  issuer?: string;        // issuing organisation, rendered at the bottom
+  signatory: string;      // person who signs the certificate
   validityYears: number;  // 0 = unlimited
   userName: string;       // auto: recipient
   groupTitle: string;     // auto: course / group name
@@ -25,7 +28,7 @@ interface Props {
 const fmtDate = (d: Date) => d.toLocaleDateString('cs-CZ');
 
 export default function DiplomaCertificate({
-  title, subtitle, bodyText, signatory, validityYears,
+  title, subtitle, introText, awardTitle, noteText, issuer, signatory, validityYears,
   userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
   const issued = new Date(issuedAt);
@@ -40,50 +43,15 @@ export default function DiplomaCertificate({
       .replace(/\{date\}/gi, fmtDate(issued))
       .replace(/\{valid_until\}/gi, validityYears > 0 ? fmtDate(validUntil) : '');
 
-  const resolvedBody = interpolate(bodyText);
-
-  // Split body text around the highlight phrase "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
-  // so we can render it as a large graphic headline. Preserve line breaks so
-  // paragraphs like "Vydává SPOLEK V ROVNOVÁZE Z.S." render on their own row.
-  const HIGHLIGHT_RE = /SPECIALISTA\s+ZDRAVOTNÍHO\s+PROTOKOLU/i;
-  const highlightMatch = resolvedBody.match(HIGHLIGHT_RE);
-  const bodyBefore = highlightMatch ? resolvedBody.slice(0, highlightMatch.index!).replace(/^\s*certifik[áa]t[^\S\n]*/i, '').replace(/[ \t,]+$/, '').replace(/\n+$/, '') : '';
-  const bodyHighlight = highlightMatch ? highlightMatch[0].toUpperCase().replace(/\s+/g, ' ') : '';
-  let bodyAfter = highlightMatch ? resolvedBody.slice(highlightMatch.index! + highlightMatch[0].length).replace(/^[ \t,]+/, '').replace(/^\n+/, '') : '';
-
-  // Extract the "Vydává ..." line so it can be rendered at the bottom of the page.
-  const ISSUER_RE = /(^|\n)\s*(Vydává[^\n]*)/i;
-  const issuerMatch = bodyAfter.match(ISSUER_RE);
-  const issuerLine = issuerMatch ? issuerMatch[2].trim() : '';
-  if (issuerMatch) {
-    bodyAfter = bodyAfter.replace(ISSUER_RE, '').replace(/\s+$/, '').replace(/\n{2,}/g, '\n\n');
-  }
-
-  // Split a body chunk around the recipient name so it can be styled larger.
-  // Returns segments in order: text, name, text, name, ...
-  const splitByName = (chunk: string): Array<{ kind: 'text' | 'name'; value: string }> => {
-    if (!chunk || !userName) return chunk ? [{ kind: 'text', value: chunk }] : [];
-    const parts = chunk.split(userName);
-    const out: Array<{ kind: 'text' | 'name'; value: string }> = [];
-    parts.forEach((p, i) => {
-      if (p) out.push({ kind: 'text', value: p });
-      if (i < parts.length - 1) out.push({ kind: 'name', value: userName });
-    });
-    return out;
-  };
-
-
-
-
-
+  const intro = interpolate(introText).trim();
+  const award = interpolate(awardTitle).trim().toUpperCase();
+  const note = interpolate(noteText || '').trim();
+  const issuerLine = interpolate(issuer || '').trim();
 
   const handlePrint = () => {
     // Use a hidden iframe instead of window.open — on iOS Safari a new tab
-    // gets stuck on the diploma after the print sheet is dismissed, with no
-    // way to navigate back. An iframe keeps the user on the current page.
+    // gets stuck on the certificate after the print sheet is dismissed.
     const safe = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-    const renderSegmentsHtml = (segs: Array<{ kind: 'text' | 'name'; value: string }>) =>
-      segs.map(s => s.kind === 'name' ? `<span class="recipient-name">${safe(s.value)}</span>` : safe(s.value)).join('');
     const logoUrl = new URL(logoSpolek, window.location.origin).href;
     const borderUrl = new URL(diplomaBorder, window.location.origin).href;
     const sigBrozekUrl = new URL(signatureBrozek, window.location.origin).href;
@@ -116,13 +84,12 @@ export default function DiplomaCertificate({
         .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 56px; letter-spacing: 8px; margin: 6px 0 8px; font-weight: 600; text-transform: uppercase; color: #111; }
-        .eyebrow { font-size: 12px; letter-spacing: 8px; color: #888; margin: 2px 0 10px; text-transform: uppercase; }
-        .body-lead { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
-        .headline { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 12px; color: #111; text-transform: uppercase; max-width: 160mm; }
-        .headline-accent { display: block; width: 60px; height: 3px; background: #1a1a1a; margin: 10px auto; }
-        .body-tail { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
-        .recipient-name { display: inline-block; font-family: 'Cormorant Garamond', serif; font-style: normal; font-weight: 600; font-size: 32px; letter-spacing: 2px; color: #111; padding: 2px 6px 0; line-height: 1.1; }
-        .italic { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 18px; line-height: 1.4; color: #111; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
+        .intro { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
+        .award { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-weight: 700; font-size: 44px; letter-spacing: 4px; line-height: 1.1; margin: 14px auto 10px; color: #111; text-transform: uppercase; max-width: 160mm; }
+        .accent { display: block; width: 60px; height: 3px; background: #1a1a1a; margin: 0 auto 14px; }
+        .for { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: #2a2a2a; }
+        .name { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 36px; letter-spacing: 2px; color: #111; line-height: 1.2; margin: 2px 0 4px; }
+        .note { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 6px auto 0; white-space: pre-line; }
         .meta { font-size: 12px; color: #444; margin-top: 4px; }
         .meta strong { color: #111; }
         .sub { font-size: 11px; color: #666; margin-top: 6px; letter-spacing: 1px; }
@@ -139,18 +106,12 @@ export default function DiplomaCertificate({
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
-          <div class="title">Certifikát</div>
-          ${highlightMatch
-            ? `${bodyBefore ? `<div class="body-lead">${renderSegmentsHtml(splitByName(bodyBefore))}</div>` : ''}
-               <div class="headline">${safe(bodyHighlight)}</div>
-               <span class="headline-accent"></span>
-               ${bodyAfter ? `<div class="body-tail">${renderSegmentsHtml(splitByName(bodyAfter))}</div>` : ''}`
-
-            : (resolvedBody
-                ? `<div class="italic">${safe(resolvedBody)}</div>`
-                : `<div class="body-lead">za úspěšné absolvování odborné zkoušky z</div>
-                   <div class="italic">${safe(groupTitle)}</div>`)}
-
+          <div class="title">${safe(title || 'Certifikát')}</div>
+          ${intro ? `<div class="intro">${safe(intro)}</div>` : ''}
+          ${award ? `<div class="award">${safe(award)}</div><span class="accent"></span>` : ''}
+          <div class="for">pro</div>
+          <div class="name">${safe(userName)}</div>
+          ${note ? `<div class="note">${safe(note)}</div>` : ''}
           <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
@@ -168,7 +129,7 @@ export default function DiplomaCertificate({
               <div class="sig-role">za spolek</div>
             </div>
           </div>
-          ${issuerLine ? `<div class="issuer">${safe(issuerLine)}</div>` : ''}
+          ${issuerLine ? `<div class="issuer">Vydává ${safe(issuerLine)}</div>` : ''}
         </div>
       </div>
       </body></html>
@@ -186,17 +147,14 @@ export default function DiplomaCertificate({
       } catch {
         // ignore
       } finally {
-        // Clean up shortly after the print dialog closes.
         const onAfter = () => cleanup();
         try {
           iframe.contentWindow?.addEventListener('afterprint', onAfter, { once: true });
         } catch { /* noop */ }
-        // Fallback cleanup in case afterprint doesn't fire.
         setTimeout(cleanup, 60_000);
       }
     };
 
-    // Wait for images (border + logo) to load so layout matches print output.
     const imgs = Array.from(doc.images || []);
     if (imgs.length === 0) {
       setTimeout(triggerPrint, 200);
@@ -210,12 +168,9 @@ export default function DiplomaCertificate({
     }
   };
 
-
   // Preview renders at the SAME fixed pixel dimensions as the print output
-  // (A4 at ~96dpi ≈ 794 × 1123 px, matching the 210×297mm print page and its
-  // absolute px font sizes). We visually scale it down with CSS transform,
-  // measuring the actual container width so layout/line-breaks are 1:1 with
-  // the printed diploma on every device (incl. narrow iPhone viewports).
+  // (A4 at ~96dpi ≈ 794 × 1123 px) and is scaled down with a CSS transform,
+  // so line-breaks are 1:1 with the printed certificate on every device.
   const A4_W = 794;
   const A4_H = 1123;
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -268,41 +223,29 @@ export default function DiplomaCertificate({
             >
               <img src={logoSpolek} alt="Spolek v Rovnováze z.s." style={{ width: 150, height: 'auto', marginBottom: 10 }} />
               <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontSize: 56, letterSpacing: 8, margin: '6px 0 8px', fontWeight: 600, textTransform: 'uppercase', color: '#111' }}>
-                Certifikát
+                {title || 'Certifikát'}
               </div>
-              {highlightMatch ? (
-                <>
-                  {bodyBefore && (
-                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                      {splitByName(bodyBefore).map((s, i) => s.kind === 'name'
-                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 600, fontSize: 32, letterSpacing: 2, color: '#111', padding: '2px 6px 0', lineHeight: 1.1 }}>{s.value}</span>
-                        : <span key={i}>{s.value}</span>)}
-                    </div>
-                  )}
-                  <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontWeight: 700, fontSize: 44, letterSpacing: 4, lineHeight: 1.1, margin: '14px auto 12px', color: '#111', textTransform: 'uppercase', maxWidth: 605 }}>
-                    {bodyHighlight}
-                  </div>
-                  <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 10px' }} />
-                  {bodyAfter && (
-                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                      {splitByName(bodyAfter).map((s, i) => s.kind === 'name'
-                        ? <span key={i} style={{ display: 'inline-block', fontStyle: 'normal', fontWeight: 600, fontSize: 32, letterSpacing: 2, color: '#111', padding: '2px 6px 0', lineHeight: 1.1 }}>{s.value}</span>
-                        : <span key={i}>{s.value}</span>)}
-                    </div>
-                  )}
-                </>
-
-              ) : resolvedBody ? (
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                  {resolvedBody}
+              {intro && (
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '0 auto', whiteSpace: 'pre-line' }}>
+                  {intro}
                 </div>
-              ) : (
+              )}
+              {award && (
                 <>
-                  <div style={{ fontSize: 13, color: '#444', letterSpacing: 1, marginBottom: 6 }}>za úspěšné absolvování odborné zkoušky z</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 600, fontSize: 18, lineHeight: 1.4, color: '#111', maxWidth: 454, margin: '0 auto', whiteSpace: 'pre-line' }}>
-                    {groupTitle}
+                  <div style={{ fontFamily: "'Cormorant Garamond', 'Times New Roman', serif", fontWeight: 700, fontSize: 44, letterSpacing: 4, lineHeight: 1.1, margin: '14px auto 10px', color: '#111', textTransform: 'uppercase', maxWidth: 605 }}>
+                    {award}
                   </div>
+                  <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 14px' }} />
                 </>
+              )}
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: '#2a2a2a' }}>pro</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 36, letterSpacing: 2, color: '#111', lineHeight: 1.2, margin: '2px 0 4px' }}>
+                {userName}
+              </div>
+              {note && (
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: '#2a2a2a', maxWidth: 530, margin: '6px auto 0', whiteSpace: 'pre-line' }}>
+                  {note}
+                </div>
               )}
 
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
@@ -333,7 +276,7 @@ export default function DiplomaCertificate({
               </div>
               {issuerLine && (
                 <div style={{ marginTop: 14, fontSize: 12, letterSpacing: 3, color: '#333', textTransform: 'uppercase', textAlign: 'center' }}>
-                  {issuerLine}
+                  Vydává {issuerLine}
                 </div>
               )}
             </div>
