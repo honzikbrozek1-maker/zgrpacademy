@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { useAppPath } from '@/lib/pathContext';
 import { toast } from '@/hooks/use-toast';
 
 /**
@@ -11,8 +9,6 @@ import { toast } from '@/hooks/use-toast';
  */
 export function useAdminRequestNotifications() {
   const { isAdmin, user } = useAuth();
-  const { basePath } = useAppPath();
-  const navigate = useNavigate();
   const [pendingCount, setPendingCount] = useState(0);
   const notifiedOnLoad = useRef(false);
 
@@ -22,8 +18,6 @@ export function useAdminRequestNotifications() {
       return;
     }
     let cancelled = false;
-
-    const open = () => navigate(`${basePath}/admin`);
 
     const loadCount = async () => {
       const { count } = await supabase
@@ -38,9 +32,8 @@ export function useAdminRequestNotifications() {
         notifiedOnLoad.current = true;
         toast({
           title: 'Nové žádosti o admin oprávnění',
-          description: `Čeká na vyřízení: ${n}. Klikněte pro otevření admin panelu.`,
-          onClick: open,
-        } as never);
+          description: `Čeká na vyřízení: ${n}. Otevřete Admin panel pro schválení.`,
+        });
       }
     };
 
@@ -51,13 +44,11 @@ export function useAdminRequestNotifications() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'admin_requests', filter: `target_admin_id=eq.${user.id}` },
-        (payload) => {
-          const row = payload.new as { requester_name?: string | null; requester_email?: string | null };
+        () => {
           toast({
             title: 'Nová žádost o admin oprávnění',
-            description: `${row?.requester_name || row?.requester_email || 'Uživatel'} žádá o admin oprávnění.`,
-            onClick: open,
-          } as never);
+            description: 'Někdo žádá o admin oprávnění. Otevřete Admin panel.',
+          });
           loadCount();
         },
       )
@@ -68,7 +59,7 @@ export function useAdminRequestNotifications() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, user, basePath, navigate]);
+  }, [isAdmin, user]);
 
   return { pendingCount };
 }
