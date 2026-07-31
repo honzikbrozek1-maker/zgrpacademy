@@ -171,7 +171,11 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          diploma_award_title: string
           diploma_body_text: string
+          diploma_intro_text: string
+          diploma_issuer: string
+          diploma_note_text: string
           diploma_signatory: string
           diploma_subtitle: string
           diploma_title: string
@@ -187,7 +191,11 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          diploma_award_title?: string
           diploma_body_text?: string
+          diploma_intro_text?: string
+          diploma_issuer?: string
+          diploma_note_text?: string
           diploma_signatory?: string
           diploma_subtitle?: string
           diploma_title?: string
@@ -203,7 +211,11 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          diploma_award_title?: string
           diploma_body_text?: string
+          diploma_intro_text?: string
+          diploma_issuer?: string
+          diploma_note_text?: string
           diploma_signatory?: string
           diploma_subtitle?: string
           diploma_title?: string
@@ -671,8 +683,12 @@ export type Database = {
         Returns: {
           average_score: number
           category: string
+          diploma_award_title: string
           diploma_body_text: string
           diploma_id: string
+          diploma_intro_text: string
+          diploma_issuer: string
+          diploma_note_text: string
           diploma_signatory: string
           diploma_subtitle: string
           diploma_title: string
