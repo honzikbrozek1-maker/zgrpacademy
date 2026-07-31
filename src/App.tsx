@@ -7,7 +7,6 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { PathProvider } from "@/lib/pathContext";
 import Auth from "./pages/Auth";
-import CertPreviewTmp from "./pages/CertPreviewTmp";
 import Checkout from "./pages/Checkout";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import PathSelection from "./pages/PathSelection";
