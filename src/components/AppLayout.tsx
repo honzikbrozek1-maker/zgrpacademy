@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
 import { useSectionProfile } from '@/hooks/useSectionProfile';
 import { useTheme } from '@/lib/theme';
+import { useAdminRequestNotifications } from '@/hooks/useAdminRequestNotifications';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { basePath, category } = useAppPath();
   const { sectionProfile } = useSectionProfile(category);
   const { setColorScheme } = useTheme();
+  useAdminRequestNotifications();
   const accountPath = `${basePath}/account`;
   const isOnAccount = location.pathname === accountPath;
   const isOnDashboard = location.pathname === basePath;
