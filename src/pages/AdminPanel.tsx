@@ -163,9 +163,10 @@ export default function AdminPanel() {
   };
 
   const fetchAdminRequests = async () => {
-    const { data } = await supabase.from('admin_requests').select('*').eq('status', 'pending').order('created_at');
+    const { data } = await supabase.from('admin_requests').select('*').order('created_at', { ascending: false });
     if (data) setAdminRequests(data);
   };
+
 
   const fetchMyRequest = async () => {
     if (!user) return;
