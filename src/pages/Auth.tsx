@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
@@ -16,21 +16,7 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { toast } = useToast();
-
-  // Same-origin relative path to return to after auth (used by the OAuth consent flow).
-  const rawNext = searchParams.get('next') ?? '';
-  const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
-  const returnUrl = nextPath ? window.location.origin + nextPath : window.location.origin;
-
-  const goAfterAuth = () => {
-    if (nextPath) {
-      window.location.href = nextPath;
-    } else {
-      navigate('/');
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +25,7 @@ export default function Auth() {
     if (error) {
       toast({ title: 'Chyba přihlášení', description: error.message, variant: 'destructive' });
     } else {
-      goAfterAuth();
+      navigate('/');
     }
     setLoading(false);
   };
@@ -50,25 +36,24 @@ export default function Auth() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName }, emailRedirectTo: returnUrl },
+      options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin },
     });
     if (error) {
       toast({ title: 'Chyba registrace', description: error.message, variant: 'destructive' });
     } else if (data.session) {
       // Auto-confirmed, user is logged in
       toast({ title: 'Registrace úspěšná', description: 'Vítejte!' });
-      goAfterAuth();
+      navigate('/');
     } else {
       toast({ title: 'Registrace úspěšná', description: 'Zkontrolujte svůj e-mail pro potvrzení.' });
     }
     setLoading(false);
   };
 
-
   const handleGoogleLogin = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: returnUrl,
+      redirect_uri: window.location.origin,
     });
     if (result.error) {
       toast({ title: 'Chyba přihlášení', description: String(result.error), variant: 'destructive' });
@@ -78,7 +63,7 @@ export default function Auth() {
     if (result.redirected) {
       return;
     }
-    goAfterAuth();
+    navigate('/');
     setLoading(false);
   };
 
