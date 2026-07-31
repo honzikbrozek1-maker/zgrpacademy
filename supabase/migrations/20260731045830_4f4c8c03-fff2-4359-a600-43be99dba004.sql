@@ -1,0 +1,1 @@
+ALTER TABLE public.level_groups ALTER COLUMN diploma_title SET DEFAULT 'CERTIFIKÁT';
