@@ -295,10 +295,29 @@ export default function AdminGroupsTab() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
+                <label className="text-sm font-medium">Uvozovací věta</label>
+                <Textarea
+                  rows={2}
+                  value={form.diploma_intro_text}
+                  onChange={e => setForm({ ...form, diploma_intro_text: e.target.value })}
+                  placeholder="o absolvování kurzu zakončeného odbornou zkouškou a získání titulu"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Vysází se kurzívou hned pod nadpisem „CERTIFIKÁT“.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Titul (hlavní nadpis)</label>
+                <Input
+                  value={form.diploma_award_title}
+                  onChange={e => setForm({ ...form, diploma_award_title: e.target.value })}
+                  placeholder="SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Vysází se velkým výrazným písmem. Pod ním je vždy „pro“ a jméno absolventa.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Doplňující věta pod jménem <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
                 <div className="flex flex-wrap gap-1.5 mt-1 mb-1.5">
                   {[
-                    { label: 'Uživatelské jméno', token: '{user_name}' },
+                    { label: 'Jméno absolventa', token: '{user_name}' },
                     { label: 'Název kurzu', token: '{group_title}' },
                     { label: 'Skóre', token: '{score}' },
                     { label: 'Datum absolvování', token: '{date}' },
@@ -311,20 +330,20 @@ export default function AdminGroupsTab() {
                       size="sm"
                       className="h-7 px-2 text-xs"
                       onClick={() => {
-                        const el = document.getElementById('diploma-body-text') as HTMLTextAreaElement | null;
-                        const cur = form.diploma_body_text ?? '';
+                        const el = document.getElementById('diploma-note-text') as HTMLTextAreaElement | null;
+                        const cur = form.diploma_note_text ?? '';
                         if (el) {
                           const start = el.selectionStart ?? cur.length;
                           const end = el.selectionEnd ?? cur.length;
                           const next = cur.slice(0, start) + token + cur.slice(end);
-                          setForm({ ...form, diploma_body_text: next });
+                          setForm({ ...form, diploma_note_text: next });
                           requestAnimationFrame(() => {
                             el.focus();
                             const pos = start + token.length;
                             el.setSelectionRange(pos, pos);
                           });
                         } else {
-                          setForm({ ...form, diploma_body_text: cur + token });
+                          setForm({ ...form, diploma_note_text: cur + token });
                         }
                       }}
                     >
@@ -333,15 +352,24 @@ export default function AdminGroupsTab() {
                   ))}
                 </div>
                 <Textarea
-                  id="diploma-body-text"
-                  rows={3}
-                  value={form.diploma_body_text}
-                  onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
-                  placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí ČLK..."
+                  id="diploma-note-text"
+                  rows={2}
+                  value={form.diploma_note_text}
+                  onChange={e => setForm({ ...form, diploma_note_text: e.target.value })}
+                  placeholder="Např.: Kurz {group_title} absolvován s výsledkem {score}."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tlačítka vloží zástupný text, který se na diplomu automaticky nahradí skutečnou hodnotou.
+                  Tlačítka vloží zástupný text, který se na certifikátu automaticky nahradí skutečnou hodnotou.
                 </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Vydavatel</label>
+                <Input
+                  value={form.diploma_issuer}
+                  onChange={e => setForm({ ...form, diploma_issuer: e.target.value })}
+                  placeholder="SPOLEK V ROVNOVÁZE Z.S."
+                />
+                <p className="text-xs text-muted-foreground mt-1">Zobrazí se dole na certifikátu jako „Vydává …“.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
