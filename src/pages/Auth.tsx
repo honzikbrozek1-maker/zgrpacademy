@@ -68,7 +68,7 @@ export default function Auth() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: returnUrl,
     });
     if (result.error) {
       toast({ title: 'Chyba přihlášení', description: String(result.error), variant: 'destructive' });
@@ -78,7 +78,7 @@ export default function Auth() {
     if (result.redirected) {
       return;
     }
-    navigate('/');
+    goAfterAuth();
     setLoading(false);
   };
 
