@@ -892,12 +892,15 @@ export default function AdminPanel() {
               <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Skupiny & certifikáty</span><span className="sm:hidden">Skupiny</span></TabsTrigger>
               <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
               <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
-              {adminRequests.length > 0 && (
+              {isAdmin && (
                 <TabsTrigger value="requests" className="relative">
                   <Shield className="mr-1 h-4 w-4" /> Žádosti
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{adminRequests.length}</span>
+                  {pendingAdminRequests.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{pendingAdminRequests.length}</span>
+                  )}
                 </TabsTrigger>
               )}
+
             </TabsList>
           </div>
 
