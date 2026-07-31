@@ -392,7 +392,10 @@ export default function AdminGroupsTab() {
                     maxWidth={420}
                     title={form.diploma_title || 'CERTIFIKÁT'}
                     subtitle={form.diploma_subtitle}
-                    bodyText={form.diploma_body_text}
+                    introText={form.diploma_intro_text}
+                    awardTitle={form.diploma_award_title}
+                    noteText={form.diploma_note_text}
+                    issuer={form.diploma_issuer}
                     signatory={form.diploma_signatory}
                     validityYears={form.diploma_validity_years}
                     userName={profile?.display_name || 'Jan Novák'}
