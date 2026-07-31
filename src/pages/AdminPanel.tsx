@@ -71,6 +71,8 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
+  const pendingAdminRequests = adminRequests.filter(r => r.status === 'pending');
+
   const [myRequest, setMyRequest] = useState<AdminRequest | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [showUnpaid, setShowUnpaid] = useState(false);
