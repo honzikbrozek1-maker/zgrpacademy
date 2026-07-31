@@ -21,6 +21,7 @@ import Diplomas from "./pages/Diplomas";
 import AdminPanel from "./pages/AdminPanel";
 import AdminShare from "./pages/AdminShare";
 import InvitePage from "./pages/InvitePage";
+import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                 <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
                 
                 {/* Products path */}
