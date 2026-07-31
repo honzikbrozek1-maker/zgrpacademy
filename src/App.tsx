@@ -44,7 +44,6 @@ const App = () => (
             <PathProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/__notif-demo" element={<NotifDemoTmp />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
