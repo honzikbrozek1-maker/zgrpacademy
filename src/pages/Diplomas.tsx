@@ -16,6 +16,10 @@ interface Diploma {
   diploma_title: string;
   diploma_subtitle: string;
   diploma_body_text: string;
+  diploma_intro_text: string;
+  diploma_award_title: string;
+  diploma_note_text: string;
+  diploma_issuer: string;
   diploma_signatory: string;
   diploma_validity_years: number;
   average_score: number;
@@ -55,7 +59,10 @@ export default function Diplomas() {
           <DiplomaCertificate
             title={selected.diploma_title}
             subtitle={selected.diploma_subtitle}
-            bodyText={selected.diploma_body_text}
+            introText={selected.diploma_intro_text}
+            awardTitle={selected.diploma_award_title}
+            noteText={selected.diploma_note_text}
+            issuer={selected.diploma_issuer}
             signatory={selected.diploma_signatory}
             validityYears={selected.diploma_validity_years}
             userName={profile?.display_name || 'Uživatel'}

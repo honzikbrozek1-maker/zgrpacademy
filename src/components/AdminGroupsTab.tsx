@@ -23,7 +23,10 @@ interface Group {
   order_index: number;
   diploma_title: string;
   diploma_subtitle: string;
-  diploma_body_text: string;
+  diploma_intro_text: string;
+  diploma_award_title: string;
+  diploma_note_text: string;
+  diploma_issuer: string;
   diploma_signatory: string;
   diploma_validity_years: number;
   min_average_score: number;
@@ -38,7 +41,9 @@ interface Level {
   category: string;
 }
 
-const DEFAULT_BODY_TEXT = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu SPECIALISTA ZDRAVOTNÍHO PROTOKOLU pro {user_name}.\n\nVydává SPOLEK V ROVNOVÁZE Z.S.';
+const DEFAULT_INTRO = 'o absolvování kurzu zakončeného odbornou zkouškou a získání titulu';
+const DEFAULT_AWARD = 'SPECIALISTA ZDRAVOTNÍHO PROTOKOLU';
+const DEFAULT_ISSUER = 'SPOLEK V ROVNOVÁZE Z.S.';
 
 const emptyForm = {
   title: '',
@@ -46,7 +51,10 @@ const emptyForm = {
   order_index: 1,
   diploma_title: 'CERTIFIKÁT',
   diploma_subtitle: 'ZGRP Academy',
-  diploma_body_text: DEFAULT_BODY_TEXT,
+  diploma_intro_text: DEFAULT_INTRO,
+  diploma_award_title: DEFAULT_AWARD,
+  diploma_note_text: '',
+  diploma_issuer: DEFAULT_ISSUER,
   diploma_signatory: 'MUDr. Gabriela Hanslianová',
   diploma_validity_years: 1,
   min_average_score: 70,
@@ -87,7 +95,10 @@ export default function AdminGroupsTab() {
       order_index: g.order_index,
       diploma_title: g.diploma_title,
       diploma_subtitle: g.diploma_subtitle,
-      diploma_body_text: g.diploma_body_text ?? emptyForm.diploma_body_text,
+      diploma_intro_text: g.diploma_intro_text ?? DEFAULT_INTRO,
+      diploma_award_title: g.diploma_award_title ?? DEFAULT_AWARD,
+      diploma_note_text: g.diploma_note_text ?? '',
+      diploma_issuer: g.diploma_issuer ?? DEFAULT_ISSUER,
       diploma_signatory: g.diploma_signatory ?? emptyForm.diploma_signatory,
       diploma_validity_years: g.diploma_validity_years ?? 1,
       min_average_score: g.min_average_score,
@@ -284,10 +295,29 @@ export default function AdminGroupsTab() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Popis kurzu / akce <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
+                <label className="text-sm font-medium">Uvozovací věta</label>
+                <Textarea
+                  rows={2}
+                  value={form.diploma_intro_text}
+                  onChange={e => setForm({ ...form, diploma_intro_text: e.target.value })}
+                  placeholder="o absolvování kurzu zakončeného odbornou zkouškou a získání titulu"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Vysází se kurzívou hned pod nadpisem „CERTIFIKÁT“.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Titul (hlavní nadpis)</label>
+                <Input
+                  value={form.diploma_award_title}
+                  onChange={e => setForm({ ...form, diploma_award_title: e.target.value })}
+                  placeholder="SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Vysází se velkým výrazným písmem. Pod ním je vždy „pro“ a jméno absolventa.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Doplňující věta pod jménem <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
                 <div className="flex flex-wrap gap-1.5 mt-1 mb-1.5">
                   {[
-                    { label: 'Uživatelské jméno', token: '{user_name}' },
+                    { label: 'Jméno absolventa', token: '{user_name}' },
                     { label: 'Název kurzu', token: '{group_title}' },
                     { label: 'Skóre', token: '{score}' },
                     { label: 'Datum absolvování', token: '{date}' },
@@ -300,20 +330,20 @@ export default function AdminGroupsTab() {
                       size="sm"
                       className="h-7 px-2 text-xs"
                       onClick={() => {
-                        const el = document.getElementById('diploma-body-text') as HTMLTextAreaElement | null;
-                        const cur = form.diploma_body_text ?? '';
+                        const el = document.getElementById('diploma-note-text') as HTMLTextAreaElement | null;
+                        const cur = form.diploma_note_text ?? '';
                         if (el) {
                           const start = el.selectionStart ?? cur.length;
                           const end = el.selectionEnd ?? cur.length;
                           const next = cur.slice(0, start) + token + cur.slice(end);
-                          setForm({ ...form, diploma_body_text: next });
+                          setForm({ ...form, diploma_note_text: next });
                           requestAnimationFrame(() => {
                             el.focus();
                             const pos = start + token.length;
                             el.setSelectionRange(pos, pos);
                           });
                         } else {
-                          setForm({ ...form, diploma_body_text: cur + token });
+                          setForm({ ...form, diploma_note_text: cur + token });
                         }
                       }}
                     >
@@ -322,15 +352,24 @@ export default function AdminGroupsTab() {
                   ))}
                 </div>
                 <Textarea
-                  id="diploma-body-text"
-                  rows={3}
-                  value={form.diploma_body_text}
-                  onChange={e => setForm({ ...form, diploma_body_text: e.target.value })}
-                  placeholder="Např.: Vzdělávací akce je zařazena v centrální databázi školících akcí ČLK..."
+                  id="diploma-note-text"
+                  rows={2}
+                  value={form.diploma_note_text}
+                  onChange={e => setForm({ ...form, diploma_note_text: e.target.value })}
+                  placeholder="Např.: Kurz {group_title} absolvován s výsledkem {score}."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tlačítka vloží zástupný text, který se na diplomu automaticky nahradí skutečnou hodnotou.
+                  Tlačítka vloží zástupný text, který se na certifikátu automaticky nahradí skutečnou hodnotou.
                 </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Vydavatel</label>
+                <Input
+                  value={form.diploma_issuer}
+                  onChange={e => setForm({ ...form, diploma_issuer: e.target.value })}
+                  placeholder="SPOLEK V ROVNOVÁZE Z.S."
+                />
+                <p className="text-xs text-muted-foreground mt-1">Zobrazí se dole na certifikátu jako „Vydává …“.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
@@ -353,7 +392,10 @@ export default function AdminGroupsTab() {
                     maxWidth={420}
                     title={form.diploma_title || 'CERTIFIKÁT'}
                     subtitle={form.diploma_subtitle}
-                    bodyText={form.diploma_body_text}
+                    introText={form.diploma_intro_text}
+                    awardTitle={form.diploma_award_title}
+                    noteText={form.diploma_note_text}
+                    issuer={form.diploma_issuer}
                     signatory={form.diploma_signatory}
                     validityYears={form.diploma_validity_years}
                     userName={profile?.display_name || 'Jan Novák'}
