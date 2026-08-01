@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import Seo from '@/components/Seo';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,15 +44,15 @@ export default function InvitePage() {
   };
 
   const inviteHead = (
-    <Helmet>
-      <title>Pozvánka do ZGRP Academy</title>
-      <meta name="description" content="Přijměte pozvánku do ZGRP Academy a získejte přístup k obsahu platformy." />
-      <meta name="robots" content="noindex" />
-      <link rel="canonical" href="https://zgrpacademy.lovable.app/invite" />
-      <meta property="og:title" content="Pozvánka do ZGRP Academy" />
-      <meta property="og:description" content="Pozvánka k registraci v ZGRP Academy." />
-      <meta property="og:url" content="https://zgrpacademy.lovable.app/invite" />
-    </Helmet>
+    <Seo
+      title="Pozvánka do ZGRP Academy"
+      description="Přijměte pozvánku do ZGRP Academy a získejte přístup k obsahu platformy."
+      robots="noindex"
+      canonical="https://zgrpacademy.lovable.app/invite"
+      ogTitle="Pozvánka do ZGRP Academy"
+      ogDescription="Pozvánka k registraci v ZGRP Academy."
+      ogUrl="https://zgrpacademy.lovable.app/invite"
+    />
   );
 
   if (!user) {

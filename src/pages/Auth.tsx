@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import Seo from '@/components/Seo';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
@@ -69,14 +69,14 @@ export default function Auth() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Helmet>
-        <title>Přihlášení – ZGRP Academy</title>
-        <meta name="description" content="Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup." />
-        <link rel="canonical" href="https://zgrpacademy.lovable.app/auth" />
-        <meta property="og:title" content="Přihlášení – ZGRP Academy" />
-        <meta property="og:description" content="Vstup do vzdělávací platformy ZGRP Academy." />
-        <meta property="og:url" content="https://zgrpacademy.lovable.app/auth" />
-      </Helmet>
+      <Seo
+        title="Přihlášení – ZGRP Academy"
+        description="Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup."
+        canonical="https://zgrpacademy.lovable.app/auth"
+        ogTitle="Přihlášení – ZGRP Academy"
+        ogDescription="Vstup do vzdělávací platformy ZGRP Academy."
+        ogUrl="https://zgrpacademy.lovable.app/auth"
+      />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-2">
