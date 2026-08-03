@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,11 +8,23 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+/** Vestavěné prohlížeče v aplikacích (Telegram, Messenger, Instagram…) často
+ *  blokují cookies třetích stran a platební okno se v nich nenačte. */
+function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV|Instagram|Telegram|Line\/|MicroMessenger|Twitter|Snapchat|TikTok|Pinterest|LinkedInApp|WhatsApp/i.test(ua);
+}
+
 export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const checkoutRef = useRef<HTMLDivElement>(null);
+  const autoRetriedRef = useRef(false);
+  const [inApp] = useState(() => isInAppBrowser());
   const [stripePromise] = useState(() => {
     try {
       return getStripe();
@@ -20,6 +32,7 @@ export default function Checkout() {
       return null;
     }
   });
+
 
   // Re-check profile on mount in case webhook already ran
   useEffect(() => {
@@ -38,6 +51,22 @@ export default function Checkout() {
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
   }, []);
+
+  // Hlídač: pokud se platební rámeček do 12 s nevykreslí, zkusíme relaci
+  // jednou automaticky vytvořit znovu; teprve pak ukážeme chybu.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const iframe = checkoutRef.current?.querySelector("iframe");
+      if (iframe) return;
+      if (!autoRetriedRef.current) {
+        autoRetriedRef.current = true;
+        setSessionKey((k) => k + 1);
+      } else {
+        setCheckoutError("timeout");
+      }
+    }, 12000);
+    return () => window.clearTimeout(timer);
+  }, [sessionKey]);
 
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
@@ -110,15 +139,45 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
-        {checkoutError && (
-          <Card className="border-destructive/30 bg-destructive/5">
-            <CardContent className="pt-6 text-sm text-destructive">
-              Platební okno se nepodařilo načíst. Zkuste to prosím znovu, případně nás kontaktujte.
+        {inApp && (
+          <Card className="border-amber-500/40 bg-amber-500/10">
+            <CardContent className="pt-6 text-sm space-y-2">
+              <p className="font-medium">Otevřete stránku v běžném prohlížeči</p>
+              <p className="text-muted-foreground">
+                Vypadá to, že jste stránku otevřeli uvnitř jiné aplikace (např. Telegram, Messenger nebo Instagram).
+                Platební formulář se v ní často nenačte. Zkopírujte si odkaz a vložte ho do Safari nebo Chrome.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    setLinkCopied(true);
+                  } catch {
+                    setLinkCopied(false);
+                  }
+                }}
+              >
+                {linkCopied ? "Odkaz zkopírován" : "Zkopírovat odkaz"}
+              </Button>
             </CardContent>
           </Card>
         )}
 
-        <div id="checkout">
+        {checkoutError && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="pt-6 text-sm text-destructive space-y-2">
+              <p>Platební okno se nepodařilo načíst.</p>
+              <p>
+                Zkuste tlačítko „Načíst platbu znovu“ níže, otevřít stránku v jiném prohlížeči
+                (Safari / Chrome) nebo vypnout blokování reklam a cookies třetích stran.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        <div id="checkout" ref={checkoutRef}>
           {stripePromise ? (
             <EmbeddedCheckoutProvider
               key={sessionKey}
@@ -130,6 +189,7 @@ export default function Checkout() {
           ) : null}
         </div>
 
+
         <p className="text-center text-sm text-muted-foreground">
           Nezobrazuje se platební formulář, nebo hlásí chybu?{" "}
           <Button
@@ -137,8 +197,10 @@ export default function Checkout() {
             className="px-1 h-auto"
             onClick={() => {
               setCheckoutError(null);
+              autoRetriedRef.current = false;
               setSessionKey((k) => k + 1);
             }}
+
           >
             Načíst platbu znovu
           </Button>
