@@ -12,6 +12,7 @@ export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [sessionKey, setSessionKey] = useState(0);
   const [stripePromise] = useState(() => {
     try {
       return getStripe();
@@ -24,6 +25,20 @@ export default function Checkout() {
   useEffect(() => {
     refreshProfile();
   }, []);
+
+  // Pokud se stránka obnoví z cache prohlížeče (např. návrat zpět na mobilu),
+  // stará platební relace už může být neplatná – vytvoříme novou.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setCheckoutError(null);
+        setSessionKey((k) => k + 1);
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
     setCheckoutError(null);
@@ -46,7 +61,7 @@ export default function Checkout() {
       setCheckoutError(message);
       throw error;
     }
-  }, [user?.email, user?.id]);
+  }, [user?.email, user?.id, sessionKey]);
 
   const checkoutOptions = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
 
@@ -98,18 +113,37 @@ export default function Checkout() {
         {checkoutError && (
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="pt-6 text-sm text-destructive">
-              Platební okno se nepodařilo načíst. Zkuste stránku obnovit, případně nás kontaktujte.
+              Platební okno se nepodařilo načíst. Zkuste to prosím znovu, případně nás kontaktujte.
             </CardContent>
           </Card>
         )}
 
         <div id="checkout">
           {stripePromise ? (
-            <EmbeddedCheckoutProvider stripe={stripePromise} options={checkoutOptions}>
+            <EmbeddedCheckoutProvider
+              key={sessionKey}
+              stripe={stripePromise}
+              options={checkoutOptions}
+            >
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
           ) : null}
         </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Nezobrazuje se platební formulář, nebo hlásí chybu?{" "}
+          <Button
+            variant="link"
+            className="px-1 h-auto"
+            onClick={() => {
+              setCheckoutError(null);
+              setSessionKey((k) => k + 1);
+            }}
+          >
+            Načíst platbu znovu
+          </Button>
+        </p>
+
       </div>
     </div>
   );
