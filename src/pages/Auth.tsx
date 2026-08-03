@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
+import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
