@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,11 +8,23 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+/** Vestavěné prohlížeče v aplikacích (Telegram, Messenger, Instagram…) často
+ *  blokují cookies třetích stran a platební okno se v nich nenačte. */
+function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV|Instagram|Telegram|Line\/|MicroMessenger|Twitter|Snapchat|TikTok|Pinterest|LinkedInApp|WhatsApp/i.test(ua);
+}
+
 export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const checkoutRef = useRef<HTMLDivElement>(null);
+  const autoRetriedRef = useRef(false);
+  const [inApp] = useState(() => isInAppBrowser());
   const [stripePromise] = useState(() => {
     try {
       return getStripe();
@@ -20,6 +32,7 @@ export default function Checkout() {
       return null;
     }
   });
+
 
   // Re-check profile on mount in case webhook already ran
   useEffect(() => {
