@@ -197,8 +197,10 @@ export default function Checkout() {
             className="px-1 h-auto"
             onClick={() => {
               setCheckoutError(null);
+              autoRetriedRef.current = false;
               setSessionKey((k) => k + 1);
             }}
+
           >
             Načíst platbu znovu
           </Button>
