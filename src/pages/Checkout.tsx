@@ -12,6 +12,7 @@ export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [sessionKey, setSessionKey] = useState(0);
   const [stripePromise] = useState(() => {
     try {
       return getStripe();
@@ -24,6 +25,20 @@ export default function Checkout() {
   useEffect(() => {
     refreshProfile();
   }, []);
+
+  // Pokud se stránka obnoví z cache prohlížeče (např. návrat zpět na mobilu),
+  // stará platební relace už může být neplatná – vytvoříme novou.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setCheckoutError(null);
+        setSessionKey((k) => k + 1);
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
     setCheckoutError(null);
