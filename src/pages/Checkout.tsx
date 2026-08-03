@@ -113,18 +113,37 @@ export default function Checkout() {
         {checkoutError && (
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="pt-6 text-sm text-destructive">
-              Platební okno se nepodařilo načíst. Zkuste stránku obnovit, případně nás kontaktujte.
+              Platební okno se nepodařilo načíst. Zkuste to prosím znovu, případně nás kontaktujte.
             </CardContent>
           </Card>
         )}
 
         <div id="checkout">
           {stripePromise ? (
-            <EmbeddedCheckoutProvider stripe={stripePromise} options={checkoutOptions}>
+            <EmbeddedCheckoutProvider
+              key={sessionKey}
+              stripe={stripePromise}
+              options={checkoutOptions}
+            >
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
           ) : null}
         </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Nezobrazuje se platební formulář, nebo hlásí chybu?{" "}
+          <Button
+            variant="link"
+            className="px-1 h-auto"
+            onClick={() => {
+              setCheckoutError(null);
+              setSessionKey((k) => k + 1);
+            }}
+          >
+            Načíst platbu znovu
+          </Button>
+        </p>
+
       </div>
     </div>
   );
