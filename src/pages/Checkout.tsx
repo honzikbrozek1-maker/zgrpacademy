@@ -52,6 +52,22 @@ export default function Checkout() {
     return () => window.removeEventListener("pageshow", onPageShow);
   }, []);
 
+  // Hlídač: pokud se platební rámeček do 12 s nevykreslí, zkusíme relaci
+  // jednou automaticky vytvořit znovu; teprve pak ukážeme chybu.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const iframe = checkoutRef.current?.querySelector("iframe");
+      if (iframe) return;
+      if (!autoRetriedRef.current) {
+        autoRetriedRef.current = true;
+        setSessionKey((k) => k + 1);
+      } else {
+        setCheckoutError("timeout");
+      }
+    }, 12000);
+    return () => window.clearTimeout(timer);
+  }, [sessionKey]);
+
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
     setCheckoutError(null);
