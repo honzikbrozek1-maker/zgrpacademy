@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
+import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -68,7 +69,7 @@ export default function Auth() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background p-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-background p-4 gap-4">
       <Seo
         title="Přihlášení – ZGRP Academy"
         description="Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup."
@@ -77,6 +78,7 @@ export default function Auth() {
         ogDescription="Vstup do vzdělávací platformy ZGRP Academy."
         ogUrl="https://zgrpacademy.lovable.app/auth"
       />
+      <InAppBrowserNotice className="w-full max-w-md" />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-2">
