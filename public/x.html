@@ -1,0 +1,6 @@
+<!doctype html><html><body><div id="checkout"></div>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const s=Stripe("pk_live_51HDR4GEyPmaEPs7jLEs4IXtA9Ujh7AYyNGXajvcAf9nauT9NsCbHO8F048Ra4hx0EK6QoEwHDc8XWQcTycWlAgB300oYp7MEaZ");
+s.initEmbeddedCheckout({fetchClientSecret:async()=>"cs_live_a1QY2noopip7HE95V4tuS9m1EaUt7p4Rj9cpcG6PH4cmH9Kl2W55xWXVCd_secret_fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdkdWxOYHwnPyd1blppbHNgWjA0TUFXMUJAfFVoZEBVdjJvSUB2MUxdcUQ8UG9tMkRcfEtCXWRvc2ZEYzxrZHBRPEt2RmdNSj1DNTE9V2QxbX01QE4zVGpAck1BZj1dUlRmUXxmUmlEYkc2NTVqXHUySEBkXycpJ3BsSGphYCc%2FJ2BoZ2BhYWBhJyknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknd2BhbHdgZnFKa0ZqaHVpYHFsamsnPydkaXJkfHYnKSdnZGZuYndqcGthRmppancnPycmY2NjY2NjJ3gl"}).then(c=>c.mount("#checkout")).catch(e=>{document.body.innerHTML="ERR "+e.message});
+</script></body></html>
