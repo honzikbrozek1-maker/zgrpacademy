@@ -61,7 +61,7 @@ export default function Checkout() {
       setCheckoutError(message);
       throw error;
     }
-  }, [user?.email, user?.id]);
+  }, [user?.email, user?.id, sessionKey]);
 
   const checkoutOptions = useMemo(() => ({ fetchClientSecret }), [fetchClientSecret]);
 
