@@ -7,24 +7,15 @@ import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-/** Vestavěné prohlížeče v aplikacích (Telegram, Messenger, Instagram…) často
- *  blokují cookies třetích stran a platební okno se v nich nenačte. */
-function isInAppBrowser(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent || "";
-  return /FBAN|FBAV|Instagram|Telegram|Line\/|MicroMessenger|Twitter|Snapchat|TikTok|Pinterest|LinkedInApp|WhatsApp/i.test(ua);
-}
+import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 
 export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
-  const [linkCopied, setLinkCopied] = useState(false);
   const checkoutRef = useRef<HTMLDivElement>(null);
   const autoRetriedRef = useRef(false);
-  const [inApp] = useState(() => isInAppBrowser());
   const [stripePromise] = useState(() => {
     try {
       return getStripe();
@@ -139,31 +130,7 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
-        {inApp && (
-          <Card className="border-amber-500/40 bg-amber-500/10">
-            <CardContent className="pt-6 text-sm space-y-2">
-              <p className="font-medium">Otevřete stránku v běžném prohlížeči</p>
-              <p className="text-muted-foreground">
-                Vypadá to, že jste stránku otevřeli uvnitř jiné aplikace (např. Telegram, Messenger nebo Instagram).
-                Platební formulář se v ní často nenačte. Zkopírujte si odkaz a vložte ho do Safari nebo Chrome.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(window.location.href);
-                    setLinkCopied(true);
-                  } catch {
-                    setLinkCopied(false);
-                  }
-                }}
-              >
-                {linkCopied ? "Odkaz zkopírován" : "Zkopírovat odkaz"}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        <InAppBrowserNotice />
 
         {checkoutError && (
           <Card className="border-destructive/30 bg-destructive/5">
