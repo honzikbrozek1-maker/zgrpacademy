@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Lock, CheckCircle, ArrowRight, Trophy, GraduationCap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
+import Seo from '@/components/Seo';
 
 interface Level {
   id: string;
@@ -173,6 +174,12 @@ export default function Levels() {
 
   return (
     <AppLayout>
+      <Seo
+        title="Levely a skupiny kurzů – ZGRP Academy"
+        description="Přehled všech levelů a skupin kurzů ZGRP Academy včetně postupu a závěrečných testů."
+        canonical={`https://zgrpacademy.lovable.app${basePath}/levels`}
+        ogUrl={`https://zgrpacademy.lovable.app${basePath}/levels`}
+      />
       <div className="p-3 md:p-8 max-w-4xl mx-auto space-y-3 md:space-y-8 animate-slide-up">
         <h1 className="text-xl md:text-2xl font-bold">Levely</h1>
 

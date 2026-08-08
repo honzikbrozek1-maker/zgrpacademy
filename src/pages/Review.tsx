@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft, PenLine } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Seo from '@/components/Seo';
 
 interface ReviewItem {
   id: string;
@@ -418,6 +419,12 @@ export default function Review() {
   // Menu view
   return (
     <AppLayout>
+      <Seo
+        title="Opakování otázek – ZGRP Academy"
+        description="Opakujte si otázky, které vám dělaly potíže, a upevněte znalosti před závěrečným testem."
+        canonical={`https://zgrpacademy.lovable.app${basePath}/review`}
+        ogUrl={`https://zgrpacademy.lovable.app${basePath}/review`}
+      />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <Breadcrumbs
           items={[

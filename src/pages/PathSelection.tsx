@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { GraduationCap, Package, Briefcase, ArrowRight } from 'lucide-react';
+import Seo from '@/components/Seo';
 
 export default function PathSelection() {
   const { profile } = useAuth();
@@ -9,6 +10,12 @@ export default function PathSelection() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Seo
+        title="Výběr sekce – ZGRP Academy"
+        description="Vyberte si, zda chcete procvičovat produktové znalosti, nebo backoffice ZinzinoGroup."
+        canonical="https://zgrpacademy.lovable.app/"
+        ogUrl="https://zgrpacademy.lovable.app/"
+      />
       <div className="w-full max-w-2xl space-y-8 animate-slide-up">
         {/* Header */}
         <div className="text-center space-y-2">
