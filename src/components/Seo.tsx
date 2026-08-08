@@ -8,6 +8,8 @@ type SeoProps = {
   ogDescription?: string;
   ogUrl?: string;
   robots?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  jsonLdId?: string;
 };
 
 function setMeta(attr: "name" | "property", key: string, content?: string) {
@@ -29,6 +31,8 @@ export default function Seo({
   ogDescription,
   ogUrl,
   robots,
+  jsonLd,
+  jsonLdId = "route-jsonld",
 }: SeoProps) {
   useEffect(() => {
     if (title) document.title = title;
@@ -37,6 +41,8 @@ export default function Seo({
     setMeta("property", "og:title", ogTitle ?? title);
     setMeta("property", "og:description", ogDescription ?? description);
     setMeta("property", "og:url", ogUrl ?? canonical);
+    setMeta("name", "twitter:title", ogTitle ?? title);
+    setMeta("name", "twitter:description", ogDescription ?? description);
 
     if (canonical) {
       let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
@@ -47,7 +53,21 @@ export default function Seo({
       }
       link.href = canonical;
     }
-  }, [title, description, canonical, ogTitle, ogDescription, ogUrl, robots]);
+
+    if (!jsonLd) return;
+    let script = document.head.querySelector<HTMLScriptElement>(`script[data-seo-id="${jsonLdId}"]`);
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.setAttribute("data-seo-id", jsonLdId);
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(jsonLd);
+    return () => {
+      script?.remove();
+    };
+  }, [title, description, canonical, ogTitle, ogDescription, ogUrl, robots, jsonLd, jsonLdId]);
 
   return null;
 }
+
