@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { InvoicesList } from "@/components/InvoicesList";
+import Seo from '@/components/Seo';
 
 export default function CheckoutReturn() {
   const [searchParams] = useSearchParams();
@@ -43,6 +44,13 @@ export default function CheckoutReturn() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Seo
+        title="Potvrzení platby – ZGRP Academy"
+        description="Potvrzení úhrady registračního poplatku a přístup k fakturám ZGRP Academy."
+        canonical="https://zgrpacademy.lovable.app/checkout/return"
+        ogUrl="https://zgrpacademy.lovable.app/checkout/return"
+        robots="noindex,follow"
+      />
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

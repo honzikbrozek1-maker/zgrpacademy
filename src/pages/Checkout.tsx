@@ -8,6 +8,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
+import Seo from "@/components/Seo";
 
 export default function Checkout() {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
@@ -99,11 +100,19 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Dokončení registrace – platba | ZGRP Academy"
+        description="Uhraďte jednorázový registrační poplatek 100 Kč a získejte přístup ke kurzům ZGRP Academy."
+        canonical={`${"https://zgrpacademy.lovable.app"}/checkout`}
+        ogUrl="https://zgrpacademy.lovable.app/checkout"
+        robots="noindex,follow"
+      />
       <PaymentTestModeBanner />
       <div className="max-w-2xl mx-auto p-6 space-y-6">
+        <h1 className="text-2xl font-bold">Dokončení registrace – platba</h1>
         <Card>
           <CardHeader>
-            <CardTitle>Registrační poplatek</CardTitle>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight">Registrační poplatek</h2>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">
@@ -120,7 +129,7 @@ export default function Checkout() {
 
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Nápověda k vyplnění adresy</CardTitle>
+            <h2 className="text-base font-semibold leading-none tracking-tight">Nápověda k vyplnění adresy</h2>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-1">
             <p><strong className="text-foreground">Řádek 1 (Address line 1):</strong> ulice a číslo popisné, např. <em>Pražská 123</em>.</p>

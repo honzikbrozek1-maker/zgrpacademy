@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import DiplomaCertificate from '@/components/DiplomaCertificate';
+import Seo from '@/components/Seo';
 
 interface Diploma {
   diploma_id: string;
@@ -77,6 +78,12 @@ export default function Diplomas() {
 
   return (
     <AppLayout>
+      <Seo
+        title="Moje certifikáty – ZGRP Academy"
+        description="Zobrazte a vytiskněte si certifikáty získané za úspěšné absolvování kurzů ZGRP Academy."
+        canonical="https://zgrpacademy.lovable.app/products/diplomas"
+        ogUrl="https://zgrpacademy.lovable.app/products/diplomas"
+      />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>

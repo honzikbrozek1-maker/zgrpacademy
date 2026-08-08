@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, BookOpen, RotateCcw, ArrowRight, Layers, Lock, CheckCircle, Package, Briefcase } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { getAvailableModulesFromQuestionTypes, getLevelProgressPercent } from '@/lib/levelProgress';
+import Seo from '@/components/Seo';
 
 interface Level {
   id: string;
@@ -140,6 +141,12 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
+      <Seo
+        title="Přehled studia – ZGRP Academy"
+        description="Sledujte svůj postup v kurzech, dokončené levely a doporučené další kroky v ZGRP Academy."
+        canonical={`https://zgrpacademy.lovable.app${basePath}`}
+        ogUrl={`https://zgrpacademy.lovable.app${basePath}`}
+      />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 md:space-y-6 animate-slide-up">
         <div className="flex items-center gap-3">
           {headerIcon}

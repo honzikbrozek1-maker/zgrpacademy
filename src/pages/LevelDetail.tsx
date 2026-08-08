@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Brain, ClipboardCheck, RotateCcw, Trophy, PenLine, CheckCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Seo from '@/components/Seo';
 import QuizModule from '@/components/QuizModule';
 import FillInBlankModule from '@/components/FillInBlankModule';
 import LevelTest from '@/components/LevelTest';
@@ -211,7 +212,21 @@ export default function LevelDetail() {
 
   return (
     <AppLayout>
+      <Seo
+        title={`${level.title} – ZGRP Academy`}
+        description={level.description || `Procvičujte level „${level.title}" v ZGRP Academy – kvíz, doplňování a závěrečný test.`}
+        canonical={`https://zgrpacademy.lovable.app${basePath}/level/${level.id}`}
+        ogUrl={`https://zgrpacademy.lovable.app${basePath}/level/${level.id}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Course',
+          name: level.title,
+          description: level.description || `Vzdělávací level ${level.title} v ZGRP Academy.`,
+          provider: { '@type': 'Organization', name: 'ZGRP Academy', url: 'https://zgrpacademy.lovable.app/' },
+        }}
+      />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
+
         <Breadcrumbs
           items={[
             { label: 'Dashboard', to: basePath },
