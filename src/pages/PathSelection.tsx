@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { GraduationCap, Package, Briefcase, ArrowRight } from 'lucide-react';
+import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
 
 export default function PathSelection() {
