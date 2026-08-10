@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { GraduationCap, Package, Briefcase, ArrowRight } from 'lucide-react';
+import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
 
 export default function PathSelection() {
@@ -19,9 +20,13 @@ export default function PathSelection() {
       <div className="w-full max-w-2xl space-y-8 animate-slide-up">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-3">
-            <GraduationCap className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <img
+            src={zgrpLogo.url}
+            alt="Logo ZGRP Academy"
+            className="mx-auto h-20 w-20 rounded-full object-cover mb-3"
+            loading="lazy"
+          />
+
           <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
           <p className="text-muted-foreground">Co chcete dnes procvičovat?</p>
         </div>
