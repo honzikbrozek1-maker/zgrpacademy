@@ -81,9 +81,12 @@ export default function Auth() {
       <InAppBrowserNotice className="w-full max-w-md" />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mb-2">
-            <GraduationCap className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <img
+            src={zgrpLogo.url}
+            alt="Logo ZGRP Academy"
+            className="mx-auto h-20 w-20 rounded-full object-cover mb-2"
+          />
+
           <h1 className="text-2xl font-semibold leading-none tracking-tight">Přihlášení do ZGRP Academy</h1>
           <CardDescription>Vzdělávací platforma pro partnery ZinzinoGroup</CardDescription>
         </CardHeader>
