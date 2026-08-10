@@ -91,12 +91,12 @@ export function AppSidebar() {
       <SidebarContent>
         {/* Logo */}
         <Link to="/" onClick={closeMobileIfNeeded} className="flex items-center gap-2 px-4 py-4 hover:opacity-80 transition-opacity">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${accentBg}`}>
-            {isBackoffice
-              ? <Briefcase className="h-4 w-4 text-white" />
-              : <GraduationCap className="h-4 w-4 text-primary-foreground" />
-            }
-          </div>
+          <img
+            src={zgrpLogo.url}
+            alt="Logo ZGRP Academy"
+            className="w-8 h-8 rounded-full object-cover shrink-0"
+          />
+
           {!collapsed && <span className="font-bold text-lg">ZGRP Academy</span>}
         </Link>
 
