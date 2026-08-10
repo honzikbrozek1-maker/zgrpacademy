@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
 import { useAppPath } from '@/lib/pathContext';
