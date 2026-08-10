@@ -28,9 +28,10 @@ const REGISTRATION_FEE_PRICE_IDS = new Set([
   "registration_fee_v5_15czk",
   "registration_fee_v6_20czk",
   "registration_fee_v7_100czk",
+  "registration_fee_v8_150czk",
 ]);
-const REGISTRATION_FEE_PRICE_ID = "registration_fee_v7_100czk";
-const REGISTRATION_FEE_AMOUNT = 10000;
+const REGISTRATION_FEE_PRICE_ID = "registration_fee_v8_150czk";
+const REGISTRATION_FEE_AMOUNT = 15000;
 const REGISTRATION_FEE_CURRENCY = "czk";
 const REGISTRATION_FEE_NAME = "Registrační poplatek ZGRP Academy";
 
