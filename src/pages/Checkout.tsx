@@ -102,7 +102,7 @@ export default function Checkout() {
     <div className="min-h-screen bg-background">
       <Seo
         title="Dokončení registrace – platba | ZGRP Academy"
-        description="Uhraďte jednorázový registrační poplatek 100 Kč a získejte přístup ke kurzům ZGRP Academy."
+        description="Uhraďte jednorázový registrační poplatek 150 Kč a získejte přístup ke kurzům ZGRP Academy."
         canonical={`${"https://zgrpacademy.lovable.app"}/checkout`}
         ogUrl="https://zgrpacademy.lovable.app/checkout"
         robots="noindex,follow"
@@ -116,7 +116,7 @@ export default function Checkout() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">
-              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>100 Kč</strong>. Po platbě obdržíš fakturu.
+              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>150 Kč</strong>. Po platbě obdržíš fakturu.
             </p>
             <p className="text-sm text-muted-foreground">
               Přihlášen jako: <span className="font-medium">{user.email}</span>{" "}
