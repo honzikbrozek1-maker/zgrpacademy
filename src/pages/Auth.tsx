@@ -165,10 +165,10 @@ export default function Auth() {
                 <div className="space-y-1">
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={6} />
+                    <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={8} />
                   </div>
                   <p className="text-xs text-muted-foreground pl-1">
-                    Heslo musí mít alespoň 6 znaků. Delší heslo je bezpečnější, ale žádné speciální znaky nejsou povinné.
+                    Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo. Speciální znaky nejsou nutné.
                   </p>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
