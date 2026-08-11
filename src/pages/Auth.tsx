@@ -34,6 +34,14 @@ export default function Auth() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^(?=.*[a-zá-ž])(?=.*[A-ZÁ-Ž])(?=.*\d).{8,}$/.test(password)) {
+      toast({
+        title: 'Slabé heslo',
+        description: 'Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
