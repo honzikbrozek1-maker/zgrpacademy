@@ -173,11 +173,24 @@ export default function Auth() {
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required />
+                  <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                    <Checkbox checked={rememberMe} onCheckedChange={v => setRememberMe(v === true)} />
+                    Zůstat přihlášen
+                  </label>
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline"
+                    onClick={() => { setResetEmail(email); setResetOpen(true); }}
+                  >
+                    Zapomenuté heslo?
+                  </button>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                   {loading ? 'Přihlašování...' : 'Přihlásit se'}
