@@ -1,9 +1,10 @@
-import { ReactNode, useEffect, useLayoutEffect } from 'react';
+import { ReactNode, useEffect, useLayoutEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import MobileBottomNav from '@/components/MobileBottomNav';
-import { Home, UserCog } from 'lucide-react';
+import GlobalSearch from '@/components/GlobalSearch';
+import { Home, Search, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
 import { useSectionProfile } from '@/hooks/useSectionProfile';
