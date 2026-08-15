@@ -14,6 +14,7 @@ import { colorSchemes } from '@/lib/colorSchemes';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import AppLayout from '@/components/AppLayout';
 import { InvoicesList } from '@/components/InvoicesList';
+import { InstallAppCard } from '@/components/InstallAppCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function Account() {
@@ -220,6 +221,10 @@ export default function Account() {
             </AlertDialog>
           </CardContent>
         </Card>
+
+        <InstallAppCard />
+
+
 
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
