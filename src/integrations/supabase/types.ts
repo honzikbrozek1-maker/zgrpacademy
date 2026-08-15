@@ -609,6 +609,7 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { invite_code: string }; Returns: undefined }
+      admin_overview_stats: { Args: never; Returns: Json }
       admin_reset_user_progress: {
         Args: { p_user_id: string }
         Returns: undefined
