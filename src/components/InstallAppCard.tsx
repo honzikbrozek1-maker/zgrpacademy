@@ -65,14 +65,14 @@ export function InstallAppCard() {
               <li className="flex items-center gap-1">
                 Klepněte na ikonu Sdílet <Share className="inline h-3 w-3" /> dole uprostřed
               </li>
-              <li>Vyberte „Přidat na plochu"</li>
+              <li>Vyberte „Přidat na plochu“</li>
               <li>Potvrďte tlačítkem „Přidat"</li>
             </ol>
           </div>
         ) : (
           <div className="text-xs text-muted-foreground space-y-1">
             <p>V prohlížeči otevřete nabídku (⋮ nebo ikona instalace v adresním řádku) a zvolte:</p>
-            <p>„Instalovat aplikaci" / „Přidat na plochu".</p>
+            <p>„Instalovat aplikaci“ / „Přidat na plochu“.</p>
           </div>
         )}
       </CardContent>
