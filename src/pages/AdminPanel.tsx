@@ -908,6 +908,10 @@ export default function AdminPanel() {
             </TabsList>
           </div>
 
+          <TabsContent value="overview" className="mt-6">
+            <AdminOverviewTab />
+          </TabsContent>
+
           <TabsContent value="content" className="mt-6 space-y-6">
             {selectedLevel ? (
               <div className="space-y-4">
