@@ -81,7 +81,7 @@ export default function ResetPassword() {
         title="Obnova hesla – ZGRP Academy"
         description="Nastavte si nové heslo do ZGRP Academy."
         canonical="https://zgrpacademy.lovable.app/reset-password"
-        noindex
+        robots="noindex, nofollow"
       />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
