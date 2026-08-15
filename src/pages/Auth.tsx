@@ -36,9 +36,10 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // When "stay signed in" is off, the session is kept only for this tab.
+    // When "stay signed in" is off, the session lives only for this browser tab.
     try {
-      sessionStorage.setItem('auth-session-only', rememberMe ? '0' : '1');
+      localStorage.setItem('auth-remember', rememberMe ? '1' : '0');
+      sessionStorage.setItem('auth-tab', '1');
     } catch {
       /* storage may be unavailable in private mode */
     }
@@ -245,6 +246,38 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Zapomenuté heslo</DialogTitle>
+            <DialogDescription>
+              Zadejte e-mail, kterým jste se registrovali. Pošleme vám odkaz pro nastavení nového hesla.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="E-mail"
+              value={resetEmail}
+              onChange={e => setResetEmail(e.target.value)}
+              className="pl-10"
+              autoComplete="email"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>Zrušit</Button>
+            <Button
+              className="gradient-primary text-primary-foreground"
+              onClick={handleResetPassword}
+              disabled={resetSending}
+            >
+              {resetSending ? 'Odesílám…' : 'Odeslat odkaz'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
