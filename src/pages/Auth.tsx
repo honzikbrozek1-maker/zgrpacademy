@@ -102,8 +102,8 @@ export default function Auth() {
         <CardContent>
           <Button
             variant="outline"
-            className="w-full mb-4 flex items-center gap-2"
-            onClick={handleGoogleLogin}
+            className="w-full mb-2 flex items-center gap-2"
+            onClick={() => handleOAuthLogin('google')}
             disabled={loading}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -113,6 +113,18 @@ export default function Auth() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
             Přihlásit se přes Google
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full mb-4 flex items-center gap-2"
+            onClick={() => handleOAuthLogin('apple')}
+            disabled={loading}
+          >
+            <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16.365 1.43c0 1.14-.42 2.2-1.19 3.02-.89.96-2.02 1.53-3.06 1.44a3.4 3.4 0 0 1 1.2-2.94c.76-.83 2.06-1.44 3.05-1.52zM20.5 17.02c-.55 1.27-.82 1.84-1.53 2.97-.99 1.57-2.39 3.53-4.12 3.54-1.54.01-1.94-1-4.03-.99-2.09.01-2.53 1.01-4.07.99-1.73-.02-3.05-1.79-4.04-3.36C.06 16.12-.2 10.98 1.5 8.25c1.2-1.94 3.1-3.07 4.88-3.07 1.82 0 2.96 1 4.46 1 1.46 0 2.35-1 4.45-1 1.59 0 3.27.86 4.47 2.35-3.93 2.15-3.29 7.76.74 9.49z" />
+            </svg>
+            Přihlásit se přes Apple
           </Button>
 
           <div className="relative mb-4">
