@@ -66,7 +66,7 @@ export function InstallAppCard() {
                 Klepněte na ikonu Sdílet <Share className="inline h-3 w-3" /> dole uprostřed
               </li>
               <li>Vyberte „Přidat na plochu“</li>
-              <li>Potvrďte tlačítkem „Přidat"</li>
+              <li>Potvrďte tlačítkem „Přidat“</li>
             </ol>
           </div>
         ) : (
