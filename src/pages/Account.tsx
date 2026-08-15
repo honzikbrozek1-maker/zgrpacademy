@@ -221,6 +221,10 @@ export default function Account() {
           </CardContent>
         </Card>
 
+        <InstallAppCard />
+
+
+
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Smazání účtu</div>
