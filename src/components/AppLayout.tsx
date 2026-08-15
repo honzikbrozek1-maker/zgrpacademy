@@ -70,30 +70,49 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 flex items-center justify-between border-b bg-card/80 backdrop-blur-md sticky top-0 z-50 px-3">
             <SidebarTrigger className="h-11 w-11 md:h-9 md:w-9" />
-            {isMobile && (
-              <div className="flex items-center gap-1">
-                {!isOnDashboard && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="hidden md:flex items-center gap-2 text-sm text-muted-foreground border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
+                aria-label="Hledat"
+              >
+                <Search className="h-4 w-4" />
+                <span>Hledat…</span>
+                <kbd className="ml-2 text-[10px] border rounded px-1 py-0.5">Ctrl K</kbd>
+              </button>
+              {isMobile && (
+                <>
                   <button
-                    onClick={() => navigate(basePath)}
+                    onClick={() => setSearchOpen(true)}
                     className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
-                    aria-label="Dashboard"
+                    aria-label="Hledat"
                   >
-                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <Search className="h-5 w-5 text-muted-foreground" />
                   </button>
-                )}
-                <button
-                  onClick={handleAccountClick}
-                  className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
-                  aria-label="Nastavení účtu"
-                >
-                  <UserCog className="h-6 w-6 text-muted-foreground" />
-                </button>
-              </div>
-            )}
+                  {!isOnDashboard && (
+                    <button
+                      onClick={() => navigate(basePath)}
+                      className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                      aria-label="Dashboard"
+                    >
+                      <Home className="h-5 w-5 text-muted-foreground" />
+                    </button>
+                  )}
+                  <button
+                    onClick={handleAccountClick}
+                    className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                    aria-label="Nastavení účtu"
+                  >
+                    <UserCog className="h-6 w-6 text-muted-foreground" />
+                  </button>
+                </>
+              )}
+            </div>
           </header>
           <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
             {children}
           </main>
+          <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
           <MobileBottomNav />
         </div>
       </div>
