@@ -887,9 +887,10 @@ export default function AdminPanel() {
           <Shield className="h-6 w-6 text-primary" /> Administrace
         </h1>
 
-        <Tabs defaultValue="content">
+        <Tabs defaultValue="overview">
           <div className="-mx-4 md:mx-0 overflow-x-auto scrollbar-none">
             <TabsList className="inline-flex w-max md:w-auto mx-4 md:mx-0">
+              <TabsTrigger value="overview"><BarChart3 className="mr-1 h-4 w-4" /> Přehled</TabsTrigger>
               <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
               <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Skupiny & certifikáty</span><span className="sm:hidden">Skupiny</span></TabsTrigger>
               <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
