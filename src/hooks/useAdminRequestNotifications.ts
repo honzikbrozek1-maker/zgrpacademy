@@ -109,6 +109,31 @@ export function useAdminRequestNotifications() {
         },
       )
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'admin_requests' }, loadCount)
+      // New registrations
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, (payload) => {
+        const row = payload.new as { display_name?: string };
+        const name = row.display_name || 'Nový uživatel';
+        notifyNative('Nová registrace', `${name} se zaregistroval/a.`);
+        toast('Nová registrace', { description: `${name} se zaregistroval/a.`, duration: 15000 });
+      })
+      // New payments
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payments' }, (payload) => {
+        const row = payload.new as { status?: string; amount?: number; environment?: string };
+        if (row.status !== 'paid') return;
+        const amount = ((row.amount ?? 0) / 100).toLocaleString('cs-CZ');
+        const env = row.environment === 'live' ? '' : ' (testovací)';
+        notifyNative('Nová platba', `Přijata platba ${amount} Kč${env}.`);
+        toast('Nová platba', { description: `Přijata platba ${amount} Kč${env}.`, duration: 15000 });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments' }, (payload) => {
+        const row = payload.new as { status?: string; amount?: number; environment?: string };
+        const old = payload.old as { status?: string };
+        if (row.status !== 'paid' || old?.status === 'paid') return;
+        const amount = ((row.amount ?? 0) / 100).toLocaleString('cs-CZ');
+        const env = row.environment === 'live' ? '' : ' (testovací)';
+        notifyNative('Nová platba', `Přijata platba ${amount} Kč${env}.`);
+        toast('Nová platba', { description: `Přijata platba ${amount} Kč${env}.`, duration: 15000 });
+      })
       .subscribe();
 
     return () => {

@@ -16,6 +16,7 @@ import LevelDetail from "./pages/LevelDetail";
 import GroupFinalTest from "./pages/GroupFinalTest";
 import Review from "./pages/Review";
 import Account from "./pages/Account";
+import ResetPassword from "./pages/ResetPassword";
 
 import Diplomas from "./pages/Diplomas";
 import AdminPanel from "./pages/AdminPanel";
@@ -44,6 +45,7 @@ const App = () => (
             <PathProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />

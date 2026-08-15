@@ -8,6 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
 import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
@@ -17,12 +26,23 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSending, setResetSending] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // When "stay signed in" is off, the session lives only for this browser tab.
+    try {
+      localStorage.setItem('auth-remember', rememberMe ? '1' : '0');
+      sessionStorage.setItem('auth-tab', '1');
+    } catch {
+      /* storage may be unavailable in private mode */
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast({ title: 'Chyba přihlášení', description: error.message, variant: 'destructive' });
@@ -30,6 +50,28 @@ export default function Auth() {
       navigate('/');
     }
     setLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    const target = (resetEmail || email).trim();
+    if (!target) {
+      toast({ title: 'Zadejte e-mail', description: 'Napište e-mail, na který máte účet.', variant: 'destructive' });
+      return;
+    }
+    setResetSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(target, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetSending(false);
+    if (error) {
+      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setResetOpen(false);
+    toast({
+      title: 'E-mail odeslán',
+      description: `Na ${target} jsme poslali odkaz pro nastavení nového hesla. Zkontrolujte i spam.`,
+    });
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -141,11 +183,24 @@ export default function Auth() {
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required />
+                  <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                    <Checkbox checked={rememberMe} onCheckedChange={v => setRememberMe(v === true)} />
+                    Zůstat přihlášen
+                  </label>
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline"
+                    onClick={() => { setResetEmail(email); setResetOpen(true); }}
+                  >
+                    Zapomenuté heslo?
+                  </button>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                   {loading ? 'Přihlašování...' : 'Přihlásit se'}
@@ -191,6 +246,38 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Zapomenuté heslo</DialogTitle>
+            <DialogDescription>
+              Zadejte e-mail, kterým jste se registrovali. Pošleme vám odkaz pro nastavení nového hesla.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="E-mail"
+              value={resetEmail}
+              onChange={e => setResetEmail(e.target.value)}
+              className="pl-10"
+              autoComplete="email"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>Zrušit</Button>
+            <Button
+              className="gradient-primary text-primary-foreground"
+              onClick={handleResetPassword}
+              disabled={resetSending}
+            >
+              {resetSending ? 'Odesílám…' : 'Odeslat odkaz'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

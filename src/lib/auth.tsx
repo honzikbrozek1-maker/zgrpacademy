@@ -76,6 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // "Stay signed in" opt-out: session is dropped when the browser tab is closed.
+    try {
+      if (localStorage.getItem('auth-remember') === '0' && !sessionStorage.getItem('auth-tab')) {
+        localStorage.removeItem('auth-remember');
+        supabase.auth.signOut();
+      }
+    } catch {
+      /* storage may be unavailable */
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);

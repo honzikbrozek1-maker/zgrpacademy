@@ -1,9 +1,10 @@
-import { ReactNode, useEffect, useLayoutEffect } from 'react';
+import { ReactNode, useEffect, useLayoutEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import MobileBottomNav from '@/components/MobileBottomNav';
-import { Home, UserCog } from 'lucide-react';
+import GlobalSearch from '@/components/GlobalSearch';
+import { Home, Search, UserCog } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppPath } from '@/lib/pathContext';
 import { useSectionProfile } from '@/hooks/useSectionProfile';
@@ -17,6 +18,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { basePath, category } = useAppPath();
   const { sectionProfile } = useSectionProfile(category);
   const { setColorScheme } = useTheme();
+  const [searchOpen, setSearchOpen] = useState(false);
   useAdminRequestNotifications();
   const accountPath = `${basePath}/account`;
   const isOnAccount = location.pathname === accountPath;
@@ -40,6 +42,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     setColorScheme(sectionProfile.color_scheme);
   }, [colorStorageKey, sectionProfile?.color_scheme, setColorScheme]);
 
+  // Ctrl/Cmd+K opens global search
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(open => !open);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   const handleAccountClick = () => {
     if (isOnAccount) {
       navigate(-1);
@@ -48,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   };
 
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -55,30 +70,49 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 flex items-center justify-between border-b bg-card/80 backdrop-blur-md sticky top-0 z-50 px-3">
             <SidebarTrigger className="h-11 w-11 md:h-9 md:w-9" />
-            {isMobile && (
-              <div className="flex items-center gap-1">
-                {!isOnDashboard && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="hidden md:flex items-center gap-2 text-sm text-muted-foreground border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
+                aria-label="Hledat"
+              >
+                <Search className="h-4 w-4" />
+                <span>Hledat…</span>
+                <kbd className="ml-2 text-[10px] border rounded px-1 py-0.5">Ctrl K</kbd>
+              </button>
+              {isMobile && (
+                <>
                   <button
-                    onClick={() => navigate(basePath)}
+                    onClick={() => setSearchOpen(true)}
                     className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
-                    aria-label="Dashboard"
+                    aria-label="Hledat"
                   >
-                    <Home className="h-5 w-5 text-muted-foreground" />
+                    <Search className="h-5 w-5 text-muted-foreground" />
                   </button>
-                )}
-                <button
-                  onClick={handleAccountClick}
-                  className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
-                  aria-label="Nastavení účtu"
-                >
-                  <UserCog className="h-6 w-6 text-muted-foreground" />
-                </button>
-              </div>
-            )}
+                  {!isOnDashboard && (
+                    <button
+                      onClick={() => navigate(basePath)}
+                      className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                      aria-label="Dashboard"
+                    >
+                      <Home className="h-5 w-5 text-muted-foreground" />
+                    </button>
+                  )}
+                  <button
+                    onClick={handleAccountClick}
+                    className="p-3 -m-1 rounded-lg hover:bg-muted transition-colors"
+                    aria-label="Nastavení účtu"
+                  >
+                    <UserCog className="h-6 w-6 text-muted-foreground" />
+                  </button>
+                </>
+              )}
+            </div>
           </header>
           <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
             {children}
           </main>
+          <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
           <MobileBottomNav />
         </div>
       </div>
