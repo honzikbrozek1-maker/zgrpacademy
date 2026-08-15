@@ -18,6 +18,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { basePath, category } = useAppPath();
   const { sectionProfile } = useSectionProfile(category);
   const { setColorScheme } = useTheme();
+  const [searchOpen, setSearchOpen] = useState(false);
   useAdminRequestNotifications();
   const accountPath = `${basePath}/account`;
   const isOnAccount = location.pathname === accountPath;
@@ -41,6 +42,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     setColorScheme(sectionProfile.color_scheme);
   }, [colorStorageKey, sectionProfile?.color_scheme, setColorScheme]);
 
+  // Ctrl/Cmd+K opens global search
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(open => !open);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   const handleAccountClick = () => {
     if (isOnAccount) {
       navigate(-1);
@@ -48,6 +61,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       navigate(accountPath);
     }
   };
+
 
   return (
     <SidebarProvider>
