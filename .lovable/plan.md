@@ -1,74 +1,49 @@
-## Výsledek testu (přihlášen jako Jan Brožek, mobil 393 px)
+# Vylepšení: heslo, přihlášení, PWA, vyhledávání, přehled
 
-- Úvod, výběr sekce, Levely i Admin panel se načítají správně, spodní navigace funguje (Domů / Levely / Certifikáty / Admin / Účet).
-- Admin → Obsah ukazuje všechny 4 levely, záložky Obsah / Skupiny / Uživatelé / Koš / Žádosti jsou dostupné (vodorovně posuvné).
-- V konzoli nejsou žádné skutečné chyby – jen vývojová varování Reactu z knihoven, na provoz nemají vliv.
-- Google přihlášení v Preview: potvrzuji, v editoru běží náhled v iframu s jinou doménou, na ostré verzi to funguje. Neřeším.
+## 1. Zapomenuté heslo
+- Na přihlašovací stránce přibude odkaz „Zapomenuté heslo?" → dialog pro zadání e-mailu.
+- Odešle se odkaz pro obnovu (přes výchozí systémové e-maily, bez vlastní domény).
+- Nová veřejná stránka `/reset-password`, kde si uživatel nastaví nové heslo (stejné požadavky: 8 znaků, velké + malé písmeno, číslo).
+- Ošetření: neplatný/expirovaný odkaz zobrazí srozumitelnou hlášku a nabídne poslat nový.
 
----
+## 2. Zůstat přihlášen
+- Zaškrtávátko „Zůstat přihlášen" na přihlašovacím formuláři (výchozí zapnuto).
+- Zapnuto = přihlášení přetrvá i po zavření prohlížeče (jako dnes).
+- Vypnuto = odhlášení po zavření prohlížeče (relace jen na dobu okna).
 
-## Návrh: jak předepisovat certifikáty rozumněji
+## 3. PWA – instalace na plochu telefonu
+- Přidám manifest a ikony (z loga ZGRP), aby šla aplikace přidat na plochu iPhonu i Androidu a otevírala se bez adresního řádku.
+- Nenápadná nabídka „Přidat na plochu" v Účtu s návodem pro iPhone (Safari → Sdílet → Přidat na plochu).
+- Offline režim nedělám – aplikace potřebuje připojení k databázi a offline cache působí problémy se zastaralou verzí.
 
-### Problém dneška
-Celý text certifikátu je jedno velké volné pole. Komponenta ho pak musí „hádat“ regulárními výrazy: hledá frázi „SPECIALISTA ZDRAVOTNÍHO PROTOKOLU“, aby ji zvětšila, vyřezává řádek začínající „Vydává…“ dolů na patičku a hledá v textu jméno, aby ho zvýraznila. Když se text napíše jinak (jiný titul, jiná diakritika, jiný pořádek), grafika se rozpadne a admin netuší proč.
+## 4. Vyhledávání (Ctrl/Cmd+K)
+- Rychlé vyhledávání otevřené zkratkou nebo ikonou lupy v hlavičce/menu.
+- Hledá:
+  - Stránky a sekce (Levely, Opakování, Certifikáty, Účet, Admin) včetně přepnutí sekce Produkty/Backoffice.
+  - Levely a skupiny podle názvu (skok na detail levelu).
+  - Otázky podle textu – pro adminy skok do správy otázek, pro běžné uživatele jen otázky z levelů, které mají odemčené.
+- Na mobilu dostupné jako ikona lupy.
 
-### Cíl
-Admin vyplní pár jasných polí, rozvržení certifikátu je vždy stejné a předvídatelné.
+## 5. Jednoduchý přehled pro admina
+- Nová záložka „Přehled" v admin panelu jako první karta:
+  - Počet registrovaných uživatelů, z toho zaplacených, konverze v %.
+  - Tržby celkem a za posledních 30 dní (jen úspěšné platby, oddělené testovací/ostré prostředí).
+  - Počet registrací za posledních 7 a 30 dní.
+  - Malý sloupcový graf registrací a plateb za posledních 30 dní.
+- Data načtu bezpečnou funkcí v databázi dostupnou jen adminům.
 
-### Navrhovaná struktura certifikátu (pevné rozvržení)
+## 6. E-mailová upozornění – zatím vynechávám
+Odesílání e-mailů z aplikace vyžaduje vlastní doménu odesílatele (např. `notify.vasedomena.cz`), kterou zatím nemáte. Proto místo e-mailů posílím upozornění v aplikaci a do prohlížeče (jako už funguje u žádostí o admina) i pro:
+- novou registraci,
+- novou platbu.
 
-```text
-            [logo spolku]
-              CERTIFIKÁT
-     ── nadpis (pevný, needituje se) ──
+Až budete mít doménu, e-maily doplním bez dalších změn v aplikaci.
 
-   uvozovací věta          "o absolvování kurzu zakončeného
-                            odbornou zkouškou a získání titulu"
-
-   TITUL (velký, hlavní)   SPECIALISTA ZDRAVOTNÍHO PROTOKOLU
-   ───── ozdobná linka ─────
-
-   pro                     Jan Brožek        (velké jméno)
-   doplňující věta         (volitelná, kurzíva)
-
-   Datum absolvování: 31. 7. 2026
-   Platnost do: 31. 7. 2027
-
-   [podpis 1]              [podpis 2 – obrázek]
-   MUDr. Gabriela H.       Ing. Tomáš Brožek, MBA
-
-            Vydává SPOLEK V ROVNOVÁZE Z.S.
-```
-
-### Co bude admin vyplňovat (nová pole místo jednoho textu)
-1. **Uvozovací věta** – např. „o absolvování kurzu zakončeného odbornou zkouškou a získání titulu“
-2. **Titul / hlavní nadpis** – např. „SPECIALISTA ZDRAVOTNÍHO PROTOKOLU“ (vždy se vysází velkým písmem, žádné hádání)
-3. **Doplňující věta pod jménem** – volitelná (např. obor, rozsah kurzu, skóre)
-4. **Vydavatel** – např. „SPOLEK V ROVNOVÁZE Z.S.“ (vždy dole)
-5. **Podpisující osoba** (druhý podpis Ing. Tomáš Brožek zůstává pevný)
-6. **Platnost (roky)** – 0 = bez omezení
-7. **Podtitul** (ZGRP Academy) – zůstává
-
-Jméno příjemce, datum a skóre se doplňují automaticky, nemusí se psát do textu.
-
-### Proměnné
-Zůstanou tlačítka pro `{user_name}`, `{group_title}`, `{score}`, `{date}`, `{valid_until}` – ale už jen jako doplněk ve větách, ne jako nutnost.
-
-### Přednastavení
-Nová skupina dostane rovnou vyplněné výchozí hodnoty podle vašeho zadání, takže „velké změny se dělat nebudou“ – admin jen případně změní titul nebo uvozovací větu.
-
-### Zpětná kompatibilita
-Existující skupiny mají text v jednom poli. Při přechodu ho jednorázově rozdělím do nových polí (uvozovací věta / titul / vydavatel) migrací, takže se nic vizuálně nezmění a nikdo nemusí nic přepisovat ručně.
-
-### Živý náhled
-Náhled v adminu zůstává (A4 1:1) a bude se překreslovat při psaní – tisk i PDF budou vypadat úplně stejně jako náhled.
-
----
-
-## Technická poznámka
-- Do `level_groups` přidám sloupce `diploma_intro_text`, `diploma_award_title`, `diploma_note_text`, `diploma_issuer` (s výchozími hodnotami) a migrací naplním z dnešního `diploma_body_text`; staré pole ponechám jako zálohu.
-- `DiplomaCertificate.tsx` přejde na tato pole a zahodí regexy `HIGHLIGHT_RE` / `ISSUER_RE` / dělení podle jména – náhled i tiskové HTML budou sdílet stejné rozvržení.
-- `AdminGroupsTab.tsx` dostane místo jednoho textarea sadu popsaných polí s náhledem.
-- `list_my_diplomas` RPC rozšířím o nové sloupce.
-
-Řekněte, jestli sedí rozvržení a názvy polí (nebo co změnit), a pustím se do toho.
+## Technické detaily
+- `src/pages/Auth.tsx`: dialog pro reset hesla (`resetPasswordForEmail` s `redirectTo` na `/reset-password`), checkbox „Zůstat přihlášen".
+- Nová stránka `src/pages/ResetPassword.tsx` + veřejná routa v `App.tsx`; ověří recovery relaci a volá `updateUser({ password })`.
+- „Zůstat přihlášen": při vypnutí se po přihlášení přepne úložiště relace na `sessionStorage` (bez zásahu do auto-generovaného klienta – vlastní wrapper v `src/lib/auth.tsx`).
+- PWA: `public/manifest.webmanifest` + ikony 192/512 z loga, meta tagy v `index.html`. Žádný service worker.
+- Vyhledávání: nová komponenta `src/components/GlobalSearch.tsx` postavená na shadcn `CommandDialog`, napojená na `levels`, `level_groups` a `get_practice_questions`; zkratka registrovaná v `AppLayout.tsx`.
+- Přehled: nová SECURITY DEFINER funkce `admin_overview_stats()` (kontrola `has_role(auth.uid(),'admin')`) agregující `profiles` a `payments`; nová komponenta `src/components/AdminOverviewTab.tsx` s grafy přes `recharts`.
+- Upozornění na registrace/platby: rozšíření `useAdminRequestNotifications.ts` o realtime odběr `profiles` (insert) a `payments` (status `paid`), zobrazení přes Sonner + Notification API.
