@@ -223,7 +223,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3">
                   <RotateCcw className="h-5 w-5 text-orange-500" />
                   <div>
-                    <h3 className="font-semibold text-sm">Procvičování</h3>
+                    <h2 className="font-semibold text-sm">Procvičování</h2>
                     <p className="text-xs text-muted-foreground">{reviewCount} položek k opakování</p>
                   </div>
                 </div>

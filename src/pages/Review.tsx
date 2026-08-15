@@ -167,7 +167,7 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack}>
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold">Procvičování kartiček</h1>
@@ -244,7 +244,7 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack}>
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold">Procvičování kvízu</h1>
@@ -349,7 +349,7 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack}>
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold">Procvičování doplňování</h1>
