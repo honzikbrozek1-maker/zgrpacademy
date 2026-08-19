@@ -48,6 +48,15 @@ interface Question {
   order_index: number;
   in_level_test: boolean;
   in_practice: boolean;
+  question_text_sk?: string | null;
+  option_1_sk?: string | null;
+  option_2_sk?: string | null;
+  option_3_sk?: string | null;
+  option_4_sk?: string | null;
+  back_text_sk?: string | null;
+  wrong_option_1_sk?: string | null;
+  wrong_option_2_sk?: string | null;
+  wrong_option_3_sk?: string | null;
 }
 
 interface UserProfile {
@@ -99,9 +108,14 @@ export default function AdminPanel() {
     wrong_option_1: '', wrong_option_2: '', wrong_option_3: '',
     order_index: 0,
     in_practice: true,
+    question_text_sk: '',
+    option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '',
+    back_text_sk: '',
+    wrong_option_1_sk: '', wrong_option_2_sk: '', wrong_option_3_sk: '',
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+  const [qEditLang, setQEditLang] = useState<'cs' | 'sk'>('cs');
 
   // Fill-blank: cursor position for blank insertion
   const sentenceRef = useRef<HTMLTextAreaElement>(null);
@@ -257,6 +271,15 @@ export default function AdminPanel() {
       wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
       wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
       in_practice: qForm.in_practice,
+      question_text_sk: qForm.question_text_sk || null,
+      option_1_sk: needsOptions ? (qForm.option_1_sk || null) : null,
+      option_2_sk: needsOptions ? (qForm.option_2_sk || null) : null,
+      option_3_sk: needsOptions ? (qForm.option_3_sk || null) : null,
+      option_4_sk: needsOptions ? (qForm.option_4_sk || null) : null,
+      back_text_sk: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? (qForm.back_text_sk || null) : null,
+      wrong_option_1_sk: isFlashcard ? (qForm.wrong_option_1_sk || null) : null,
+      wrong_option_2_sk: isFlashcard ? (qForm.wrong_option_2_sk || null) : null,
+      wrong_option_3_sk: isFlashcard ? (qForm.wrong_option_3_sk || null) : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
@@ -301,16 +324,28 @@ export default function AdminPanel() {
       wrong_option_3: q.wrong_option_3 || '',
       order_index: q.order_index,
       in_practice: q.in_practice !== false,
+      question_text_sk: q.question_text_sk || '',
+      option_1_sk: q.option_1_sk || '', option_2_sk: q.option_2_sk || '',
+      option_3_sk: q.option_3_sk || '', option_4_sk: q.option_4_sk || '',
+      back_text_sk: q.back_text_sk || '',
+      wrong_option_1_sk: q.wrong_option_1_sk || '',
+      wrong_option_2_sk: q.wrong_option_2_sk || '',
+      wrong_option_3_sk: q.wrong_option_3_sk || '',
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
     setBlankInserted(q.type === 'fill_blank' && (q.back_text || '').includes('______'));
     setShowQuestionDialog(true);
+    setQEditLang('cs');
   };
 
   const resetQForm = () => {
-    setQForm({ type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length, in_practice: true });
+    setQForm({
+      type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length, in_practice: true,
+      question_text_sk: '', option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '', back_text_sk: '', wrong_option_1_sk: '', wrong_option_2_sk: '', wrong_option_3_sk: '',
+    });
     setBlankInserted(false);
+    setQEditLang('cs');
   };
 
   const resetAiDialog = () => {
@@ -361,9 +396,9 @@ export default function AdminPanel() {
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const text = qForm.back_text;
+    const text = qVal('back_text');
     const newText = text.substring(0, start) + '______' + text.substring(end);
-    setQForm({ ...qForm, back_text: newText });
+    qSet('back_text', newText);
     setBlankInserted(true);
   };
 
@@ -667,8 +702,38 @@ export default function AdminPanel() {
     );
   };
 
+  const qField = (base: string) => (qEditLang === 'sk' ? `${base}_sk` : base) as keyof typeof qForm;
+  const qVal = (base: string) => (qForm as any)[qField(base)] as string;
+  const qSet = (base: string, value: string) => setQForm({ ...qForm, [qField(base)]: value } as typeof qForm);
+
+  const renderQuestionLangToggle = () => (
+    <div className="flex items-center gap-2">
+      <div className="inline-flex rounded-md border p-0.5 bg-muted/40">
+        <button
+          type="button"
+          onClick={() => setQEditLang('cs')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${qEditLang === 'cs' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇨🇿 {t('Čeština')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setQEditLang('sk')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${qEditLang === 'sk' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇸🇰 {t('Slovenčina')}
+        </button>
+      </div>
+      {qEditLang === 'sk' && (
+        <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
+      )}
+    </div>
+  );
+
   const renderQuestionForm = () => (
     <div className="space-y-4">
+      {renderQuestionLangToggle()}
+
       {/* Type selector */}
       <div>
         <label className="text-sm font-medium mb-1 block">{t('Typ')}</label>
@@ -689,8 +754,8 @@ export default function AdminPanel() {
           </label>
           <Textarea
             placeholder={qForm.type === 'flashcard' ? t('Co se zobrazí na přední straně kartičky?') : t('Napište otázku...')}
-            value={qForm.question_text}
-            onChange={e => setQForm({ ...qForm, question_text: e.target.value })}
+            value={qVal('question_text')}
+            onChange={e => qSet('question_text', e.target.value)}
           />
         </div>
       )}
@@ -699,10 +764,10 @@ export default function AdminPanel() {
         <>
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('Možnosti odpovědí')}</label>
-            <Input placeholder={t('Možnost 1')} value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
-            <Input placeholder={t('Možnost 2')} value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
-            <Input placeholder={t('Možnost 3')} value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
-            <Input placeholder={t('Možnost 4')} value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+            <Input placeholder={t('Možnost 1')} value={qVal('option_1')} onChange={e => qSet('option_1', e.target.value)} />
+            <Input placeholder={t('Možnost 2')} value={qVal('option_2')} onChange={e => qSet('option_2', e.target.value)} />
+            <Input placeholder={t('Možnost 3')} value={qVal('option_3')} onChange={e => qSet('option_3', e.target.value)} />
+            <Input placeholder={t('Možnost 4')} value={qVal('option_4')} onChange={e => qSet('option_4', e.target.value)} />
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block">{t('Která možnost je správná?')}</label>
@@ -725,8 +790,8 @@ export default function AdminPanel() {
             <label className="text-sm font-medium mb-1 block">{t('Zadní strana kartičky (správná odpověď)')}</label>
             <Textarea
               placeholder={t('Co se zobrazí po otočení kartičky?')}
-              value={qForm.back_text}
-              onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
+              value={qVal('back_text')}
+              onChange={e => qSet('back_text', e.target.value)}
             />
           </div>
           <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
@@ -736,18 +801,18 @@ export default function AdminPanel() {
             </p>
             <Input
               placeholder={t('Špatná možnost 1')}
-              value={qForm.wrong_option_1}
-              onChange={e => setQForm({ ...qForm, wrong_option_1: e.target.value })}
+              value={qVal('wrong_option_1')}
+              onChange={e => qSet('wrong_option_1', e.target.value)}
             />
             <Input
               placeholder={t('Špatná možnost 2')}
-              value={qForm.wrong_option_2}
-              onChange={e => setQForm({ ...qForm, wrong_option_2: e.target.value })}
+              value={qVal('wrong_option_2')}
+              onChange={e => qSet('wrong_option_2', e.target.value)}
             />
             <Input
               placeholder={t('Špatná možnost 3')}
-              value={qForm.wrong_option_3}
-              onChange={e => setQForm({ ...qForm, wrong_option_3: e.target.value })}
+              value={qVal('wrong_option_3')}
+              onChange={e => qSet('wrong_option_3', e.target.value)}
             />
           </div>
         </div>
@@ -764,8 +829,8 @@ export default function AdminPanel() {
             <Textarea
               ref={sentenceRef}
               placeholder={t('Např.: Hlavním městem České republiky je Praha.')}
-              value={qForm.back_text}
-              onChange={e => { setQForm({ ...qForm, back_text: e.target.value }); if (!e.target.value.includes('______')) setBlankInserted(false); }}
+              value={qVal('back_text')}
+              onChange={e => { qSet('back_text', e.target.value); if (!e.target.value.includes('______')) setBlankInserted(false); }}
             />
           </div>
 
@@ -776,11 +841,11 @@ export default function AdminPanel() {
               variant="outline"
               size="sm"
               onClick={handleInsertBlank}
-              disabled={!qForm.back_text || blankInserted}
+              disabled={!qVal('back_text') || blankInserted}
             >
               {blankInserted ? t('✅ Mezera vložena') : t('📍 Vložit mezeru na pozici kurzoru')}
             </Button>
-            {!blankInserted && qForm.back_text && (
+            {!blankInserted && qVal('back_text') && (
               <p className="text-xs text-muted-foreground mt-1">
                 {t('Umístěte kurzor do věty tam, kde chcete vynechat slovo, a klikněte na tlačítko.')}
               </p>
@@ -791,11 +856,11 @@ export default function AdminPanel() {
           </div>
 
           {/* Preview */}
-          {blankInserted && qForm.back_text.includes('______') && (
+          {blankInserted && qVal('back_text').includes('______') && (
             <div className="p-3 rounded-lg bg-muted/50 border">
               <p className="text-xs text-muted-foreground mb-1">{t('Náhled:')}</p>
               <p className="text-sm">
-                {qForm.back_text.split('______').map((part, i, arr) => (
+                {qVal('back_text').split('______').map((part, i, arr) => (
                   <span key={i}>
                     {part}
                     {i < arr.length - 1 && <span className="font-bold text-primary px-1 bg-primary/10 rounded">______</span>}
@@ -806,7 +871,7 @@ export default function AdminPanel() {
           )}
 
           {/* Hidden question_text = same as back_text for display */}
-          <input type="hidden" value={qForm.back_text} />
+          <input type="hidden" value={qVal('back_text')} />
 
           {/* Step 3: Answer options */}
           <div className="space-y-2">
@@ -814,8 +879,8 @@ export default function AdminPanel() {
             <div className="relative">
               <Input
                 placeholder={t('Možnost 1')}
-                value={qForm.option_1}
-                onChange={e => setQForm({ ...qForm, option_1: e.target.value })}
+                value={qVal('option_1')}
+                onChange={e => qSet('option_1', e.target.value)}
                 className="pr-20"
               />
               {qForm.correct_answer === 1 && (
@@ -825,8 +890,8 @@ export default function AdminPanel() {
             <div className="relative">
               <Input
                 placeholder={t('Možnost 2')}
-                value={qForm.option_2}
-                onChange={e => setQForm({ ...qForm, option_2: e.target.value })}
+                value={qVal('option_2')}
+                onChange={e => qSet('option_2', e.target.value)}
                 className="pr-20"
               />
               {qForm.correct_answer === 2 && (
@@ -836,8 +901,8 @@ export default function AdminPanel() {
             <div className="relative">
               <Input
                 placeholder={t('Možnost 3 (volitelná)')}
-                value={qForm.option_3}
-                onChange={e => setQForm({ ...qForm, option_3: e.target.value })}
+                value={qVal('option_3')}
+                onChange={e => qSet('option_3', e.target.value)}
                 className="pr-20"
               />
               {qForm.correct_answer === 3 && (
@@ -847,8 +912,8 @@ export default function AdminPanel() {
             <div className="relative">
               <Input
                 placeholder={t('Možnost 4 (volitelná)')}
-                value={qForm.option_4}
-                onChange={e => setQForm({ ...qForm, option_4: e.target.value })}
+                value={qVal('option_4')}
+                onChange={e => qSet('option_4', e.target.value)}
                 className="pr-20"
               />
               {qForm.correct_answer === 4 && (
@@ -877,6 +942,7 @@ export default function AdminPanel() {
         // For fill_blank, auto-set question_text from back_text
         if (qForm.type === 'fill_blank') {
           qForm.question_text = qForm.back_text;
+          qForm.question_text_sk = qForm.back_text_sk;
         }
         saveQuestion();
       }} className="w-full">{t('Uložit')}</Button>
