@@ -30,8 +30,10 @@ import { isSoundEnabled, setSoundEnabled } from '@/lib/sounds';
 import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { useT } from '@/lib/i18n';
 
 export function AppSidebar() {
+  const t = useT();
   const { profile, signOut, isAdmin, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [pendingRequests, setPendingRequests] = useState(0);
@@ -74,11 +76,11 @@ export function AppSidebar() {
   };
 
   const topItems = [
-    { to: basePath, icon: Home, label: 'Dashboard' },
-    { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
-    { to: `${basePath}/diplomas`, icon: GraduationCap, label: 'Moje certifikáty' },
-    { to: `${basePath}/share`, icon: Share2, label: 'Sdílet aplikaci' },
-    { to: `${basePath}/admin`, icon: Shield, label: 'Admin panel' },
+    { to: basePath, icon: Home, label: t('Dashboard') },
+    { to: `${basePath}/levels`, icon: Layers, label: t('Levely') },
+    { to: `${basePath}/diplomas`, icon: GraduationCap, label: t('Moje certifikáty') },
+    { to: `${basePath}/share`, icon: Share2, label: t('Sdílet aplikaci') },
+    { to: `${basePath}/admin`, icon: Shield, label: t('Admin panel') },
   ];
 
   const handleToggleSound = () => {
@@ -109,7 +111,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link to="/" onClick={closeMobileIfNeeded} className={`flex items-center gap-2 ${accentClass} font-medium`}>
                     {isBackoffice ? <Briefcase className="h-4 w-4" /> : <Package className="h-4 w-4" />}
-                    {!collapsed && <span>{pathLabel}</span>}
+                    {!collapsed && <span>{t(pathLabel)}</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -127,7 +129,7 @@ export function AppSidebar() {
                         <span className="relative inline-flex">
                           <item.icon className="h-4 w-4" />
                           {showBadge && (
-                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" aria-label={`${pendingRequests} nových žádostí`} />
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" aria-label={t('{n} nových žádostí', { n: pendingRequests })} />
                           )}
                         </span>
                         {!collapsed && (
@@ -153,15 +155,15 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleToggleSound} aria-label={soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky'}>
+            <SidebarMenuButton onClick={handleToggleSound} aria-label={soundOn ? t('Vypnout zvuky') : t('Zapnout zvuky')}>
               {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              {!collapsed && <span>{soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky'}</span>}
+              {!collapsed && <span>{soundOn ? t('Vypnout zvuky') : t('Zapnout zvuky')}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={toggleTheme} aria-label={theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}>
+            <SidebarMenuButton onClick={toggleTheme} aria-label={theme === 'light' ? t('Tmavý režim') : t('Světlý režim')}>
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              {!collapsed && <span>{theme === 'light' ? 'Tmavý režim' : 'Světlý režim'}</span>}
+              {!collapsed && <span>{theme === 'light' ? t('Tmavý režim') : t('Světlý režim')}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
           {/* Account */}
@@ -172,29 +174,29 @@ export function AppSidebar() {
                   <UserCog className="h-5 w-5" />
                   <Settings className="h-2.5 w-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground" />
                 </div>
-                {!collapsed && <span className="font-medium">{profile?.display_name || 'Můj účet'}</span>}
+                {!collapsed && <span className="font-medium">{profile?.display_name || t('Můj účet')}</span>}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <SidebarMenuButton aria-label="Odhlásit se">
+                <SidebarMenuButton aria-label={t('Odhlásit se')}>
                   <LogOut className="h-4 w-4" />
-                  {!collapsed && <span>Odhlásit se</span>}
+                  {!collapsed && <span>{t('Odhlásit se')}</span>}
                 </SidebarMenuButton>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Opravdu se chcete odhlásit?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('Opravdu se chcete odhlásit?')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Budete přesměrováni na přihlašovací stránku.
+                    {t('Budete přesměrováni na přihlašovací stránku.')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                  <AlertDialogCancel>{t('Zrušit')}</AlertDialogCancel>
                   <AlertDialogAction onClick={() => { closeMobileIfNeeded(); signOut(); }}>
-                    Odhlásit se
+                    {t('Odhlásit se')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useT, useLang } from '@/lib/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -31,6 +32,8 @@ export default function Review() {
   const { user } = useAuth();
   const { category, basePath } = useAppPath();
   const navigate = useNavigate();
+  const t = useT();
+  const { lang } = useLang();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'menu' | 'flashcard' | 'quiz' | 'fillin'>('menu');
@@ -52,7 +55,7 @@ export default function Review() {
     }
     const levelIds = levelsData.map(l => l.id);
     // Get questions for these levels
-    const { data: questionIds } = await supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds });
+    const { data: questionIds } = await supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds, p_lang: lang });
     if (!questionIds || questionIds.length === 0) {
       setItems([]);
       setLoading(false);
@@ -76,7 +79,7 @@ export default function Review() {
       })));
     }
     setLoading(false);
-  }, [user, category]);
+  }, [user, category, lang]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
@@ -158,7 +161,7 @@ export default function Review() {
   };
 
   if (loading) return (
-    <AppLayout><div className="p-8 text-center text-muted-foreground">Načítání...</div></AppLayout>
+    <AppLayout><div className="p-8 text-center text-muted-foreground">{t('Načítání...')}</div></AppLayout>
   );
 
   // Study mode - flashcard style
@@ -167,10 +170,10 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label={t('Zpět')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Procvičování kartiček</h1>
+            <h1 className="text-xl font-bold">{t('Procvičování kartiček')}</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{currentIndex + 1}/{activeItems.length}</span>
@@ -180,14 +183,14 @@ export default function Review() {
             <div className={`relative w-full min-h-[250px] preserve-3d transition-transform duration-500 ${flipped ? 'rotate-y-180' : ''}`}>
               <Card className="absolute inset-0 backface-hidden shadow-elevated">
                 <CardContent className="p-8 flex flex-col items-center justify-center min-h-[250px]">
-                  <p className="text-xs text-muted-foreground mb-4">Kliknutím otočíte</p>
+                  <p className="text-xs text-muted-foreground mb-4">{t('Kliknutím otočíte')}</p>
                   <h3 className="text-xl font-semibold text-center">{currentItem.question?.question_text}</h3>
                 </CardContent>
               </Card>
               <Card className="absolute inset-0 backface-hidden rotate-y-180 shadow-elevated">
                 <CardContent className="p-8 flex flex-col items-center justify-center min-h-[250px]">
-                  <p className="text-xs text-muted-foreground mb-4">Odpověď</p>
-                  <p className="text-lg text-center">{currentItem.question?.back_text || 'Bez odpovědi'}</p>
+                  <p className="text-xs text-muted-foreground mb-4">{t('Odpověď')}</p>
+                  <p className="text-lg text-center">{currentItem.question?.back_text || t('Bez odpovědi')}</p>
                 </CardContent>
               </Card>
             </div>
@@ -195,22 +198,22 @@ export default function Review() {
           {flipped && (
             <div className="flex justify-center gap-3 animate-slide-up">
               <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => advanceReviewItem('know')}>
-                <CheckCircle className="mr-1 h-4 w-4" /> Umím
+                <CheckCircle className="mr-1 h-4 w-4" /> {t('Umím')}
               </Button>
               <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={() => advanceReviewItem('partial')}>
-                <HelpCircle className="mr-1 h-4 w-4" /> Částečně
+                <HelpCircle className="mr-1 h-4 w-4" /> {t('Částečně')}
               </Button>
               <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10" onClick={() => advanceReviewItem('unknown')}>
-                <XCircle className="mr-1 h-4 w-4" /> Neumím
+                <XCircle className="mr-1 h-4 w-4" /> {t('Neumím')}
               </Button>
             </div>
           )}
           <div className="flex justify-between">
             <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
             </Button>
             <Button variant="ghost" onClick={() => setFlipped(!flipped)}>
-              <RotateCcw className="mr-1 h-4 w-4" /> Otočit
+              <RotateCcw className="mr-1 h-4 w-4" /> {t('Otočit')}
             </Button>
           </div>
         </div>
@@ -244,10 +247,10 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label={t('Zpět')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Procvičování kvízu</h1>
+            <h1 className="text-xl font-bold">{t('Procvičování kvízu')}</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{currentIndex + 1}/{activeItems.length}</span>
@@ -285,11 +288,11 @@ export default function Review() {
           </Card>
           <div className="flex justify-between">
             <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
             </Button>
             {showResult && (
               <Button onClick={() => advanceReviewItem(selected === correctAnswer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
-                {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+                {currentIndex < activeItems.length - 1 ? t('Další') : t('Dokončit')} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
           </div>
@@ -349,10 +352,10 @@ export default function Review() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 animate-slide-up pb-20">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={goBack} aria-label="Zpět">
+            <Button variant="ghost" size="icon" onClick={goBack} aria-label={t('Zpět')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Procvičování doplňování</h1>
+            <h1 className="text-xl font-bold">{t('Procvičování doplňování')}</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{currentIndex + 1}/{activeItems.length}</span>
@@ -403,11 +406,11 @@ export default function Review() {
           </Card>
           <div className="flex justify-between">
             <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
             </Button>
             {showResult && (
               <Button onClick={() => advanceReviewItem(selected === correctAnswer ? 'know' : 'unknown')} className="gradient-primary text-primary-foreground">
-                {currentIndex < activeItems.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+                {currentIndex < activeItems.length - 1 ? t('Další') : t('Dokončit')} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
           </div>
@@ -420,29 +423,29 @@ export default function Review() {
   return (
     <AppLayout>
       <Seo
-        title="Opakování otázek – ZGRP Academy"
-        description="Opakujte si otázky, které vám dělaly potíže, a upevněte znalosti před závěrečným testem."
+        title={t('Opakování otázek – ZGRP Academy')}
+        description={t('Opakujte si otázky, které vám dělaly potíže, a upevněte znalosti před závěrečným testem.')}
         canonical={`https://zgrpacademy.lovable.app${basePath}/review`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}/review`}
       />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <Breadcrumbs
           items={[
-            { label: 'Dashboard', to: basePath },
-            { label: 'Procvičování' },
+            { label: t('Dashboard'), to: basePath },
+            { label: t('Procvičování') },
           ]}
         />
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Zpět">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label={t('Zpět')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <RotateCcw className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">Procvičování</h1>
+          <h1 className="text-2xl font-bold">{t('Procvičování')}</h1>
         </div>
 
         {items.length === 0 ? (
           <Card><CardContent className="p-8 text-center text-muted-foreground">
-            🎉 Nemáte žádné položky k procvičení! Skvělá práce!
+            {t('🎉 Nemáte žádné položky k procvičení! Skvělá práce!')}
           </CardContent></Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
@@ -456,8 +459,8 @@ export default function Review() {
                     <RotateCcw className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Kartičky</h3>
-                    <p className="text-sm text-muted-foreground">{flashcardItems.length} k procvičení</p>
+                    <h3 className="font-semibold">{t('Kartičky')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('{n} k procvičení', { n: flashcardItems.length })}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
                 </CardContent>
@@ -473,8 +476,8 @@ export default function Review() {
                     <HelpCircle className="h-6 w-6 text-warning" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Kvíz</h3>
-                    <p className="text-sm text-muted-foreground">{quizItems.length} k procvičení</p>
+                    <h3 className="font-semibold">{t('Kvíz')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('{n} k procvičení', { n: quizItems.length })}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
                 </CardContent>
@@ -490,8 +493,8 @@ export default function Review() {
                     <PenLine className="h-6 w-6 text-secondary-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Doplňování</h3>
-                    <p className="text-sm text-muted-foreground">{fillBlankItems.length} k procvičení</p>
+                    <h3 className="font-semibold">{t('Doplňování')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('{n} k procvičení', { n: fillBlankItems.length })}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
                 </CardContent>

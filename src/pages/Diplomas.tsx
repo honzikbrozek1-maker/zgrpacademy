@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { useT, useLang } from '@/lib/i18n';
 import DiplomaCertificate from '@/components/DiplomaCertificate';
 import Seo from '@/components/Seo';
 
@@ -30,6 +31,8 @@ interface Diploma {
 export default function Diplomas() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const t = useT();
+  const { lang } = useLang();
   const [diplomas, setDiplomas] = useState<Diploma[]>([]);
   const [selected, setSelected] = useState<Diploma | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,18 +47,18 @@ export default function Diplomas() {
           groups.map(g => supabase.rpc('issue_diploma_if_eligible', { p_group_id: g.id }))
         );
       }
-      const { data } = await supabase.rpc('list_my_diplomas');
+      const { data } = await supabase.rpc('list_my_diplomas', { p_lang: lang });
       if (data) setDiplomas(data as Diploma[]);
       setLoading(false);
     })();
-  }, []);
+  }, [lang]);
 
   if (selected) {
     return (
       <AppLayout>
         <div className="p-4 md:p-8 max-w-3xl mx-auto pb-20 space-y-4">
           <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
-            <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na seznam
+            <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na seznam')}
           </Button>
           <DiplomaCertificate
             title={selected.diploma_title}
@@ -66,7 +69,7 @@ export default function Diplomas() {
             issuer={selected.diploma_issuer}
             signatory={selected.diploma_signatory}
             validityYears={selected.diploma_validity_years}
-            userName={profile?.display_name || 'Uživatel'}
+            userName={profile?.display_name || t('Uživatel')}
             groupTitle={selected.group_title}
             score={selected.average_score}
             issuedAt={selected.issued_at}
@@ -79,8 +82,8 @@ export default function Diplomas() {
   return (
     <AppLayout>
       <Seo
-        title="Moje certifikáty – ZGRP Academy"
-        description="Zobrazte a vytiskněte si certifikáty získané za úspěšné absolvování kurzů ZGRP Academy."
+        title={t('Moje certifikáty – ZGRP Academy')}
+        description={t('Zobrazte a vytiskněte si certifikáty získané za úspěšné absolvování kurzů ZGRP Academy.')}
         canonical="https://zgrpacademy.lovable.app/products/diplomas"
         ogUrl="https://zgrpacademy.lovable.app/products/diplomas"
       />
@@ -90,18 +93,18 @@ export default function Diplomas() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Moje certifikáty</h1>
-            <p className="text-sm text-muted-foreground">Certifikáty získané za dokončené skupiny levelů.</p>
+            <h1 className="text-2xl font-bold">{t('Moje certifikáty')}</h1>
+            <p className="text-sm text-muted-foreground">{t('Certifikáty získané za dokončené skupiny levelů.')}</p>
           </div>
         </div>
 
         {loading ? (
-          <p className="text-muted-foreground">Načítání...</p>
+          <p className="text-muted-foreground">{t('Načítání...')}</p>
         ) : diplomas.length === 0 ? (
           <Card className="shadow-card">
             <CardContent className="p-8 text-center space-y-3">
               <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground" />
-              <p className="text-muted-foreground">Zatím nemáte žádný certifikát. Dokončete všechny levely ve skupině s požadovaným skóre.</p>
+              <p className="text-muted-foreground">{t('Zatím nemáte žádný certifikát. Dokončete všechny levely ve skupině s požadovaným skóre.')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -115,7 +118,7 @@ export default function Diplomas() {
                   <div className="flex-1 min-w-0">
                     <h2 className="font-semibold truncate">{d.group_title}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {d.diploma_title} · {new Date(d.issued_at).toLocaleDateString('cs-CZ')}
+                      {d.diploma_title} · {new Date(d.issued_at).toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ')}
                     </p>
                   </div>
                   <span className="text-lg font-bold text-primary shrink-0">{d.average_score}%</span>

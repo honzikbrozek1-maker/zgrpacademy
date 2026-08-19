@@ -16,8 +16,11 @@ import AppLayout from '@/components/AppLayout';
 import { InvoicesList } from '@/components/InvoicesList';
 import { InstallAppCard } from '@/components/InstallAppCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useT } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Account() {
+  const t = useT();
   const { user, profile, refreshProfile, signOut } = useAuth();
   const { setColorScheme } = useTheme();
   const { category } = useAppPath();
@@ -47,9 +50,9 @@ export default function Account() {
     setLoading(true);
     const { error } = await supabase.from('profiles').update({ display_name: displayName }).eq('user_id', user.id);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Uloženo', description: 'Profil byl aktualizován.' });
+      toast({ title: t('Uloženo'), description: t('Profil byl aktualizován.') });
       await refreshProfile();
     }
     setLoading(false);
@@ -57,15 +60,15 @@ export default function Account() {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast({ title: 'Chyba', description: 'Heslo musí mít alespoň 6 znaků.', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: t('Heslo musí mít alespoň 6 znaků.'), variant: 'destructive' });
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Heslo změněno', description: 'Vaše heslo bylo úspěšně změněno.' });
+      toast({ title: t('Heslo změněno'), description: t('Vaše heslo bylo úspěšně změněno.') });
       setNewPassword('');
     }
     setLoading(false);
@@ -93,14 +96,14 @@ export default function Account() {
         if (typeof window !== 'undefined') {
           localStorage.setItem(`section-color-scheme:${category}`, previousSchemeId);
         }
-        toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+        toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
         return;
       }
 
       refreshSectionProfile();
     }
 
-    toast({ title: 'Barevné schéma změněno' });
+    toast({ title: t('Barevné schéma změněno') });
   };
 
   const handleSoundToggle = (enabled: boolean) => {
@@ -113,11 +116,11 @@ export default function Account() {
     if (user) {
       const { error } = await supabase.rpc('delete_my_account');
       if (error) {
-        toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+        toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
         return;
       }
     }
-    toast({ title: 'Účet smazán', description: 'Vaše data byla odstraněna.' });
+    toast({ title: t('Účet smazán'), description: t('Vaše data byla odstraněna.') });
     await signOut();
   };
 
@@ -126,25 +129,25 @@ export default function Account() {
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4 animate-slide-up pb-20">
-        <h1 className="text-2xl font-bold">Nastavení účtu</h1>
+        <h1 className="text-2xl font-bold">{t('Nastavení účtu')}</h1>
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> Profil</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> {t('Profil')}</div>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">{user?.email}</span>
             </div>
             <div className="flex gap-2">
-              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Zobrazované jméno" className="flex-1" />
+              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder={t('Zobrazované jméno')} className="flex-1" />
               <Button onClick={handleUpdateProfile} disabled={loading} size="sm" className="gradient-primary text-primary-foreground">
-                Uložit
+                {t('Uložit')}
               </Button>
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
               <div className="flex items-center gap-2">
                 <Volume2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Zvukové efekty</span>
+                <span className="text-sm">{t('Zvukové efekty')}</span>
               </div>
               <Switch checked={soundOn} onCheckedChange={handleSoundToggle} />
             </div>
@@ -153,7 +156,7 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> Barevné schéma ({category === 'products' ? 'Produkty' : 'Backoffice'})</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> {t('Barevné schéma ({category})', { category: category === 'products' ? t('Produkty') : t('Backoffice') })}</div>
             <div className="grid grid-cols-6 gap-2">
               {colorSchemes.map(scheme => {
                 const isActive = currentSchemeId === scheme.id;
@@ -180,11 +183,11 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> Změna hesla</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> {t('Změna hesla')}</div>
             <div className="flex gap-2">
-              <Input type="password" placeholder="Nové heslo (min. 6 znaků)" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="flex-1" />
+              <Input type="password" placeholder={t('Nové heslo (min. 6 znaků)')} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="flex-1" />
               <Button onClick={handleChangePassword} disabled={loading} variant="outline" size="sm">
-                Změnit
+                {t('Změnit')}
               </Button>
             </div>
           </CardContent>
@@ -192,30 +195,30 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> Faktury</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> {t('Faktury')}</div>
             <InvoicesList />
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> Aplikace</div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> {t('Aplikace')}</div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <RotateCcw className="mr-1 h-3 w-3" /> Obnovit aplikaci
+                  <RotateCcw className="mr-1 h-3 w-3" /> {t('Obnovit aplikaci')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Obnovit aplikaci?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('Obnovit aplikaci?')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Stránka se znovu načte a veškerá neuložená data mohou být ztracena.
+                    {t('Stránka se znovu načte a veškerá neuložená data mohou být ztracena.')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => window.location.reload()}>Obnovit</AlertDialogAction>
+                  <AlertDialogCancel>{t('Zrušit')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => window.location.reload()}>{t('Obnovit')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -224,22 +227,27 @@ export default function Account() {
 
         <InstallAppCard />
 
-
+        <Card className="shadow-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <span className="text-sm font-semibold">{t('Jazyk aplikace')}</span>
+            <LanguageSwitcher />
+          </CardContent>
+        </Card>
 
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Smazání účtu</div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t('Smazání účtu')}</div>
             {!showDeleteConfirm ? (
               <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setShowDeleteConfirm(true)}>
-                Smazat účet
+                {t('Smazat účet')}
               </Button>
             ) : (
               <div className="space-y-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                <p className="text-xs font-medium text-destructive">Pro potvrzení napište „SMAZAT":</p>
+                <p className="text-xs font-medium text-destructive">{t('Pro potvrzení napište „SMAZAT":')}</p>
                 <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="SMAZAT" className="border-destructive/30 h-8 text-sm" />
                 <div className="flex gap-2">
-                  <Button variant="destructive" size="sm" disabled={deleteConfirmText !== 'SMAZAT'} onClick={handleDeleteAccount}>Potvrdit</Button>
-                  <Button variant="outline" size="sm" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>Zrušit</Button>
+                  <Button variant="destructive" size="sm" disabled={deleteConfirmText !== 'SMAZAT'} onClick={handleDeleteAccount}>{t('Potvrdit')}</Button>
+                  <Button variant="outline" size="sm" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>{t('Zrušit')}</Button>
                 </div>
               </div>
             )}

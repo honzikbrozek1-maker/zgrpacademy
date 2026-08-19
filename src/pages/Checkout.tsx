@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 import Seo from "@/components/Seo";
+import { useT } from "@/lib/i18n";
 
 export default function Checkout() {
+  const t = useT();
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -74,11 +76,11 @@ export default function Checkout() {
         },
       });
       if (error || !data?.clientSecret) {
-        throw new Error(error?.message || "Nepodařilo se vytvořit platbu");
+        throw new Error(error?.message || t("Nepodařilo se vytvořit platbu"));
       }
       return data.clientSecret;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nepodařilo se vytvořit platbu";
+      const message = error instanceof Error ? error.message : t("Nepodařilo se vytvořit platbu");
       setCheckoutError(message);
       throw error;
     }
@@ -89,7 +91,7 @@ export default function Checkout() {
   if (loading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Načítání...</p>
+        <p className="text-muted-foreground">{t("Načítání...")}</p>
       </div>
     );
   }
@@ -101,27 +103,27 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-background">
       <Seo
-        title="Dokončení registrace – platba | ZGRP Academy"
-        description="Uhraďte jednorázový registrační poplatek 150 Kč a získejte přístup ke kurzům ZGRP Academy."
+        title={t("Dokončení registrace – platba | ZGRP Academy")}
+        description={t("Uhraďte jednorázový registrační poplatek 150 Kč a získejte přístup ke kurzům ZGRP Academy.")}
         canonical={`${"https://zgrpacademy.lovable.app"}/checkout`}
         ogUrl="https://zgrpacademy.lovable.app/checkout"
         robots="noindex,follow"
       />
       <PaymentTestModeBanner />
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-bold">Dokončení registrace – platba</h1>
+        <h1 className="text-2xl font-bold">{t("Dokončení registrace – platba")}</h1>
         <Card>
           <CardHeader>
-            <h2 className="text-2xl font-semibold leading-none tracking-tight">Registrační poplatek</h2>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight">{t("Registrační poplatek")}</h2>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-2">
-              Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek <strong>150 Kč</strong>. Po platbě obdržíš fakturu.
+              {t("Pro vstup do ZGRP Academy je potřeba uhradit jednorázový poplatek {fee}. Po platbě obdržíš fakturu.", { fee: "150 Kč" })}
             </p>
             <p className="text-sm text-muted-foreground">
-              Přihlášen jako: <span className="font-medium">{user.email}</span>{" "}
+              {t("Přihlášen jako:")} <span className="font-medium">{user.email}</span>{" "}
               <Button variant="link" className="px-1 h-auto" onClick={() => { signOut(); navigate("/auth"); }}>
-                Odhlásit se
+                {t("Odhlásit se")}
               </Button>
             </p>
           </CardContent>
@@ -129,13 +131,13 @@ export default function Checkout() {
 
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader className="pb-2">
-            <h2 className="text-base font-semibold leading-none tracking-tight">Nápověda k vyplnění adresy</h2>
+            <h2 className="text-base font-semibold leading-none tracking-tight">{t("Nápověda k vyplnění adresy")}</h2>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p><strong className="text-foreground">Řádek 1 (Address line 1):</strong> ulice a číslo popisné, např. <em>Pražská 123</em>.</p>
-            <p><strong className="text-foreground">Řádek 2 (Address line 2):</strong> nepovinné – doplněk adresy, např. <em>byt 5</em>, <em>patro 3</em>, <em>c/o Jan Novák</em>. V ČR a SK obvykle nechte prázdné.</p>
-            <p><strong className="text-foreground">City (Město):</strong> název obce, např. <em>Praha</em> nebo <em>Brno</em>.</p>
-            <p><strong className="text-foreground">Postal code (PSČ):</strong> poštovní směrovací číslo, v ČR 5 číslic (např. <em>110 00</em>), na SK 5 číslic (např. <em>811 01</em>).</p>
+            <p><strong className="text-foreground">{t("Řádek 1 (Address line 1):")}</strong> {t("ulice a číslo popisné, např.")} <em>Pražská 123</em>.</p>
+            <p><strong className="text-foreground">{t("Řádek 2 (Address line 2):")}</strong> {t("nepovinné – doplněk adresy, např.")} <em>{t("byt 5")}</em>, <em>{t("patro 3")}</em>, <em>{t("c/o Jan Novák")}</em>. {t("V ČR a SK obvykle nechte prázdné.")}</p>
+            <p><strong className="text-foreground">{t("City (Město):")}</strong> {t("název obce, např.")} <em>Praha</em> {t("nebo")} <em>Brno</em>.</p>
+            <p><strong className="text-foreground">{t("Postal code (PSČ):")}</strong> {t("poštovní směrovací číslo, v ČR 5 číslic (např. {cz}), na SK 5 číslic (např. {sk})", { cz: "110 00", sk: "811 01" })}.</p>
           </CardContent>
         </Card>
 
@@ -144,10 +146,9 @@ export default function Checkout() {
         {checkoutError && (
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="pt-6 text-sm text-destructive space-y-2">
-              <p>Platební okno se nepodařilo načíst.</p>
+              <p>{t("Platební okno se nepodařilo načíst.")}</p>
               <p>
-                Zkuste tlačítko „Načíst platbu znovu“ níže, otevřít stránku v jiném prohlížeči
-                (Safari / Chrome) nebo vypnout blokování reklam a cookies třetích stran.
+                {t("Zkuste tlačítko „Načíst platbu znovu“ níže, otevřít stránku v jiném prohlížeči (Safari / Chrome) nebo vypnout blokování reklam a cookies třetích stran.")}
               </p>
             </CardContent>
           </Card>
@@ -167,7 +168,7 @@ export default function Checkout() {
 
 
         <p className="text-center text-sm text-muted-foreground">
-          Nezobrazuje se platební formulář, nebo hlásí chybu?{" "}
+          {t("Nezobrazuje se platební formulář, nebo hlásí chybu?")}{" "}
           <Button
             variant="link"
             className="px-1 h-auto"
@@ -178,7 +179,7 @@ export default function Checkout() {
             }}
 
           >
-            Načíst platbu znovu
+            {t("Načíst platbu znovu")}
           </Button>
         </p>
 

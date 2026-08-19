@@ -52,6 +52,17 @@ export default function Seo({
         document.head.appendChild(link);
       }
       link.href = canonical;
+
+      (["cs", "sk"] as const).forEach(hreflang => {
+        let altLink = document.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${hreflang}"]`);
+        if (!altLink) {
+          altLink = document.createElement("link");
+          altLink.rel = "alternate";
+          altLink.setAttribute("hreflang", hreflang);
+          document.head.appendChild(altLink);
+        }
+        altLink.href = canonical;
+      });
     }
 
     if (!jsonLd) return;
