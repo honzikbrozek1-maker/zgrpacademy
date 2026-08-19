@@ -20,6 +20,7 @@ import AdminGroupsTab from '@/components/AdminGroupsTab';
 import AdminOverviewTab from '@/components/AdminOverviewTab';
 import RecycleBinTab from '@/components/RecycleBinTab';
 import { NumberField } from '@/components/NumberField';
+import { useT } from '@/lib/i18n';
 
 interface Level {
   id: string;
@@ -64,6 +65,7 @@ interface AdminRequest {
 }
 
 export default function AdminPanel() {
+  const t = useT();
   const { user, isAdmin } = useAuth();
   const { category } = useAppPath();
   const { toast } = useToast();
@@ -434,11 +436,11 @@ export default function AdminPanel() {
       : [];
 
     try {
-      for (const t of targets) {
-        const typesForCall = t.type === '__mixed__' ? aiTypes : [t.type];
+      for (const target of targets) {
+        const typesForCall = target.type === '__mixed__' ? aiTypes : [target.type];
         let producedForType = 0;
-        while (producedForType < t.count) {
-          const remaining = t.count - producedForType;
+        while (producedForType < target.count) {
+          const remaining = target.count - producedForType;
           const batchSize = Math.min(BATCH, remaining);
           const { data, error } = await supabase.functions.invoke('generate-questions', {
             body: {
@@ -465,7 +467,7 @@ export default function AdminPanel() {
           all.push(...batch);
           producedForType += batch.length;
           setAiProgress({ done: Math.min(all.length, grandTotal), total: grandTotal });
-          if (producedForType < t.count) await new Promise(r => setTimeout(r, 800));
+          if (producedForType < target.count) await new Promise(r => setTimeout(r, 800));
         }
       }
       setAiResults(all);
