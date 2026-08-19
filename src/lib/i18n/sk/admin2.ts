@@ -160,4 +160,5 @@ export const skAdmin2: Record<string, string> = {
   '📖 Kartička': '📖 Kartička',
   '🧠 Kvíz': '🧠 Kvíz',
   '🧠 Kvízových': '🧠 Kvízových',
+  'Administrace': 'Administrácia',
 };

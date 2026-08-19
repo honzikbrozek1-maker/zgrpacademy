@@ -953,7 +953,7 @@ export default function AdminPanel() {
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 animate-slide-up">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" /> Administrace
+          <Shield className="h-6 w-6 text-primary" /> {t('Administrace')}
         </h1>
 
         <Tabs defaultValue="overview">
