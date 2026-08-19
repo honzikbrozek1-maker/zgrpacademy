@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
-import { useT, useLang } from '@/lib/i18n';
+import { useT, useLang, pickLang } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -22,6 +22,7 @@ interface TestItem {
 interface GroupInfo {
   id: string;
   title: string;
+  title_sk?: string | null;
   final_test_passing_score: number;
 }
 
@@ -54,7 +55,7 @@ export default function GroupFinalTest() {
       setLoading(true);
       const { data: g } = await supabase
         .from('level_groups')
-        .select('id, title, final_test_passing_score')
+        .select('id, title, title_sk, final_test_passing_score')
         .eq('id', groupId)
         .maybeSingle();
       if (!g) {
@@ -280,7 +281,7 @@ export default function GroupFinalTest() {
             items={[
               { label: t('Dashboard'), to: basePath },
               { label: t('Levely'), to: `${basePath}/levels` },
-              { label: t('Závěrečný test — {group}', { group: group?.title ?? '' }) },
+              { label: t('Závěrečný test — {group}', { group: group ? pickLang(group, 'title', lang) : '' }) },
             ]}
           />
           <Button variant="ghost" size="sm" onClick={() => navigate(`${basePath}/levels`)}>
@@ -292,7 +293,7 @@ export default function GroupFinalTest() {
                 <Trophy className="h-8 w-8 text-primary-foreground" />
               </div>
               <h2 className="text-xl font-bold">{t('Závěrečný test skupiny')}</h2>
-              <p className="text-muted-foreground">{group?.title}</p>
+              <p className="text-muted-foreground">{group ? pickLang(group, 'title', lang) : ''}</p>
               <p className="text-sm text-muted-foreground">
                 {t('Pro získání certifikátu potřebujete alespoň')} <strong>{group?.final_test_passing_score}%</strong> {t('správných odpovědí.')}
               </p>
