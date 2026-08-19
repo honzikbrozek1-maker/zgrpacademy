@@ -14,11 +14,12 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap, BarChart3 } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, BookOpen, Shield, Send, ArrowLeft, ArrowRight, CheckCircle, XCircle, Clock, Search, ChevronDown, GripVertical, Sparkles, Loader2, GraduationCap, BarChart3, Languages } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AdminGroupsTab from '@/components/AdminGroupsTab';
 import AdminOverviewTab from '@/components/AdminOverviewTab';
 import RecycleBinTab from '@/components/RecycleBinTab';
+import SlovakContentTab from '@/components/SlovakContentTab';
 import { NumberField } from '@/components/NumberField';
 import { useT } from '@/lib/i18n';
 
@@ -963,6 +964,7 @@ export default function AdminPanel() {
               <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> {t('Obsah')}</TabsTrigger>
               <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">{t('Skupiny & certifikáty')}</span><span className="sm:hidden">{t('Skupiny')}</span></TabsTrigger>
               <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> {t('Uživatelé')}</TabsTrigger>
+              <TabsTrigger value="translations"><Languages className="mr-1 h-4 w-4" /> {t('Slovenština')}</TabsTrigger>
               <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> {t('Koš')}</TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="requests" className="relative">
@@ -1431,9 +1433,14 @@ export default function AdminPanel() {
             )}
           </TabsContent>
 
+          <TabsContent value="translations" className="mt-6">
+            <SlovakContentTab />
+          </TabsContent>
+
           <TabsContent value="trash" className="mt-6">
             <RecycleBinTab />
           </TabsContent>
+
 
           {isAdmin && (
             <TabsContent value="requests" className="mt-6">
