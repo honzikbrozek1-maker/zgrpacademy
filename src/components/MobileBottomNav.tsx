@@ -3,18 +3,20 @@ import { Home, Layers, GraduationCap, UserCog, Shield } from 'lucide-react';
 import { useAppPath } from '@/lib/pathContext';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
+import { useT } from '@/lib/i18n';
 
 export default function MobileBottomNav() {
+  const t = useT();
   const location = useLocation();
   const { basePath } = useAppPath();
   const { isAdmin } = useAuth();
 
   const items = [
-    { to: basePath, icon: Home, label: 'Domů', exact: true },
-    { to: `${basePath}/levels`, icon: Layers, label: 'Levely' },
-    { to: `${basePath}/diplomas`, icon: GraduationCap, label: 'Certifikáty' },
-    ...(isAdmin ? [{ to: `${basePath}/admin`, icon: Shield, label: 'Admin' }] : []),
-    { to: `${basePath}/account`, icon: UserCog, label: 'Účet' },
+    { to: basePath, icon: Home, label: t('Domů'), exact: true },
+    { to: `${basePath}/levels`, icon: Layers, label: t('Levely') },
+    { to: `${basePath}/diplomas`, icon: GraduationCap, label: t('Certifikáty') },
+    ...(isAdmin ? [{ to: `${basePath}/admin`, icon: Shield, label: t('Admin') }] : []),
+    { to: `${basePath}/account`, icon: UserCog, label: t('Účet') },
   ];
 
   const isActive = (to: string, exact?: boolean) =>
@@ -23,7 +25,7 @@ export default function MobileBottomNav() {
   return (
     <nav
       className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-card/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
-      aria-label="Hlavní navigace"
+      aria-label={t('Hlavní navigace')}
     >
       <ul className="flex items-stretch justify-around">
         {items.map((it) => {

@@ -7,8 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, CheckCircle } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 export default function InvitePage() {
+  const t = useT();
   const { code } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -36,21 +38,21 @@ export default function InvitePage() {
     // Use secure RPC to accept invite (server-side role assignment)
     const { error } = await supabase.rpc('accept_invite', { invite_code: code });
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Pozvánka přijata!' });
+    toast({ title: t('Pozvánka přijata!') });
     navigate('/');
   };
 
   const inviteHead = (
     <Seo
-      title="Pozvánka do ZGRP Academy"
-      description="Přijměte pozvánku do ZGRP Academy a získejte přístup k obsahu platformy."
+      title={t("Pozvánka do ZGRP Academy")}
+      description={t("Přijměte pozvánku do ZGRP Academy a získejte přístup k obsahu platformy.")}
       robots="noindex"
       canonical="https://zgrpacademy.lovable.app/invite"
-      ogTitle="Pozvánka do ZGRP Academy"
-      ogDescription="Pozvánka k registraci v ZGRP Academy."
+      ogTitle={t("Pozvánka do ZGRP Academy")}
+      ogDescription={t("Pozvánka k registraci v ZGRP Academy.")}
       ogUrl="https://zgrpacademy.lovable.app/invite"
     />
   );
@@ -62,10 +64,10 @@ export default function InvitePage() {
         <Card className="max-w-md w-full shadow-elevated">
           <CardContent className="p-8 text-center space-y-4">
             <GraduationCap className="h-12 w-12 mx-auto text-primary" />
-            <h1 className="text-xl font-bold">Pozvánka do ZGRP Academy</h1>
-            <p className="text-muted-foreground">Pro přijetí pozvánky se nejprve přihlaste nebo zaregistrujte.</p>
+            <h1 className="text-xl font-bold">{t("Pozvánka do ZGRP Academy")}</h1>
+            <p className="text-muted-foreground">{t("Pro přijetí pozvánky se nejprve přihlaste nebo zaregistrujte.")}</p>
             <Button onClick={() => navigate('/auth')} className="gradient-primary text-primary-foreground">
-              Přihlásit se
+              {t("Přihlásit se")}
             </Button>
           </CardContent>
         </Card>
@@ -78,29 +80,29 @@ export default function InvitePage() {
       {inviteHead}
       <Card className="max-w-md w-full shadow-elevated">
         <CardContent className="p-8 text-center space-y-4">
-          {status === 'loading' && <p>Načítání...</p>}
+          {status === 'loading' && <p>{t('Načítání...')}</p>}
           {status === 'invalid' && (
             <>
-              <h1 className="text-lg font-semibold">Neplatná pozvánka</h1>
-              <p className="text-muted-foreground">Tato pozvánka neexistuje nebo vypršela.</p>
-              <Button onClick={() => navigate('/')}>Zpět</Button>
+              <h1 className="text-lg font-semibold">{t('Neplatná pozvánka')}</h1>
+              <p className="text-muted-foreground">{t('Tato pozvánka neexistuje nebo vypršela.')}</p>
+              <Button onClick={() => navigate('/')}>{t('Zpět')}</Button>
             </>
           )}
           {status === 'used' && (
             <>
-              <h1 className="text-lg font-semibold">Pozvánka již byla použita</h1>
-              <Button onClick={() => navigate('/')}>Zpět</Button>
+              <h1 className="text-lg font-semibold">{t('Pozvánka již byla použita')}</h1>
+              <Button onClick={() => navigate('/')}>{t('Zpět')}</Button>
             </>
           )}
           {status === 'valid' && invite && (
             <>
               <CheckCircle className="h-12 w-12 mx-auto text-success" />
-              <h1 className="text-xl font-bold">Pozvánka do ZGRP Academy</h1>
+              <h1 className="text-xl font-bold">{t('Pozvánka do ZGRP Academy')}</h1>
               <p className="text-muted-foreground">
-                Budete přidáni jako <strong>{invite.role === 'admin' ? 'Administrátor' : 'Uživatel'}</strong>.
+                {t('Budete přidáni jako {role}.', { role: invite.role === 'admin' ? t('Administrátor') : t('Uživatel') })}
               </p>
               <Button onClick={handleAccept} className="gradient-primary text-primary-foreground">
-                Přijmout pozvánku
+                {t('Přijmout pozvánku')}
               </Button>
             </>
           )}

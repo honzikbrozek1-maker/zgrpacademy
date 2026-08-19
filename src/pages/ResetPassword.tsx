@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 const PASSWORD_RE = /^(?=.*[a-zá-ž])(?=.*[A-ZÁ-Ž])(?=.*\d).{8,}$/;
 
 export default function ResetPassword() {
+  const t = useT();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,51 +56,51 @@ export default function ResetPassword() {
     e.preventDefault();
     if (!PASSWORD_RE.test(password)) {
       toast({
-        title: 'Slabé heslo',
-        description: 'Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.',
+        title: t('Slabé heslo'),
+        description: t('Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.'),
         variant: 'destructive',
       });
       return;
     }
     if (password !== confirm) {
-      toast({ title: 'Hesla se neshodují', description: 'Zadejte prosím obě hesla stejně.', variant: 'destructive' });
+      toast({ title: t('Hesla se neshodují'), description: t('Zadejte prosím obě hesla stejně.'), variant: 'destructive' });
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Heslo změněno', description: 'Nyní jste přihlášeni.' });
+    toast({ title: t('Heslo změněno'), description: t('Nyní jste přihlášeni.') });
     navigate('/');
   };
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background p-4 gap-4">
       <Seo
-        title="Obnova hesla – ZGRP Academy"
-        description="Nastavte si nové heslo do ZGRP Academy."
+        title={t('Obnova hesla – ZGRP Academy')}
+        description={t('Nastavte si nové heslo do ZGRP Academy.')}
         canonical="https://zgrpacademy.lovable.app/reset-password"
         robots="noindex, nofollow"
       />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-2">
-          <img src={zgrpLogo.url} alt="Logo ZGRP Academy" className="mx-auto h-16 w-16 rounded-full object-cover mb-2" />
-          <h1 className="text-2xl font-semibold leading-none tracking-tight">Nastavení nového hesla</h1>
-          <CardDescription>Zadejte nové heslo ke svému účtu.</CardDescription>
+          <img src={zgrpLogo.url} alt={t('Logo ZGRP Academy')} className="mx-auto h-16 w-16 rounded-full object-cover mb-2" />
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('Nastavení nového hesla')}</h1>
+          <CardDescription>{t('Zadejte nové heslo ke svému účtu.')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {ready === 'checking' && <p className="text-sm text-muted-foreground text-center">Ověřuji odkaz…</p>}
+          {ready === 'checking' && <p className="text-sm text-muted-foreground text-center">{t('Ověřuji odkaz…')}</p>}
 
           {ready === 'invalid' && (
             <div className="space-y-3 text-center">
               <p className="text-sm text-muted-foreground">
-                Odkaz pro obnovu hesla je neplatný nebo už vypršel. Nechte si prosím poslat nový.
+                {t('Odkaz pro obnovu hesla je neplatný nebo už vypršel. Nechte si prosím poslat nový.')}
               </p>
               <Button className="w-full gradient-primary text-primary-foreground" onClick={() => navigate('/auth')}>
-                Zpět na přihlášení
+                {t('Zpět na přihlášení')}
               </Button>
             </div>
           )}
@@ -110,7 +112,7 @@ export default function ResetPassword() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="password"
-                    placeholder="Nové heslo"
+                    placeholder={t('Nové heslo')}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="pl-10"
@@ -119,14 +121,14 @@ export default function ResetPassword() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground pl-1">
-                  Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo.
+                  {t('Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo.')}
                 </p>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="password"
-                  placeholder="Nové heslo znovu"
+                  placeholder={t('Nové heslo znovu')}
                   value={confirm}
                   onChange={e => setConfirm(e.target.value)}
                   className="pl-10"
@@ -135,7 +137,7 @@ export default function ResetPassword() {
                 />
               </div>
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-                {loading ? 'Ukládám…' : 'Nastavit nové heslo'}
+                {loading ? t('Ukládám…') : t('Nastavit nové heslo')}
               </Button>
             </form>
           )}

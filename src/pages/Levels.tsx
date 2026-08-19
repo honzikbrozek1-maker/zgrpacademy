@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useT, useLang, pickLang } from '@/lib/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,9 @@ import Seo from '@/components/Seo';
 interface Level {
   id: string;
   title: string;
+  title_sk?: string | null;
   description: string | null;
+  description_sk?: string | null;
   order_index: number;
   passing_score: number;
   group_id: string | null;
@@ -23,7 +26,9 @@ interface Level {
 interface Group {
   id: string;
   title: string;
+  title_sk?: string | null;
   description: string | null;
+  description_sk?: string | null;
   order_index: number;
   final_test_passing_score: number;
 }
@@ -45,6 +50,8 @@ export default function Levels() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { category, basePath } = useAppPath();
+  const t = useT();
+  const { lang } = useLang();
   const [groups, setGroups] = useState<Group[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [progress, setProgress] = useState<UserProgressRow[]>([]);
@@ -77,7 +84,7 @@ export default function Levels() {
       const levelIds = lvls.map(l => l.id);
       const [progressRes, questionsRes] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds }) as unknown as Promise<{ data: { level_id: string; type: string }[] | null }>,
+        supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds, p_lang: lang }) as unknown as Promise<{ data: { level_id: string; type: string }[] | null }>,
       ]);
 
       if (progressRes.data) {
@@ -98,7 +105,7 @@ export default function Levels() {
       }
       setLevelQuestionTypes(map);
     })();
-  }, [user, category]);
+  }, [user, category, lang]);
 
   const getLevelProgress = (id: string) => progress.find(p => p.level_id === id);
   const getGroupProgress = (id: string) => groupProgress.find(p => p.group_id === id);
@@ -144,14 +151,14 @@ export default function Levels() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold">{level.title}</h3>
-                {level.description && <p className="text-sm text-muted-foreground">{level.description}</p>}
+                <h3 className="font-semibold">{pickLang(level, 'title', lang)}</h3>
+                {level.description && <p className="text-sm text-muted-foreground">{pickLang(level, 'description', lang)}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
               {prog?.completed && prog?.test_score !== null && (
                 <Badge variant="secondary" className="bg-success/10 text-success">
-                  Test {prog.test_score}%
+                  {t('Test {score}%', { score: prog.test_score })}
                 </Badge>
               )}
               {unlocked && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
@@ -175,13 +182,13 @@ export default function Levels() {
   return (
     <AppLayout>
       <Seo
-        title="Levely a skupiny kurzů – ZGRP Academy"
-        description="Přehled všech levelů a skupin kurzů ZGRP Academy včetně postupu a závěrečných testů."
+        title={t('Levely a skupiny kurzů – ZGRP Academy')}
+        description={t('Přehled všech levelů a skupin kurzů ZGRP Academy včetně postupu a závěrečných testů.')}
         canonical={`https://zgrpacademy.lovable.app${basePath}/levels`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}/levels`}
       />
       <div className="p-3 md:p-8 max-w-4xl mx-auto space-y-3 md:space-y-8 animate-slide-up">
-        <h1 className="text-xl md:text-2xl font-bold">Levely</h1>
+        <h1 className="text-xl md:text-2xl font-bold">{t('Levely')}</h1>
 
 
         {groups.map((group, idx) => {
@@ -197,19 +204,19 @@ export default function Levels() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
-                  <h2 className="text-lg font-semibold">{group.title}</h2>
+                  <h2 className="text-lg font-semibold">{pickLang(group, 'title', lang)}</h2>
                   {groupPassed && (
                     <Badge variant="secondary" className="bg-success/10 text-success">
-                      <CheckCircle className="h-3 w-3 mr-1" /> Skupina dokončena
+                      <CheckCircle className="h-3 w-3 mr-1" /> {t('Skupina dokončena')}
                     </Badge>
                   )}
                 </div>
               </div>
-              {group.description && <p className="text-sm text-muted-foreground">{group.description}</p>}
+              {group.description && <p className="text-sm text-muted-foreground">{pickLang(group, 'description', lang)}</p>}
               {!unlocked ? (
                 <Card className="shadow-card">
                   <CardContent className="p-6 text-center text-muted-foreground text-sm">
-                    Tato skupina se odemkne po úspěšném dokončení předchozí skupiny.
+                    {t('Tato skupina se odemkne po úspěšném dokončení předchozí skupiny.')}
                   </CardContent>
                 </Card>
               ) : (
@@ -217,7 +224,7 @@ export default function Levels() {
                   <div className="space-y-2 md:space-y-3">
                     {groupLevels.map(l => renderLevelCard(l, true))}
                     {groupLevels.length === 0 && (
-                      <Card className="shadow-card"><CardContent className="p-6 text-center text-muted-foreground text-sm">Ve skupině zatím nejsou levely.</CardContent></Card>
+                      <Card className="shadow-card"><CardContent className="p-6 text-center text-muted-foreground text-sm">{t('Ve skupině zatím nejsou levely.')}</CardContent></Card>
                     )}
                   </div>
 
@@ -229,13 +236,13 @@ export default function Levels() {
                           {allLevelsPassed ? <Trophy className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-sm">Závěrečný test skupiny</h3>
+                          <h3 className="font-semibold text-sm">{t('Závěrečný test skupiny')}</h3>
                           <p className="text-xs text-muted-foreground">
                             {groupPassed
-                              ? `Splněno ${gp?.test_score}%`
+                              ? t('Splněno {score}%', { score: gp?.test_score })
                               : allLevelsPassed
-                                ? `Potřeba ≥ ${group.final_test_passing_score}%`
-                                : 'Nejprve dokončete všechny levely'}
+                                ? t('Potřeba ≥ {score}%', { score: group.final_test_passing_score })
+                                : t('Nejprve dokončete všechny levely')}
                           </p>
                         </div>
                         {allLevelsPassed && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
@@ -249,9 +256,9 @@ export default function Levels() {
                           {hasDiploma ? <GraduationCap className="h-5 w-5 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-sm">Certifikát</h3>
+                          <h3 className="font-semibold text-sm">{t('Certifikát')}</h3>
                           <p className="text-xs text-muted-foreground">
-                            {hasDiploma ? 'Získán — zobrazit v Mých certifikátech' : 'Dostupný po splnění závěr. testu skupiny'}
+                            {hasDiploma ? t('Získán — zobrazit v Mých certifikátech') : t('Dostupný po splnění závěr. testu skupiny')}
                           </p>
                         </div>
                         {hasDiploma && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
@@ -266,7 +273,7 @@ export default function Levels() {
 
         {ungrouped.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Ostatní levely</h2>
+            <h2 className="text-lg font-semibold">{t('Ostatní levely')}</h2>
             <div className="space-y-2 md:space-y-3">
               {ungrouped.map(l => renderLevelCard(l, true))}
             </div>
@@ -276,7 +283,7 @@ export default function Levels() {
         {groups.length === 0 && ungrouped.length === 0 && (
           <Card className="shadow-card">
             <CardContent className="p-8 text-center text-muted-foreground">
-              Zatím nejsou k dispozici žádné levely.
+              {t('Zatím nejsou k dispozici žádné levely.')}
             </CardContent>
           </Card>
         )}

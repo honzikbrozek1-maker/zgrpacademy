@@ -11,6 +11,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAppPath } from '@/lib/pathContext';
 import { useAuth } from '@/lib/auth';
+import { useT, useLang, pickLang } from '@/lib/i18n';
 import {
   BookOpen,
   GraduationCap,
@@ -25,6 +26,7 @@ import {
 interface LevelRow {
   id: string;
   title: string;
+  title_sk?: string | null;
   order_index: number;
   group_id: string | null;
 }
@@ -32,6 +34,7 @@ interface LevelRow {
 interface GroupRow {
   id: string;
   title: string;
+  title_sk?: string | null;
 }
 
 interface QuestionRow {
@@ -48,6 +51,8 @@ const normalize = (value: string) =>
 
 export default function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const navigate = useNavigate();
+  const t = useT();
+  const { lang } = useLang();
   const { basePath, category } = useAppPath();
   const { isAdmin } = useAuth();
   const [query, setQuery] = useState('');
@@ -64,10 +69,10 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
       const [{ data: levelData }, { data: groupData }] = await Promise.all([
         supabase
           .from('levels')
-          .select('id, title, order_index, group_id')
+          .select('id, title, title_sk, order_index, group_id')
           .eq('category', category)
           .order('order_index'),
-        supabase.from('level_groups').select('id, title').eq('category', category).order('order_index'),
+        supabase.from('level_groups').select('id, title, title_sk').eq('category', category).order('order_index'),
       ]);
       if (cancelled) return;
       setLevels(levelData ?? []);
@@ -87,6 +92,7 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
     (async () => {
       const { data } = await supabase.rpc('get_practice_questions', {
         p_level_ids: levels.map(l => l.id),
+        p_lang: lang,
       });
       if (cancelled) return;
       setQuestions(
@@ -102,7 +108,7 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
     return () => {
       cancelled = true;
     };
-  }, [open, query, questionsLoaded, levels]);
+  }, [open, query, questionsLoaded, levels, lang]);
 
   useEffect(() => {
     if (!open) setQuery('');
@@ -120,37 +126,37 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
 
   const pages = useMemo(() => {
     const items = [
-      { label: 'Přehled (dashboard)', path: basePath, icon: Home },
-      { label: 'Levely', path: `${basePath}/levels`, icon: BookOpen },
-      { label: 'Opakování', path: `${basePath}/review`, icon: RefreshCw },
-      { label: 'Certifikáty', path: `${basePath}/diplomas`, icon: GraduationCap },
-      { label: 'Nastavení účtu', path: `${basePath}/account`, icon: UserCog },
-      { label: 'Výběr sekce', path: '/', icon: LayoutGrid },
+      { label: t('Přehled (dashboard)'), path: basePath, icon: Home },
+      { label: t('Levely'), path: `${basePath}/levels`, icon: BookOpen },
+      { label: t('Opakování'), path: `${basePath}/review`, icon: RefreshCw },
+      { label: t('Certifikáty'), path: `${basePath}/diplomas`, icon: GraduationCap },
+      { label: t('Nastavení účtu'), path: `${basePath}/account`, icon: UserCog },
+      { label: t('Výběr sekce'), path: '/', icon: LayoutGrid },
       {
-        label: category === 'products' ? 'Přepnout na Backoffice' : 'Přepnout na Produkty',
+        label: category === 'products' ? t('Přepnout na Backoffice') : t('Přepnout na Produkty'),
         path: category === 'products' ? '/backoffice' : '/products',
         icon: LayoutGrid,
       },
     ];
-    if (isAdmin) items.push({ label: 'Administrace', path: `${basePath}/admin`, icon: Shield });
+    if (isAdmin) items.push({ label: t('Administrace'), path: `${basePath}/admin`, icon: Shield });
     return items;
-  }, [basePath, category, isAdmin]);
+  }, [basePath, category, isAdmin, t]);
 
   const filteredPages = q ? pages.filter(p => normalize(p.label).includes(q)) : pages;
-  const filteredLevels = q ? levels.filter(l => normalize(l.title).includes(q)).slice(0, 8) : [];
-  const filteredGroups = q ? groups.filter(g => normalize(g.title).includes(q)).slice(0, 5) : [];
+  const filteredLevels = q ? levels.filter(l => normalize(pickLang(l, 'title', lang)).includes(q)).slice(0, 8) : [];
+  const filteredGroups = q ? groups.filter(g => normalize(pickLang(g, 'title', lang)).includes(q)).slice(0, 5) : [];
   const filteredQuestions = q.length >= 3
     ? questions.filter(qu => normalize(qu.question_text).includes(q)).slice(0, 8)
     : [];
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Hledat stránky, levely a otázky…" value={query} onValueChange={setQuery} />
+      <CommandInput placeholder={t('Hledat stránky, levely a otázky…')} value={query} onValueChange={setQuery} />
       <CommandList>
-        <CommandEmpty>Nic nenalezeno.</CommandEmpty>
+        <CommandEmpty>{t('Nic nenalezeno.')}</CommandEmpty>
 
         {filteredPages.length > 0 && (
-          <CommandGroup heading="Stránky">
+          <CommandGroup heading={t('Stránky')}>
             {filteredPages.map(page => (
               <CommandItem key={page.path + page.label} value={`page-${page.label}`} onSelect={() => go(page.path)}>
                 <page.icon className="mr-2 h-4 w-4" />
@@ -161,7 +167,7 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
         )}
 
         {filteredLevels.length > 0 && (
-          <CommandGroup heading="Levely">
+          <CommandGroup heading={t('Levely')}>
             {filteredLevels.map(level => (
               <CommandItem
                 key={level.id}
@@ -169,25 +175,25 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
                 onSelect={() => go(`${basePath}/level/${level.id}`)}
               >
                 <BookOpen className="mr-2 h-4 w-4" />
-                {level.order_index}. {level.title}
+                {level.order_index}. {pickLang(level, 'title', lang)}
               </CommandItem>
             ))}
           </CommandGroup>
         )}
 
         {filteredGroups.length > 0 && (
-          <CommandGroup heading="Skupiny">
+          <CommandGroup heading={t('Skupiny')}>
             {filteredGroups.map(group => (
               <CommandItem key={group.id} value={`group-${group.id}`} onSelect={() => go(`${basePath}/levels`)}>
                 <GraduationCap className="mr-2 h-4 w-4" />
-                {group.title}
+                {pickLang(group, 'title', lang)}
               </CommandItem>
             ))}
           </CommandGroup>
         )}
 
         {filteredQuestions.length > 0 && (
-          <CommandGroup heading="Otázky">
+          <CommandGroup heading={t('Otázky')}>
             {filteredQuestions.map(question => {
               const level = levels.find(l => l.id === question.level_id);
               return (
@@ -199,7 +205,7 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
                   <HelpCircle className="mr-2 h-4 w-4 shrink-0" />
                   <span className="truncate">
                     {question.question_text}
-                    {level && <span className="text-muted-foreground"> — {level.title}</span>}
+                    {level && <span className="text-muted-foreground"> — {pickLang(level, 'title', lang)}</span>}
                   </span>
                 </CommandItem>
               );

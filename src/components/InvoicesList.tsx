@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, FileText, ExternalLink, Download } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 interface Invoice {
   id: string;
@@ -14,6 +15,7 @@ interface Invoice {
 }
 
 export function InvoicesList() {
+  const t = useT();
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +32,12 @@ export function InvoicesList() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> Načítání faktur...
+        <Loader2 className="h-4 w-4 animate-spin" /> {t('Načítání faktur...')}
       </div>
     );
   }
   if (error) return <p className="text-sm text-destructive">{error}</p>;
-  if (invoices.length === 0) return <p className="text-sm text-muted-foreground">Zatím nemáš žádné faktury.</p>;
+  if (invoices.length === 0) return <p className="text-sm text-muted-foreground">{t('Zatím nemáš žádné faktury.')}</p>;
 
   return (
     <ul className="space-y-2">
@@ -47,7 +49,7 @@ export function InvoicesList() {
               <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">
-                  {inv.number ? `Faktura ${inv.number}` : "Faktura"} ·{" "}
+                  {inv.number ? t('Faktura {number}', { number: inv.number }) : t('Faktura')} ·{" "}
                   {(inv.amount / 100).toLocaleString("cs-CZ")} {inv.currency.toUpperCase()}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -61,7 +63,7 @@ export function InvoicesList() {
                   {inv.hosted_invoice_url && (
                     <Button asChild size="sm" variant="outline">
                       <a href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer">
-                        Zobrazit <ExternalLink className="ml-1 h-3 w-3" />
+                        {t('Zobrazit')} <ExternalLink className="ml-1 h-3 w-3" />
                       </a>
                     </Button>
                   )}
@@ -75,7 +77,7 @@ export function InvoicesList() {
                 </>
               ) : (
                 <span className="text-xs text-muted-foreground">
-                  Faktura není k dispozici (starší platba)
+                  {t('Faktura není k dispozici (starší platba)')}
                 </span>
               )}
             </div>

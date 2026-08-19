@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useT, useLang, pickLang } from '@/lib/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,7 +42,9 @@ export default function LevelDetail() {
   const { user } = useAuth();
   const { category, basePath } = useAppPath();
   const { toast } = useToast();
-  const [level, setLevel] = useState<{ id: string; title: string; description: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
+  const t = useT();
+  const { lang } = useLang();
+  const [level, setLevel] = useState<{ id: string; title: string; title_sk?: string | null; description: string | null; description_sk?: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
@@ -51,7 +54,7 @@ export default function LevelDetail() {
   const refreshReviewCount = useCallback(async () => {
     if (!user || !level) return;
     const { data: levelQuestionIds } = await supabase
-      .rpc('get_practice_questions' as any, { p_level_ids: [level.id] });
+      .rpc('get_practice_questions' as any, { p_level_ids: [level.id], p_lang: lang });
 
     if (!levelQuestionIds || levelQuestionIds.length === 0) {
       setReviewCount(0);
@@ -67,7 +70,7 @@ export default function LevelDetail() {
       .in('confidence', ['partial', 'unknown']);
 
     setReviewCount(count || 0);
-  }, [user, level]);
+  }, [user, level, lang]);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -87,7 +90,7 @@ export default function LevelDetail() {
     setLevel(lvl);
 
     const [questionsRes, progressRes] = await Promise.all([
-      supabase.rpc('get_practice_questions' as any, { p_level_ids: [lvl.id] }),
+      supabase.rpc('get_practice_questions' as any, { p_level_ids: [lvl.id], p_lang: lang }),
       supabase.from('user_progress').select('*').eq('user_id', user.id).eq('level_id', lvl.id).maybeSingle(),
     ]);
     if (questionsRes.data) setQuestions(questionsRes.data as unknown as Question[]);
@@ -101,7 +104,7 @@ export default function LevelDetail() {
       setProgress(null);
       setModuleMarkers([]);
     }
-  }, [levelId, user, category, navigate, basePath]);
+  }, [levelId, user, category, navigate, basePath, lang]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { if (level) refreshReviewCount(); }, [level, refreshReviewCount]);
@@ -206,22 +209,22 @@ export default function LevelDetail() {
 
   if (!level) return (
     <AppLayout>
-      <div className="p-8 text-center text-muted-foreground">Načítání...</div>
+      <div className="p-8 text-center text-muted-foreground">{t('Načítání...')}</div>
     </AppLayout>
   );
 
   return (
     <AppLayout>
       <Seo
-        title={`${level.title} – ZGRP Academy`}
-        description={level.description || `Procvičujte level „${level.title}" v ZGRP Academy – kvíz, doplňování a závěrečný test.`}
+        title={`${pickLang(level, 'title', lang)} – ZGRP Academy`}
+        description={pickLang(level, 'description', lang) || t('Procvičujte level „{title}" v ZGRP Academy – kvíz, doplňování a závěrečný test.', { title: pickLang(level, 'title', lang) })}
         canonical={`https://zgrpacademy.lovable.app${basePath}/level/${level.id}`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}/level/${level.id}`}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Course',
-          name: level.title,
-          description: level.description || `Vzdělávací level ${level.title} v ZGRP Academy.`,
+          name: pickLang(level, 'title', lang),
+          description: pickLang(level, 'description', lang) || t('Vzdělávací level {title} v ZGRP Academy.', { title: pickLang(level, 'title', lang) }),
           provider: { '@type': 'Organization', name: 'ZGRP Academy', url: 'https://zgrpacademy.lovable.app/' },
         }}
       />
@@ -229,40 +232,40 @@ export default function LevelDetail() {
 
         <Breadcrumbs
           items={[
-            { label: 'Dashboard', to: basePath },
-            { label: 'Levely', to: `${basePath}/levels` },
-            { label: level.title },
+            { label: t('Dashboard'), to: basePath },
+            { label: t('Levely'), to: `${basePath}/levels` },
+            { label: pickLang(level, 'title', lang) },
           ]}
         />
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Zpět">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label={t('Zpět')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{level.title}</h1>
-            {level.description && <p className="text-muted-foreground">{level.description}</p>}
+            <h1 className="text-2xl font-bold">{pickLang(level, 'title', lang)}</h1>
+            {level.description && <p className="text-muted-foreground">{pickLang(level, 'description', lang)}</p>}
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-1.5">
-              <span className="hidden sm:inline">Přehled</span>
+              <span className="hidden sm:inline">{t('Přehled')}</span>
               <span className="sm:hidden text-xs">📋</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center gap-1.5 relative">
               <Brain className="h-4 w-4" />
-              <span className="hidden sm:inline">Kvíz</span>
+              <span className="hidden sm:inline">{t('Kvíz')}</span>
               {completedModules.has('quiz') && <CheckCircle className="h-3 w-3 text-success absolute -top-1 -right-1" />}
             </TabsTrigger>
             <TabsTrigger value="fillin" className="flex items-center gap-1.5 relative">
               <PenLine className="h-4 w-4" />
-              <span className="hidden sm:inline">Doplňování</span>
+              <span className="hidden sm:inline">{t('Doplňování')}</span>
               {completedModules.has('fillin') && <CheckCircle className="h-3 w-3 text-success absolute -top-1 -right-1" />}
             </TabsTrigger>
             <TabsTrigger value="test" className="flex items-center gap-1.5">
               <ClipboardCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Test</span>
+              <span className="hidden sm:inline">{t('Test')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -281,11 +284,11 @@ export default function LevelDetail() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold">Kvíz</h3>
+                    <h3 className="font-semibold">{t('Kvíz')}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {quizQuestions.length} otázek
+                      {t('{n} otázek', { n: quizQuestions.length })}
                       {!completedModules.has('quiz') && quizSavedIndex > 0 && quizSavedIndex < quizQuestions.length && (
-                        <> · pokračujte na otázce {quizSavedIndex + 1}</>
+                        <> · {t('pokračujte na otázce {n}', { n: quizSavedIndex + 1 })}</>
                       )}
                     </p>
                   </div>
@@ -305,11 +308,11 @@ export default function LevelDetail() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold">Doplňování</h3>
+                    <h3 className="font-semibold">{t('Doplňování')}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {fillBlankQuestions.length} otázek
+                      {t('{n} otázek', { n: fillBlankQuestions.length })}
                       {!completedModules.has('fillin') && fillinSavedIndex > 0 && fillinSavedIndex < fillBlankQuestions.length && (
-                        <> · pokračujte na otázce {fillinSavedIndex + 1}</>
+                        <> · {t('pokračujte na otázce {n}', { n: fillinSavedIndex + 1 })}</>
                       )}
                     </p>
                   </div>
@@ -329,13 +332,13 @@ export default function LevelDetail() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold">Závěrečný test</h3>
+                    <h3 className="font-semibold">{t('Závěrečný test')}</h3>
                     {progress?.completed ? (
-                      <p className="text-sm text-muted-foreground">Výsledek: {progress.test_score}%</p>
+                      <p className="text-sm text-muted-foreground">{t('Výsledek: {score}%', { score: progress.test_score })}</p>
                     ) : progress?.test_score !== null && progress?.test_score !== undefined ? (
-                      <p className="text-sm text-muted-foreground">Poslední pokus: {progress.test_score}% — zkuste znovu</p>
+                      <p className="text-sm text-muted-foreground">{t('Poslední pokus: {score}% — zkuste znovu', { score: progress.test_score })}</p>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Připraven k testu</p>
+                      <p className="text-sm text-muted-foreground">{t('Připraven k testu')}</p>
                     )}
                   </div>
                 </CardContent>
@@ -349,8 +352,8 @@ export default function LevelDetail() {
                         <RotateCcw className="h-6 w-6 text-warning" />
                       </div>
                       <div>
-                        <h3 className="font-semibold">Procvičování</h3>
-                        <p className="text-sm text-muted-foreground">{reviewCount} položek k opakování</p>
+                        <h3 className="font-semibold">{t('Procvičování')}</h3>
+                        <p className="text-sm text-muted-foreground">{t('{n} položek k opakování', { n: reviewCount })}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -362,11 +365,11 @@ export default function LevelDetail() {
               <Card className="shadow-elevated mt-4 border-success/30">
                 <CardContent className="p-6 text-center space-y-3">
                   <Trophy className="h-8 w-8 mx-auto text-success" />
-                  <h3 className="font-bold text-lg">Level dokončen! 🎉</h3>
-                  <p className="text-muted-foreground">Výsledek testu: <span className="font-bold text-success">{progress.test_score}%</span></p>
+                  <h3 className="font-bold text-lg">{t('Level dokončen! 🎉')}</h3>
+                  <p className="text-muted-foreground">{t('Výsledek testu:')} <span className="font-bold text-success">{progress.test_score}%</span></p>
                   {level.group_id && (
                     <Button onClick={() => navigate(`${basePath}/group/${level.group_id}/test`)} className="gradient-primary text-primary-foreground">
-                      Závěrečný test skupiny
+                      {t('Závěrečný test skupiny')}
                     </Button>
                   )}
                 </CardContent>
@@ -377,33 +380,33 @@ export default function LevelDetail() {
           <TabsContent value="quiz" className="mt-6">
             <div className="mb-4">
               <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
-                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+                <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na přehled')}
               </Button>
             </div>
             {quizQuestions.length > 0 ? (
               <QuizModule questions={quizQuestions} levelId={level.id} onComplete={() => finalizeModule('quiz')} onReviewItemsChange={refreshReviewCount} />
             ) : (
-              <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné kvízové otázky v tomto levelu.</CardContent></Card>
+              <Card><CardContent className="p-8 text-center text-muted-foreground">{t('Žádné kvízové otázky v tomto levelu.')}</CardContent></Card>
             )}
           </TabsContent>
 
           <TabsContent value="fillin" className="mt-6">
             <div className="mb-4">
               <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
-                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+                <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na přehled')}
               </Button>
             </div>
             {fillBlankQuestions.length > 0 ? (
               <FillInBlankModule questions={fillBlankQuestions} levelId={level.id} onComplete={() => finalizeModule('fillin')} onReviewItemsChange={refreshReviewCount} />
             ) : (
-              <Card><CardContent className="p-8 text-center text-muted-foreground">Žádné otázky pro doplňování v tomto levelu.</CardContent></Card>
+              <Card><CardContent className="p-8 text-center text-muted-foreground">{t('Žádné otázky pro doplňování v tomto levelu.')}</CardContent></Card>
             )}
           </TabsContent>
 
           <TabsContent value="test" className="mt-6">
             <div className="mb-4">
               <Button variant="ghost" size="sm" onClick={() => setActiveTab('overview')}>
-                <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na přehled
+                <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na přehled')}
               </Button>
             </div>
             <LevelTest
@@ -416,8 +419,8 @@ export default function LevelDetail() {
                 setProgress(nextProgress);
                 if (level.group_id) {
                   toast({
-                    title: 'Level dokončen! 🎉',
-                    description: 'Po dokončení všech levelů ve skupině můžete absolvovat závěrečný test skupiny a získat certifikát.',
+                    title: t('Level dokončen! 🎉'),
+                    description: t('Po dokončení všech levelů ve skupině můžete absolvovat závěrečný test skupiny a získat certifikát.'),
                   });
                 }
               }}

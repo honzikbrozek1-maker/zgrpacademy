@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useT, useLang } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -30,6 +31,8 @@ export default function GroupFinalTest() {
   const { user } = useAuth();
   const { basePath } = useAppPath();
   const { toast } = useToast();
+  const t = useT();
+  const { lang } = useLang();
 
   const [group, setGroup] = useState<GroupInfo | null>(null);
   const [items, setItems] = useState<TestItem[]>([]);
@@ -83,11 +86,11 @@ export default function GroupFinalTest() {
     if (!groupId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_group_test', { p_group_id: groupId });
+      const { data, error } = await supabase.rpc('get_group_test', { p_group_id: groupId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
       if (list.length === 0) {
-        toast({ title: 'Test není připraven', description: 'Pro tuto skupinu zatím nejsou žádné otázky závěrečného testu.', variant: 'destructive' });
+        toast({ title: t('Test není připraven'), description: t('Pro tuto skupinu zatím nejsou žádné otázky závěrečného testu.'), variant: 'destructive' });
         return;
       }
       setItems(list);
@@ -97,7 +100,7 @@ export default function GroupFinalTest() {
       setScore(null);
       setStarted(true);
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se načíst test', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se načíst test'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -134,6 +137,7 @@ export default function GroupFinalTest() {
       const { data, error } = await supabase.rpc('complete_group_test_v2', {
         p_group_id: groupId,
         p_answers: payload,
+        p_lang: lang,
       });
       if (error) throw error;
       const res = data as { score: number; passed: boolean; per_question?: typeof perQuestion };
@@ -145,17 +149,17 @@ export default function GroupFinalTest() {
 
       if (res?.passed) {
         await supabase.rpc('issue_diploma_if_eligible', { p_group_id: groupId });
-        toast({ title: '🎓 Získali jste certifikát!', description: 'Certifikát najdete v sekci Moje certifikáty.' });
+        toast({ title: t('🎓 Získali jste certifikát!'), description: t('Certifikát najdete v sekci Moje certifikáty.') });
       }
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se odeslat test', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se odeslat test'), variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) {
-    return <AppLayout><div className="p-8 text-center text-muted-foreground">Načítání...</div></AppLayout>;
+    return <AppLayout><div className="p-8 text-center text-muted-foreground">{t('Načítání...')}</div></AppLayout>;
   }
 
   if (!eligibility.ok) {
@@ -163,13 +167,13 @@ export default function GroupFinalTest() {
       <AppLayout>
         <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
           <Button variant="ghost" size="sm" onClick={() => navigate(`${basePath}/levels`)}>
-            <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
+            <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na levely')}
           </Button>
           <Card className="shadow-elevated">
             <CardContent className="p-8 text-center space-y-3">
               <AlertTriangle className="h-10 w-10 mx-auto text-warning" />
-              <h2 className="text-xl font-bold">Závěrečný test skupiny ještě není dostupný</h2>
-              <p className="text-muted-foreground">Nejprve úspěšně dokončete závěrečný test ve všech levelech této skupiny.</p>
+              <h2 className="text-xl font-bold">{t('Závěrečný test skupiny ještě není dostupný')}</h2>
+              <p className="text-muted-foreground">{t('Nejprve úspěšně dokončete závěrečný test ve všech levelech této skupiny.')}</p>
             </CardContent>
           </Card>
         </div>
@@ -187,30 +191,30 @@ export default function GroupFinalTest() {
               <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-success/20' : 'bg-destructive/20'}`}>
                 {passed ? <GraduationCap className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
               </div>
-              <h2 className="text-2xl font-bold">{passed ? 'Gratulujeme — certifikát je váš! 🎓' : 'Bohužel neprošlo'}</h2>
+              <h2 className="text-2xl font-bold">{passed ? t('Gratulujeme — certifikát je váš! 🎓') : t('Bohužel neprošlo')}</h2>
               <p className="text-3xl font-extrabold text-primary">{score}%</p>
               <p className="text-muted-foreground">
                 {passed
-                  ? 'Úspěšně jste dokončili celou skupinu. Certifikát najdete v sekci Moje certifikáty.'
-                  : `Pro splnění potřebujete alespoň ${group?.final_test_passing_score}%. Můžete to zkusit znovu.`}
+                  ? t('Úspěšně jste dokončili celou skupinu. Certifikát najdete v sekci Moje certifikáty.')
+                  : t('Pro splnění potřebujete alespoň {score}%. Můžete to zkusit znovu.', { score: group?.final_test_passing_score })}
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
                 <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
-                  Zpět na levely
+                  {t('Zpět na levely')}
                 </Button>
                 {perQuestion.length > 0 && (
                   <Button variant="outline" onClick={() => setShowReview(s => !s)}>
                     <ListChecks className="mr-1 h-4 w-4" />
-                    {showReview ? 'Skrýt odpovědi' : 'Zobrazit odpovědi'}
+                    {showReview ? t('Skrýt odpovědi') : t('Zobrazit odpovědi')}
                   </Button>
                 )}
                 {passed ? (
                   <Button onClick={() => navigate(`${basePath}/diplomas`)} className="gradient-primary text-primary-foreground">
-                    Moje certifikáty
+                    {t('Moje certifikáty')}
                   </Button>
                 ) : (
                   <Button onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setScore(null); setPerQuestion([]); setShowReview(false); }} className="gradient-primary text-primary-foreground">
-                    Zkusit znovu
+                    {t('Zkusit znovu')}
                   </Button>
                 )}
               </div>
@@ -221,9 +225,9 @@ export default function GroupFinalTest() {
             <Card className="shadow-card">
               <CardContent className="p-4 md:p-6 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Vaše odpovědi</h3>
+                  <h3 className="font-semibold">{t('Vaše odpovědi')}</h3>
                   <span className="text-sm text-muted-foreground">
-                    {perQuestion.length - wrongCount} / {perQuestion.length} správně
+                    {t('{correct} / {total} správně', { correct: perQuestion.length - wrongCount, total: perQuestion.length })}
                   </span>
                 </div>
                 <div className="space-y-3">
@@ -243,14 +247,14 @@ export default function GroupFinalTest() {
                           </p>
                           <div className="text-sm space-y-1">
                             <div>
-                              <span className="text-muted-foreground">Vaše odpověď: </span>
+                              <span className="text-muted-foreground">{t('Vaše odpověď:')} </span>
                               <span className={p.correct ? 'text-success font-medium' : 'text-destructive font-medium'}>
-                                {p.user_answer || <em className="text-muted-foreground">— bez odpovědi —</em>}
+                                {p.user_answer || <em className="text-muted-foreground">{t('— bez odpovědi —')}</em>}
                               </span>
                             </div>
                             {!p.correct && (
                               <div>
-                                <span className="text-muted-foreground">Správná odpověď: </span>
+                                <span className="text-muted-foreground">{t('Správná odpověď:')} </span>
                                 <span className="text-success font-medium">{p.correct_answer}</span>
                               </div>
                             )}
@@ -274,26 +278,26 @@ export default function GroupFinalTest() {
         <div className="p-4 md:p-8 max-w-2xl mx-auto space-y-4">
           <Breadcrumbs
             items={[
-              { label: 'Dashboard', to: basePath },
-              { label: 'Levely', to: `${basePath}/levels` },
-              { label: `Závěrečný test — ${group?.title ?? ''}` },
+              { label: t('Dashboard'), to: basePath },
+              { label: t('Levely'), to: `${basePath}/levels` },
+              { label: t('Závěrečný test — {group}', { group: group?.title ?? '' }) },
             ]}
           />
           <Button variant="ghost" size="sm" onClick={() => navigate(`${basePath}/levels`)}>
-            <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
+            <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na levely')}
           </Button>
           <Card className="shadow-elevated">
             <CardContent className="p-8 text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full gradient-primary flex items-center justify-center">
                 <Trophy className="h-8 w-8 text-primary-foreground" />
               </div>
-              <h2 className="text-xl font-bold">Závěrečný test skupiny</h2>
+              <h2 className="text-xl font-bold">{t('Závěrečný test skupiny')}</h2>
               <p className="text-muted-foreground">{group?.title}</p>
               <p className="text-sm text-muted-foreground">
-                Pro získání certifikátu potřebujete alespoň <strong>{group?.final_test_passing_score}%</strong> správných odpovědí.
+                {t('Pro získání certifikátu potřebujete alespoň')} <strong>{group?.final_test_passing_score}%</strong> {t('správných odpovědí.')}
               </p>
               <Button onClick={startTest} className="gradient-primary text-primary-foreground">
-                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Načítám...</> : <>Začít test <ArrowRight className="ml-1 h-4 w-4" /></>}
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('Načítám...')}</> : <>{t('Začít test')} <ArrowRight className="ml-1 h-4 w-4" /></>}
               </Button>
             </CardContent>
           </Card>
@@ -310,7 +314,7 @@ export default function GroupFinalTest() {
         <div className="px-4 md:px-6 pt-4 pb-3 border-b bg-background/80 backdrop-blur sticky top-0 z-10">
           <div className="flex items-center gap-3 mb-2">
             <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate(`${basePath}/levels`)}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět')}
             </Button>
             <div className="flex-1" />
             <span className="text-sm font-medium tabular-nums">{currentIndex + 1}/{items.length}</span>
@@ -348,11 +352,11 @@ export default function GroupFinalTest() {
 
         <div className="flex justify-between gap-3 px-4 md:px-6 py-3 border-t bg-background sticky bottom-0">
           <Button variant="outline" onClick={() => setCurrentIndex(i => Math.max(0, i - 1))} disabled={currentIndex === 0}>
-            <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+            <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
           </Button>
           {currentIndex < items.length - 1 ? (
             <Button onClick={() => setCurrentIndex(i => i + 1)} disabled={!answers[currentIndex]} className="gradient-primary text-primary-foreground">
-              Další <ArrowRight className="ml-1 h-4 w-4" />
+              {t('Další')} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button
@@ -360,7 +364,7 @@ export default function GroupFinalTest() {
               disabled={Object.keys(answers).length < items.length || submitting}
               className="gradient-primary text-primary-foreground"
             >
-              {submitting ? 'Odesílání...' : 'Odevzdat test'}
+              {submitting ? t('Odesílání...') : t('Odevzdat test')}
             </Button>
           )}
         </div>

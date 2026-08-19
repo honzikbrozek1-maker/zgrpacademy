@@ -4,16 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { GraduationCap, Package, Briefcase, ArrowRight } from 'lucide-react';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
+import { useT } from '@/lib/i18n';
 
 export default function PathSelection() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Seo
-        title="Výběr sekce – ZGRP Academy"
-        description="Vyberte si, zda chcete procvičovat produktové znalosti, nebo backoffice ZinzinoGroup."
+        title={t('Výběr sekce – ZGRP Academy')}
+        description={t('Vyberte si, zda chcete procvičovat produktové znalosti, nebo backoffice ZinzinoGroup.')}
         canonical="https://zgrpacademy.lovable.app/"
         ogUrl="https://zgrpacademy.lovable.app/"
       />
@@ -27,8 +29,8 @@ export default function PathSelection() {
             loading="lazy"
           />
 
-          <h1 className="text-2xl font-bold">Vítejte, {profile?.display_name || 'uživateli'}!</h1>
-          <p className="text-muted-foreground">Co chcete dnes procvičovat?</p>
+          <h1 className="text-2xl font-bold">{t('Vítejte, {name}!', { name: profile?.display_name || t('uživateli') })}</h1>
+          <p className="text-muted-foreground">{t('Co chcete dnes procvičovat?')}</p>
         </div>
 
         {/* Two paths */}
@@ -44,13 +46,13 @@ export default function PathSelection() {
                 <Package className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-1">Produkty Zinzino</h2>
+                <h2 className="text-xl font-bold mb-1">{t('Produkty Zinzino')}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Učte se o produktech, procvičujte znalosti a skládejte testy.
+                  {t('Učte se o produktech, procvičujte znalosti a skládejte testy.')}
                 </p>
               </div>
               <div className="flex items-center text-primary text-sm font-medium gap-1 group-hover:gap-2 transition-all">
-                Pokračovat <ArrowRight className="h-4 w-4" />
+                {t('Pokračovat')} <ArrowRight className="h-4 w-4" />
               </div>
             </CardContent>
           </Card>
@@ -66,13 +68,13 @@ export default function PathSelection() {
                 <Briefcase className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-1">Backoffice & Odměny</h2>
+                <h2 className="text-xl font-bold mb-1">{t('Backoffice & Odměny')}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Práce s backoffice systémem, systém odměn a business nástroje.
+                  {t('Práce s backoffice systémem, systém odměn a business nástroje.')}
                 </p>
               </div>
               <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-medium gap-1 group-hover:gap-2 transition-all">
-                Pokračovat <ArrowRight className="h-4 w-4" />
+                {t('Pokračovat')} <ArrowRight className="h-4 w-4" />
               </div>
             </CardContent>
           </Card>

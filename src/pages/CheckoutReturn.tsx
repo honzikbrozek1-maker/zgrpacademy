@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { InvoicesList } from "@/components/InvoicesList";
 import Seo from '@/components/Seo';
+import { useT } from '@/lib/i18n';
 
 export default function CheckoutReturn() {
+  const t = useT();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const { refreshProfile, profile } = useAuth();
@@ -45,8 +47,8 @@ export default function CheckoutReturn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Seo
-        title="Potvrzení platby – ZGRP Academy"
-        description="Potvrzení úhrady registračního poplatku a přístup k fakturám ZGRP Academy."
+        title={t("Potvrzení platby – ZGRP Academy")}
+        description={t("Potvrzení úhrady registračního poplatku a přístup k fakturám ZGRP Academy.")}
         canonical="https://zgrpacademy.lovable.app/checkout/return"
         ogUrl="https://zgrpacademy.lovable.app/checkout/return"
         robots="noindex,follow"
@@ -56,36 +58,36 @@ export default function CheckoutReturn() {
           <CardTitle className="flex items-center gap-2">
             {profile?.has_paid ? (
               <>
-                <CheckCircle2 className="h-6 w-6 text-green-600" /> Platba dokončena
+                <CheckCircle2 className="h-6 w-6 text-green-600" /> {t("Platba dokončena")}
               </>
             ) : polling ? (
               <>
-                <Loader2 className="h-6 w-6 animate-spin" /> Ověřujeme platbu...
+                <Loader2 className="h-6 w-6 animate-spin" /> {t("Ověřujeme platbu...")}
               </>
             ) : (
-              "Platba zpracována"
+              t("Platba zpracována")
             )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {sessionId && (
-            <p className="text-xs text-muted-foreground break-all">Session: {sessionId}</p>
+            <p className="text-xs text-muted-foreground break-all">{t("Session: {id}", { id: sessionId })}</p>
           )}
           {profile?.has_paid ? (
             <>
               <div className="rounded-md border p-3">
-                <p className="mb-2 text-sm font-medium">Tvoje faktura</p>
+                <p className="mb-2 text-sm font-medium">{t("Tvoje faktura")}</p>
                 <InvoicesList />
               </div>
-              <Button className="w-full" onClick={() => navigate("/")}>Pokračovat do aplikace</Button>
+              <Button className="w-full" onClick={() => navigate("/")}>{t("Pokračovat do aplikace")}</Button>
             </>
           ) : !polling ? (
             <>
               <p className="text-sm text-muted-foreground">
-                Platba ještě nedorazila do systému. Pokud jsi zaplatil, zkus stránku obnovit za chvíli.
+                {t("Platba ještě nedorazila do systému. Pokud jsi zaplatil, zkus stránku obnovit za chvíli.")}
               </p>
               <Button variant="outline" className="w-full" onClick={() => window.location.reload()}>
-                Zkusit znovu
+                {t("Zkusit znovu")}
               </Button>
             </>
           ) : null}

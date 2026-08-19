@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
+import { useT } from '@/lib/i18n';
 
 interface Question {
   id: string;
@@ -25,6 +26,7 @@ interface Props {
 
 export default function QuizModule({ questions, levelId, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
+  const t = useT();
   const storageKey = `practice:quiz:${levelId}`;
   const [currentIndex, setCurrentIndex] = useState(() => {
     try {
@@ -157,12 +159,12 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
           <div className="w-16 h-16 mx-auto rounded-full bg-success/20 flex items-center justify-center">
             <CheckCircle className="h-8 w-8 text-success" />
           </div>
-          <h3 className="text-xl font-bold">Procvičování dokončeno!</h3>
+          <h3 className="text-xl font-bold">{t('Procvičování dokončeno!')}</h3>
           <p className="text-muted-foreground">
-            Správně: {correctCount} z {questions.length}
+            {t('Správně: {correct} z {total}', { correct: correctCount, total: questions.length })}
           </p>
           <Button onClick={onComplete} className="gradient-primary text-primary-foreground">
-            Pokračovat <ArrowRight className="ml-1 h-4 w-4" />
+            {t('Pokračovat')} <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </CardContent>
       </Card>
@@ -182,10 +184,10 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm text-muted-foreground whitespace-nowrap">Otázka {currentIndex + 1}/{questions.length}</span>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{t('Otázka {n}/{total}', { n: currentIndex + 1, total: questions.length })}</span>
         <div
           role="slider"
-          aria-label="Přejít na otázku"
+          aria-label={t('Přejít na otázku')}
           aria-valuemin={1}
           aria-valuemax={questions.length}
           aria-valuenow={currentIndex + 1}
@@ -199,10 +201,10 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full ring-2 ring-primary/40" />
         </div>
-        <span className="text-sm text-muted-foreground whitespace-nowrap">Zodpovězeno: {answeredCount}/{questions.length}</span>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">{t('Zodpovězeno: {answered}/{total}', { answered: answeredCount, total: questions.length })}</span>
         {currentIndex > 0 && (
           <Button variant="ghost" size="sm" onClick={handleRestart} className="h-7 text-xs">
-            Začít znovu
+            {t('Začít znovu')}
           </Button>
         )}
       </div>
@@ -242,17 +244,17 @@ export default function QuizModule({ questions, levelId, onComplete, onReviewIte
 
       <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-          <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+          <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
         </Button>
         <div className="flex gap-2">
           {!showResult && currentIndex < questions.length - 1 && (
             <Button variant="ghost" onClick={handleSkip}>
-              Přeskočit <ArrowRight className="ml-1 h-4 w-4" />
+              {t('Přeskočit')} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           )}
           {showResult && (
             <Button onClick={handleNext} className="gradient-primary text-primary-foreground">
-              {currentIndex < questions.length - 1 ? 'Další' : 'Dokončit'} <ArrowRight className="ml-1 h-4 w-4" />
+              {currentIndex < questions.length - 1 ? t('Další') : t('Dokončit')} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           )}
         </div>

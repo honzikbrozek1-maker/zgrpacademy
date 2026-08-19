@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Banknote, CreditCard, TrendingUp, Users } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 interface DailyPoint {
   day: string;
@@ -31,6 +32,7 @@ const formatDay = (day: string) => {
 };
 
 export default function AdminOverviewTab() {
+  const t = useT();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,34 +52,34 @@ export default function AdminOverviewTab() {
     };
   }, []);
 
-  if (error) return <p className="text-sm text-destructive">Nepodařilo se načíst přehled: {error}</p>;
-  if (!stats) return <p className="text-sm text-muted-foreground">Načítání přehledu…</p>;
+  if (error) return <p className="text-sm text-destructive">{t('Nepodařilo se načíst přehled:')} {error}</p>;
+  if (!stats) return <p className="text-sm text-muted-foreground">{t('Načítání přehledu…')}</p>;
 
   const conversion = stats.total_users > 0 ? Math.round((stats.paid_users / stats.total_users) * 100) : 0;
 
   const cards = [
     {
-      label: 'Registrovaní uživatelé',
+      label: t('Registrovaní uživatelé'),
       value: String(stats.total_users),
-      hint: `+${stats.users_7d} za 7 dní · +${stats.users_30d} za 30 dní`,
+      hint: t('+{a} za 7 dní · +{b} za 30 dní', { a: stats.users_7d, b: stats.users_30d }),
       icon: Users,
     },
     {
-      label: 'Zaplacení uživatelé',
+      label: t('Zaplacení uživatelé'),
       value: String(stats.paid_users),
-      hint: `Konverze ${conversion} %`,
+      hint: t('Konverze {c} %', { c: conversion }),
       icon: TrendingUp,
     },
     {
-      label: 'Tržby celkem',
+      label: t('Tržby celkem'),
       value: formatCzk(stats.revenue_total),
-      hint: `${stats.payments_total} plateb`,
+      hint: t('{n} plateb', { n: stats.payments_total }),
       icon: Banknote,
     },
     {
-      label: 'Tržby za 30 dní',
+      label: t('Tržby za 30 dní'),
       value: formatCzk(stats.revenue_30d),
-      hint: `${stats.payments_30d} plateb`,
+      hint: t('{n} plateb', { n: stats.payments_30d }),
       icon: CreditCard,
     },
   ];
@@ -103,7 +105,7 @@ export default function AdminOverviewTab() {
 
       <Card className="shadow-card">
         <CardContent className="p-4 space-y-3">
-          <p className="text-sm font-semibold">Posledních 30 dní</p>
+          <p className="text-sm font-semibold">{t('Posledních 30 dní')}</p>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
@@ -119,13 +121,13 @@ export default function AdminOverviewTab() {
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="registrations" name="Registrace" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="payments" name="Platby" fill="hsl(var(--muted-foreground))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="registrations" name={t('Registrace')} fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="payments" name={t('Platby')} fill="hsl(var(--muted-foreground))" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <p className="text-xs text-muted-foreground">
-            Tržby a platby zahrnují pouze ostré (live) platby, testovací se nezapočítávají.
+            {t('Tržby a platby zahrnují pouze ostré (live) platby, testovací se nezapočítávají.')}
           </p>
         </CardContent>
       </Card>

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Sparkles, Loader2, CheckCircle, GraduationCap, ArrowLeft } from 'lucide-react';
 import { NumberField } from './NumberField';
+import { useT } from '@/lib/i18n';
 
 interface Question {
   id: string;
@@ -22,6 +23,12 @@ interface Question {
   correct_answer: number | null;
   back_text: string | null;
   order_index: number;
+  question_text_sk: string | null;
+  option_1_sk: string | null;
+  option_2_sk: string | null;
+  option_3_sk: string | null;
+  option_4_sk: string | null;
+  back_text_sk: string | null;
 }
 
 interface Props {
@@ -38,15 +45,20 @@ const emptyForm = {
   correct_answer: 1,
   back_text: '',
   order_index: 0,
+  question_text_sk: '',
+  option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '',
+  back_text_sk: '',
 };
 
 export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore }: Props) {
+  const t = useT();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [editLang, setEditLang] = useState<'cs' | 'sk'>('cs');
 
   // AI generation
   const [showAi, setShowAi] = useState(false);
@@ -73,20 +85,39 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       correct_answer: q.correct_answer || 1,
       back_text: q.back_text || '',
       order_index: q.order_index,
+      question_text_sk: q.question_text_sk || '',
+      option_1_sk: q.option_1_sk || '', option_2_sk: q.option_2_sk || '',
+      option_3_sk: q.option_3_sk || '', option_4_sk: q.option_4_sk || '',
+      back_text_sk: q.back_text_sk || '',
     });
     setEditingId(q.id);
+    setEditLang('cs');
     setShowForm(true);
   };
 
   const startCreate = () => {
     setForm({ ...emptyForm, order_index: questions.length });
     setEditingId(null);
+    setEditLang('cs');
     setShowForm(true);
+  };
+
+  // Generic accessor helpers so the same inputs edit either the Czech or Slovak column.
+  const fv = (key: 'question_text' | 'option_1' | 'option_2' | 'option_3' | 'option_4' | 'back_text') =>
+    (editLang === 'sk' ? (form as any)[`${key}_sk`] ?? '' : (form as any)[key]);
+  const setFv = (key: 'question_text' | 'option_1' | 'option_2' | 'option_3' | 'option_4' | 'back_text') => (value: string) => {
+    if (editLang === 'sk') {
+      if (key === 'back_text') setForm({ ...form, back_text_sk: value, question_text_sk: value });
+      else setForm({ ...form, [`${key}_sk`]: value } as any);
+    } else {
+      if (key === 'back_text') setForm({ ...form, back_text: value, question_text: value });
+      else setForm({ ...form, [key]: value } as any);
+    }
   };
 
   const save = async () => {
     if (!form.question_text.trim() && form.type === 'quiz') {
-      toast({ title: 'Chyba', description: 'Vyplňte text otázky', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: t('Vyplňte text otázky'), variant: 'destructive' });
       return;
     }
     const isFillBlank = form.type === 'fill_blank';
@@ -105,22 +136,28 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       wrong_option_2: null,
       wrong_option_3: null,
       order_index: form.order_index,
+      question_text_sk: isFillBlank ? (form.back_text_sk || null) : (form.question_text_sk || null),
+      option_1_sk: form.option_1_sk || null,
+      option_2_sk: form.option_2_sk || null,
+      option_3_sk: form.option_3_sk || null,
+      option_4_sk: form.option_4_sk || null,
+      back_text_sk: isFillBlank ? (form.back_text_sk || null) : null,
     };
     const { error } = editingId
       ? await supabase.from('questions').update(payload).eq('id', editingId)
       : await supabase.from('questions').insert(payload);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
     setShowForm(false);
     setEditingId(null);
-    toast({ title: 'Uloženo' });
+    toast({ title: t('Uloženo') });
     load();
   };
 
   const remove = async (id: string) => {
-    if (!confirm('Přesunout otázku do koše?')) return;
+    if (!confirm(t('Přesunout otázku do koše?'))) return;
     await supabase.rpc('soft_delete_question', { p_id: id });
     load();
   };
@@ -128,7 +165,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
   const generateAi = async () => {
     if (!aiText.trim() || aiTypes.length === 0) return;
     if (!Number.isFinite(aiCount)) {
-      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      toast({ title: t('Chybí hodnota'), description: t('Vyplňte počet otázek.'), variant: 'destructive' });
       return;
     }
     setAiLoading(true);
@@ -150,7 +187,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       setAiResults(list);
       setAiSelected(new Set(list.map((_, i) => i)));
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se vygenerovat'), variant: 'destructive' });
     } finally {
       setAiLoading(false);
     }
@@ -179,10 +216,10 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
     if (toInsert.length === 0) return;
     const { error } = await supabase.from('questions').insert(toInsert);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: `${toInsert.length} otázek přidáno` });
+    toast({ title: t('{n} otázek přidáno', { n: toInsert.length }) });
     setShowAi(false);
     setAiResults(null);
     setAiText('');
@@ -192,18 +229,42 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
   const toggleAiType = (t: string) =>
     setAiTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
 
+  const LangToggle = () => (
+    <div className="flex items-center gap-2">
+      <div className="inline-flex rounded-md border p-0.5 bg-muted/40">
+        <button
+          type="button"
+          onClick={() => setEditLang('cs')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'cs' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇨🇿 {t('Čeština')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLang('sk')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'sk' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇸🇰 {t('Slovenčina')}
+        </button>
+      </div>
+      {editLang === 'sk' && (
+        <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
+      )}
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <GraduationCap className="mr-1 h-4 w-4" /> Závěrečný test
+          <GraduationCap className="mr-1 h-4 w-4" /> {t('Závěrečný test')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl p-0 gap-0 max-h-[90vh] flex flex-col">
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-primary" />
-            Závěrečný test — {groupTitle}
+            {t('Závěrečný test — {title}', { title: groupTitle })}
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -211,21 +272,21 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
         {showAi ? (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => { setShowAi(false); setAiResults(null); }}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět')}
             </Button>
             {!aiResults ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  AI vybere POUZE nejdůležitější informace z textu (vhodné pro závěrečný test).
+                  {t('AI vybere POUZE nejdůležitější informace z textu (vhodné pro závěrečný test).')}
                 </p>
                 <Textarea
-                  placeholder="Vložte text (obsah celé skupiny levelů, klíčové pojmy...)"
+                  placeholder={t('Vložte text (obsah celé skupiny levelů, klíčové pojmy...)')}
                   value={aiText}
                   onChange={e => setAiText(e.target.value)}
                   rows={8}
                 />
                 <div className="flex gap-2 flex-wrap">
-                  {[{ t: 'quiz', l: '🧠 Kvíz' }, { t: 'fill_blank', l: '✏️ Doplňování' }].map(o => (
+                  {[{ t: 'quiz', l: `🧠 ${t('Kvíz')}` }, { t: 'fill_blank', l: `✏️ ${t('Doplňování')}` }].map(o => (
                     <button
                       key={o.t}
                       onClick={() => toggleAiType(o.t)}
@@ -238,19 +299,19 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                   ))}
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Počet otázek</label>
+                  <label className="text-sm font-medium mb-1 block">{t('Počet otázek')}</label>
                   <NumberField min={1} max={30} value={aiCount} onChange={v => setAiCount(v)} />
                 </div>
                 <Button onClick={generateAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
-                  {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji...</> : <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat</>}
+                  {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('Generuji...')}</> : <><Sparkles className="mr-2 h-4 w-4" /> {t('Vygenerovat')}</>}
                 </Button>
               </>
             ) : (
               <>
-                <p className="text-sm text-muted-foreground">Vygenerováno {aiResults.length} otázek. Vyberte které uložit:</p>
+                <p className="text-sm text-muted-foreground">{t('Vygenerováno {n} otázek. Vyberte které uložit:', { n: aiResults.length })}</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>Vybrat vše</Button>
-                  <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>Zrušit</Button>
+                  <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>{t('Vybrat vše')}</Button>
+                  <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>{t('Zrušit')}</Button>
                 </div>
                 <div className="space-y-2 max-h-[40vh] overflow-y-auto">
                   {aiResults.map((q, i) => (
@@ -267,7 +328,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary" className="text-[10px]">
-                          {q.type === 'quiz' ? '🧠 Kvíz' : '✏️ Doplňování'}
+                          {q.type === 'quiz' ? `🧠 ${t('Kvíz')}` : `✏️ ${t('Doplňování')}`}
                         </Badge>
                         {aiSelected.has(i) && <CheckCircle className="h-4 w-4 text-primary" />}
                       </div>
@@ -285,7 +346,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                   ))}
                 </div>
                 <Button onClick={saveAi} disabled={aiSelected.size === 0} className="w-full">
-                  <Plus className="mr-1 h-4 w-4" /> Uložit {aiSelected.size} otázek
+                  <Plus className="mr-1 h-4 w-4" /> {t('Uložit {n} otázek', { n: aiSelected.size })}
                 </Button>
               </>
             )}
@@ -293,71 +354,72 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
         ) : showForm ? (
           <div className="space-y-3">
             <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setEditingId(null); }}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na seznam
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na seznam')}
             </Button>
+            <LangToggle />
             <div>
-              <label className="text-sm font-medium mb-1 block">Typ</label>
+              <label className="text-sm font-medium mb-1 block">{t('Typ')}</label>
               <Select value={form.type} onValueChange={v => setForm({ ...form, type: v as any })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="quiz">🧠 Kvíz</SelectItem>
-                  <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
+                  <SelectItem value="quiz">🧠 {t('Kvíz')}</SelectItem>
+                  <SelectItem value="fill_blank">✏️ {t('Doplňování')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {form.type === 'quiz' ? (
               <div>
-                <label className="text-sm font-medium mb-1 block">Text otázky</label>
-                <Textarea value={form.question_text} onChange={e => setForm({ ...form, question_text: e.target.value })} />
+                <label className="text-sm font-medium mb-1 block">{t('Text otázky')}</label>
+                <Textarea value={fv('question_text')} onChange={e => setFv('question_text')(e.target.value)} />
               </div>
             ) : (
               <div>
-                <label className="text-sm font-medium mb-1 block">Věta (s „______" jako mezerou)</label>
+                <label className="text-sm font-medium mb-1 block">{t('Věta (s „______" jako mezerou)')}</label>
                 <Textarea
-                  value={form.back_text}
-                  onChange={e => setForm({ ...form, back_text: e.target.value, question_text: e.target.value })}
-                  placeholder="Např. Hlavní město ČR je ______."
+                  value={fv('back_text')}
+                  onChange={e => setFv('back_text')(e.target.value)}
+                  placeholder={t('Např. Hlavní město ČR je ______.')}
                 />
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Možnosti odpovědí</label>
-              <Input placeholder="Možnost 1" value={form.option_1} onChange={e => setForm({ ...form, option_1: e.target.value })} />
-              <Input placeholder="Možnost 2" value={form.option_2} onChange={e => setForm({ ...form, option_2: e.target.value })} />
-              <Input placeholder="Možnost 3 (volitelná)" value={form.option_3} onChange={e => setForm({ ...form, option_3: e.target.value })} />
-              <Input placeholder="Možnost 4 (volitelná)" value={form.option_4} onChange={e => setForm({ ...form, option_4: e.target.value })} />
+              <label className="text-sm font-medium">{t('Možnosti odpovědí')}</label>
+              <Input placeholder={t('Možnost 1')} value={fv('option_1')} onChange={e => setFv('option_1')(e.target.value)} />
+              <Input placeholder={t('Možnost 2')} value={fv('option_2')} onChange={e => setFv('option_2')(e.target.value)} />
+              <Input placeholder={t('Možnost 3 (volitelná)')} value={fv('option_3')} onChange={e => setFv('option_3')(e.target.value)} />
+              <Input placeholder={t('Možnost 4 (volitelná)')} value={fv('option_4')} onChange={e => setFv('option_4')(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Která je správná?</label>
+              <label className="text-sm font-medium mb-1 block">{t('Která je správná?')}</label>
               <Select value={String(form.correct_answer)} onValueChange={v => setForm({ ...form, correct_answer: parseInt(v) })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Možnost 1</SelectItem>
-                  <SelectItem value="2">Možnost 2</SelectItem>
-                  {form.option_3 && <SelectItem value="3">Možnost 3</SelectItem>}
-                  {form.option_4 && <SelectItem value="4">Možnost 4</SelectItem>}
+                  <SelectItem value="1">{t('Možnost 1')}</SelectItem>
+                  <SelectItem value="2">{t('Možnost 2')}</SelectItem>
+                  {form.option_3 && <SelectItem value="3">{t('Možnost 3')}</SelectItem>}
+                  {form.option_4 && <SelectItem value="4">{t('Možnost 4')}</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={save} className="w-full">Uložit</Button>
+            <Button onClick={save} className="w-full">{t('Uložit')}</Button>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <p className="text-sm text-muted-foreground">
-                Otázek: <strong>{questions.length}</strong> · Min. skóre: <strong>{passingScore}%</strong>
+                {t('Otázek:')} <strong>{questions.length}</strong> · {t('Min. skóre:')} <strong>{t('{n}%', { n: passingScore })}</strong>
               </p>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => { setShowAi(true); setAiResults(null); }}>
-                  <Sparkles className="mr-1 h-4 w-4" /> AI generování
+                  <Sparkles className="mr-1 h-4 w-4" /> {t('AI generování')}
                 </Button>
                 <Button size="sm" onClick={startCreate}>
-                  <Plus className="mr-1 h-4 w-4" /> Přidat otázku
+                  <Plus className="mr-1 h-4 w-4" /> {t('Přidat otázku')}
                 </Button>
               </div>
             </div>
             {questions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">Zatím žádné otázky závěrečného testu.</p>
+              <p className="text-sm text-muted-foreground text-center py-6">{t('Zatím žádné otázky závěrečného testu.')}</p>
             ) : (
               <div className="space-y-2">
                 {questions.map(q => (
@@ -369,7 +431,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                       <p className="text-sm font-medium truncate">{q.question_text}</p>
                       {q.correct_answer && (
                         <p className="text-xs text-success truncate">
-                          Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}
+                          {t('Správně:')} {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}
                         </p>
                       )}
                     </div>

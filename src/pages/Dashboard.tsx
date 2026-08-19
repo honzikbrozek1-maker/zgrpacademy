@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useAppPath } from '@/lib/pathContext';
+import { useT, useLang, pickLang } from '@/lib/i18n';
 import { useSectionProfile } from '@/hooks/useSectionProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -16,7 +17,9 @@ import Seo from '@/components/Seo';
 interface Level {
   id: string;
   title: string;
+  title_sk?: string | null;
   description: string | null;
+  description_sk?: string | null;
   order_index: number;
   group_id: string | null;
 }
@@ -41,6 +44,8 @@ interface UserProgressRow {
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
+  const { lang } = useLang();
   const { currentPath, category, basePath, pathLabel } = useAppPath();
   const { sectionProfile, refreshSectionProfile } = useSectionProfile(category);
   const [levels, setLevels] = useState<Level[]>([]);
@@ -74,7 +79,7 @@ export default function Dashboard() {
       const levelIds = levelsData.map((level) => level.id);
       const [{ data: progressData }, { data: questionsData }] = await Promise.all([
         supabase.from('user_progress').select('*').eq('user_id', user.id),
-        supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds }) as unknown as Promise<{ data: { id: string; level_id: string; type: string }[] | null }>,
+        supabase.rpc('get_practice_questions' as any, { p_level_ids: levelIds, p_lang: lang }) as unknown as Promise<{ data: { id: string; level_id: string; type: string }[] | null }>,
       ]);
 
       const questionTypesMap = Object.fromEntries(levelIds.map((id) => [id, [] as string[]]));
@@ -112,7 +117,7 @@ export default function Dashboard() {
     };
     fetchData();
     refreshSectionProfile();
-  }, [user, category, refreshSectionProfile]);
+  }, [user, category, refreshSectionProfile, lang]);
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
@@ -142,8 +147,8 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <Seo
-        title="Přehled studia – ZGRP Academy"
-        description="Sledujte svůj postup v kurzech, dokončené levely a doporučené další kroky v ZGRP Academy."
+        title={t('Přehled studia – ZGRP Academy')}
+        description={t('Sledujte svůj postup v kurzech, dokončené levely a doporučené další kroky v ZGRP Academy.')}
         canonical={`https://zgrpacademy.lovable.app${basePath}`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}`}
       />
@@ -153,7 +158,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-bold">{pathLabel}</h1>
             <p className="text-sm text-muted-foreground">
-              {isBackoffice ? 'Práce s backoffice systémem a systém odměn' : 'Procvičování znalostí o produktech Zinzino'}
+              {isBackoffice ? t('Práce s backoffice systémem a systém odměn') : t('Procvičování znalostí o produktech Zinzino')}
             </p>
           </div>
         </div>
@@ -165,7 +170,7 @@ export default function Dashboard() {
                 <Trophy className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Dokončeno</p>
+                <p className="text-xs text-muted-foreground">{t('Dokončeno')}</p>
                 <p className="text-lg font-bold">{completedCount}/{levels.length}</p>
               </div>
             </CardContent>
@@ -176,7 +181,7 @@ export default function Dashboard() {
                 <Layers className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Celkový postup</p>
+                <p className="text-xs text-muted-foreground">{t('Celkový postup')}</p>
                 <p className="text-lg font-bold">{Math.round(progressPercent)}%</p>
               </div>
             </CardContent>
@@ -187,7 +192,7 @@ export default function Dashboard() {
                 <BookOpen className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Aktivní sekce</p>
+                <p className="text-xs text-muted-foreground">{t('Aktivní sekce')}</p>
                 <p className="text-lg font-bold">{pathLabel}</p>
               </div>
             </CardContent>
@@ -198,7 +203,7 @@ export default function Dashboard() {
                 <RotateCcw className="h-5 w-5 text-orange-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">K procvičení</p>
+                <p className="text-xs text-muted-foreground">{t('K procvičení')}</p>
                 <p className="text-lg font-bold">{reviewCount}</p>
               </div>
             </CardContent>
@@ -208,7 +213,7 @@ export default function Dashboard() {
         <Card className="shadow-card hidden md:block">
           <CardContent className="p-3 md:p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Celkový postup</span>
+              <span className="text-sm font-medium">{t('Celkový postup')}</span>
               <span className="text-sm text-muted-foreground">{Math.round(progressPercent)}%</span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -223,8 +228,8 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3">
                   <RotateCcw className="h-5 w-5 text-orange-500" />
                   <div>
-                    <h2 className="font-semibold text-sm">Procvičování</h2>
-                    <p className="text-xs text-muted-foreground">{reviewCount} položek k opakování</p>
+                    <h2 className="font-semibold text-sm">{t('Procvičování')}</h2>
+                    <p className="text-xs text-muted-foreground">{t('{n} položek k opakování', { n: reviewCount })}</p>
                   </div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -236,10 +241,10 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Layers className="h-5 w-5 text-primary" /> Levely
+              <Layers className="h-5 w-5 text-primary" /> {t('Levely')}
             </h2>
             <Link to={`${basePath}/levels`}>
-              <Button variant="ghost" size="sm">Zobrazit vše <ArrowRight className="ml-1 h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm">{t('Zobrazit vše')} <ArrowRight className="ml-1 h-4 w-4" /></Button>
             </Link>
           </div>
           <div className="space-y-2">
@@ -269,8 +274,8 @@ export default function Dashboard() {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-medium text-sm">{level.title}</h3>
-                          {level.description && <p className="text-xs text-muted-foreground line-clamp-1">{level.description}</p>}
+                          <h3 className="font-medium text-sm">{pickLang(level, 'title', lang)}</h3>
+                          {level.description && <p className="text-xs text-muted-foreground line-clamp-1">{pickLang(level, 'description', lang)}</p>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -302,7 +307,7 @@ export default function Dashboard() {
             {levels.length === 0 && (
               <Card className="shadow-card">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  Zatím nejsou k dispozici žádné levely v této sekci.
+                  {t('Zatím nejsou k dispozici žádné levely v této sekci.')}
                 </CardContent>
               </Card>
             )}

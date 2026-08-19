@@ -20,8 +20,11 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
 import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useT } from '@/lib/i18n';
 
 export default function Auth() {
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -45,7 +48,7 @@ export default function Auth() {
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast({ title: 'Chyba přihlášení', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba přihlášení'), description: error.message, variant: 'destructive' });
     } else {
       navigate('/');
     }
@@ -55,7 +58,7 @@ export default function Auth() {
   const handleResetPassword = async () => {
     const target = (resetEmail || email).trim();
     if (!target) {
-      toast({ title: 'Zadejte e-mail', description: 'Napište e-mail, na který máte účet.', variant: 'destructive' });
+      toast({ title: t('Zadejte e-mail'), description: t('Napište e-mail, na který máte účet.'), variant: 'destructive' });
       return;
     }
     setResetSending(true);
@@ -64,13 +67,13 @@ export default function Auth() {
     });
     setResetSending(false);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
     setResetOpen(false);
     toast({
-      title: 'E-mail odeslán',
-      description: `Na ${target} jsme poslali odkaz pro nastavení nového hesla. Zkontrolujte i spam.`,
+      title: t('E-mail odeslán'),
+      description: t('Na {n} jsme poslali odkaz pro nastavení nového hesla. Zkontrolujte i spam.', { n: target }),
     });
   };
 
@@ -78,8 +81,8 @@ export default function Auth() {
     e.preventDefault();
     if (!/^(?=.*[a-zá-ž])(?=.*[A-ZÁ-Ž])(?=.*\d).{8,}$/.test(password)) {
       toast({
-        title: 'Slabé heslo',
-        description: 'Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.',
+        title: t('Slabé heslo'),
+        description: t('Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.'),
         variant: 'destructive',
       });
       return;
@@ -91,13 +94,13 @@ export default function Auth() {
       options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin },
     });
     if (error) {
-      toast({ title: 'Chyba registrace', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba registrace'), description: error.message, variant: 'destructive' });
     } else if (data.session) {
       // Auto-confirmed, user is logged in
-      toast({ title: 'Registrace úspěšná', description: 'Vítejte!' });
+      toast({ title: t('Registrace úspěšná'), description: t('Vítejte!') });
       navigate('/');
     } else {
-      toast({ title: 'Registrace úspěšná', description: 'Zkontrolujte svůj e-mail pro potvrzení.' });
+      toast({ title: t('Registrace úspěšná'), description: t('Zkontrolujte svůj e-mail pro potvrzení.') });
     }
     setLoading(false);
   };
@@ -108,7 +111,7 @@ export default function Auth() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast({ title: 'Chyba přihlášení', description: String(result.error), variant: 'destructive' });
+      toast({ title: t('Chyba přihlášení'), description: String(result.error), variant: 'destructive' });
       setLoading(false);
       return;
     }
@@ -122,24 +125,25 @@ export default function Auth() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background p-4 gap-4">
       <Seo
-        title="Přihlášení – ZGRP Academy"
-        description="Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup."
+        title={t('Přihlášení – ZGRP Academy')}
+        description={t('Přihlaste se nebo si vytvořte účet v ZGRP Academy – vzdělávací platformě pro partnery ZinzinoGroup.')}
         canonical="https://zgrpacademy.lovable.app/auth"
-        ogTitle="Přihlášení – ZGRP Academy"
-        ogDescription="Vstup do vzdělávací platformy ZGRP Academy."
+        ogTitle={t('Přihlášení – ZGRP Academy')}
+        ogDescription={t('Vstup do vzdělávací platformy ZGRP Academy.')}
         ogUrl="https://zgrpacademy.lovable.app/auth"
       />
       <InAppBrowserNotice className="w-full max-w-md" />
-      <Card className="w-full max-w-md shadow-elevated">
+      <Card className="w-full max-w-md shadow-elevated relative">
+        <LanguageSwitcher className="absolute top-3 right-3" />
         <CardHeader className="text-center space-y-2">
           <img
             src={zgrpLogo.url}
-            alt="Logo ZGRP Academy"
+            alt={t('Logo ZGRP Academy')}
             className="mx-auto h-20 w-20 rounded-full object-cover mb-2"
           />
 
-          <h1 className="text-2xl font-semibold leading-none tracking-tight">Přihlášení do ZGRP Academy</h1>
-          <CardDescription>Vzdělávací platforma pro partnery ZinzinoGroup</CardDescription>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('Přihlášení do ZGRP Academy')}</h1>
+          <CardDescription>{t('Vzdělávací platforma pro partnery ZinzinoGroup')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -154,7 +158,7 @@ export default function Auth() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Přihlásit se přes Google
+            {t('Přihlásit se přes Google')}
           </Button>
 
           <Button
@@ -166,44 +170,44 @@ export default function Auth() {
             <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16.365 1.43c0 1.14-.42 2.2-1.19 3.02-.89.96-2.02 1.53-3.06 1.44a3.4 3.4 0 0 1 1.2-2.94c.76-.83 2.06-1.44 3.05-1.52zM20.5 17.02c-.55 1.27-.82 1.84-1.53 2.97-.99 1.57-2.39 3.53-4.12 3.54-1.54.01-1.94-1-4.03-.99-2.09.01-2.53 1.01-4.07.99-1.73-.02-3.05-1.79-4.04-3.36C.06 16.12-.2 10.98 1.5 8.25c1.2-1.94 3.1-3.07 4.88-3.07 1.82 0 2.96 1 4.46 1 1.46 0 2.35-1 4.45-1 1.59 0 3.27.86 4.47 2.35-3.93 2.15-3.29 7.76.74 9.49z" />
             </svg>
-            Přihlásit se přes Apple
+            {t('Přihlásit se přes Apple')}
           </Button>
 
           <div className="relative mb-4">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-            <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">nebo</span></div>
+            <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">{t('nebo')}</span></div>
           </div>
 
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Přihlášení</TabsTrigger>
-              <TabsTrigger value="register">Registrace</TabsTrigger>
+              <TabsTrigger value="login">{t('Přihlášení')}</TabsTrigger>
+              <TabsTrigger value="register">{t('Registrace')}</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
+                  <Input placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
+                  <Input placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
                     <Checkbox checked={rememberMe} onCheckedChange={v => setRememberMe(v === true)} />
-                    Zůstat přihlášen
+                    {t('Zůstat přihlášen')}
                   </label>
                   <button
                     type="button"
                     className="text-sm text-primary hover:underline"
                     onClick={() => { setResetEmail(email); setResetOpen(true); }}
                   >
-                    Zapomenuté heslo?
+                    {t('Zapomenuté heslo?')}
                   </button>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-                  {loading ? 'Přihlašování...' : 'Přihlásit se'}
+                  {loading ? t('Přihlašování...') : t('Přihlásit se')}
                 </Button>
               </form>
             </TabsContent>
@@ -213,7 +217,7 @@ export default function Auth() {
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Např. Tomáš Fuk"
+                      placeholder={t('Např. Tomáš Fuk')}
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
                       className="pl-10"
@@ -222,24 +226,24 @@ export default function Auth() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground pl-1">
-                    Zadejte své celé jméno a příjmení – bude uvedeno na certifikátu.
+                    {t('Zadejte své celé jméno a příjmení – bude uvedeno na certifikátu.')}
                   </p>
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+                  <Input placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
                 </div>
                 <div className="space-y-1">
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={8} />
+                    <Input placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={8} />
                   </div>
                   <p className="text-xs text-muted-foreground pl-1">
-                    Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo. Speciální znaky nejsou nutné.
+                    {t('Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo. Speciální znaky nejsou nutné.')}
                   </p>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-                  {loading ? 'Registrace...' : 'Zaregistrovat se'}
+                  {loading ? t('Registrace...') : t('Zaregistrovat se')}
                 </Button>
               </form>
             </TabsContent>
@@ -250,16 +254,16 @@ export default function Auth() {
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Zapomenuté heslo</DialogTitle>
+            <DialogTitle>{t('Zapomenuté heslo')}</DialogTitle>
             <DialogDescription>
-              Zadejte e-mail, kterým jste se registrovali. Pošleme vám odkaz pro nastavení nového hesla.
+              {t('Zadejte e-mail, kterým jste se registrovali. Pošleme vám odkaz pro nastavení nového hesla.')}
             </DialogDescription>
           </DialogHeader>
           <div className="relative">
             <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               type="email"
-              placeholder="E-mail"
+              placeholder={t('E-mail')}
               value={resetEmail}
               onChange={e => setResetEmail(e.target.value)}
               className="pl-10"
@@ -267,13 +271,13 @@ export default function Auth() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResetOpen(false)}>Zrušit</Button>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>{t('Zrušit')}</Button>
             <Button
               className="gradient-primary text-primary-foreground"
               onClick={handleResetPassword}
               disabled={resetSending}
             >
-              {resetSending ? 'Odesílám…' : 'Odeslat odkaz'}
+              {resetSending ? t('Odesílám…') : t('Odeslat odkaz')}
             </Button>
           </DialogFooter>
         </DialogContent>
