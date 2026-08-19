@@ -81,4 +81,14 @@ export const skAdmin3: Record<string, string> = {
   '— Bez skupiny —': '— Bez skupiny —',
   'Procvičujte level „{title}" v ZGRP Academy – kvíz, doplňování a závěrečný test.':
     'Precvičujte level „{title}" v ZGRP Academy – kvíz, dopĺňanie a záverečný test.',
+  'Slovenština': 'Slovenčina',
+  'Slovenský obsah': 'Slovenský obsah',
+  'Skupiny a certifikáty': 'Skupiny a certifikáty',
+  'Hotovo': 'Hotovo',
+  'Překlad dokončen': 'Preklad dokončený',
+  'Chyba překladu': 'Chyba prekladu',
+  'Přeloženo {done} z {total}': 'Preložené {done} z {total}',
+  'Přeložit ({n})': 'Preložiť ({n})',
+  'Automatický překlad českého obsahu do slovenštiny. Přeloží se jen položky, které slovenskou verzi zatím nemají — ručně upravené texty zůstanou beze změny.':
+    'Automatický preklad českého obsahu do slovenčiny. Preložia sa iba položky, ktoré slovenskú verziu zatiaľ nemajú — ručne upravené texty zostanú bez zmeny.',
 };
