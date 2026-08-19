@@ -179,14 +179,14 @@ export default function AdminPanel() {
 
   const sendAdminRequest = async () => {
     if (!user || !selectedTargetAdmin) {
-      toast({ title: 'Chyba', description: 'Vyberte admina, kterému chcete poslat žádost.', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: t('Vyberte admina, kterému chcete poslat žádost.'), variant: 'destructive' });
       return;
     }
     const { error } = await supabase.from('admin_requests').insert({ user_id: user.id, target_admin_id: selectedTargetAdmin });
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Žádost odeslána' });
+      toast({ title: t('Žádost odeslána') });
       fetchMyRequest();
     }
   };
@@ -195,20 +195,20 @@ export default function AdminPanel() {
     if (!user) return;
     const { error } = await supabase.rpc('handle_admin_request', { p_request_id: requestId, p_approve: approve });
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: approve ? 'Žádost schválena' : 'Žádost zamítnuta' });
+    toast({ title: approve ? t('Žádost schválena') : t('Žádost zamítnuta') });
     fetchAdminRequests();
   };
 
   const saveLevel = async () => {
     if (!levelForm.title.trim()) {
-      toast({ title: 'Chyba', description: 'Vyplňte název levelu.', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: t('Vyplňte název levelu.'), variant: 'destructive' });
       return;
     }
     if (!Number.isFinite(levelForm.order_index) || !Number.isFinite(levelForm.passing_score)) {
-      toast({ title: 'Chybí hodnota', description: 'Vyplňte pořadí a skóre pro postup.', variant: 'destructive' });
+      toast({ title: t('Chybí hodnota'), description: t('Vyplňte pořadí a skóre pro postup.'), variant: 'destructive' });
       return;
     }
     const payload = { ...levelForm, category };
@@ -221,15 +221,15 @@ export default function AdminPanel() {
     setEditingLevel(null);
     setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category });
     fetchLevels();
-    toast({ title: 'Uloženo' });
+    toast({ title: t('Uloženo') });
   };
 
   const deleteLevel = async (id: string) => {
     const { error } = await supabase.rpc('soft_delete_level', { p_id: id });
-    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: t('Chyba'), description: error.message, variant: 'destructive' }); return; }
     fetchLevels();
     if (selectedLevel?.id === id) setSelectedLevel(null);
-    toast({ title: 'Level přesunut do koše' });
+    toast({ title: t('Level přesunut do koše') });
   };
 
   const editLevel = (level: Level) => {
@@ -267,21 +267,21 @@ export default function AdminPanel() {
     setBlankInserted(false);
     resetQForm();
     fetchQuestions(selectedLevel.id);
-    toast({ title: 'Uloženo' });
+    toast({ title: t('Uloženo') });
   };
 
   const deleteQuestion = async (id: string) => {
     const { error } = await supabase.rpc('soft_delete_question', { p_id: id });
-    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: t('Chyba'), description: error.message, variant: 'destructive' }); return; }
     if (selectedLevel) fetchQuestions(selectedLevel.id);
-    toast({ title: 'Otázka přesunuta do koše' });
+    toast({ title: t('Otázka přesunuta do koše') });
   };
 
   const toggleInLevelTest = async (q: Question, value: boolean) => {
     setQuestions(prev => prev.map(x => x.id === q.id ? { ...x, in_level_test: value } : x));
     const { error } = await supabase.from('questions').update({ in_level_test: value }).eq('id', q.id);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       if (selectedLevel) fetchQuestions(selectedLevel.id);
     }
   };
@@ -336,21 +336,21 @@ export default function AdminPanel() {
   const toggleAdmin = async (userId: string, isCurrentlyAdmin: boolean) => {
     if (isCurrentlyAdmin) {
       const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
-      if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
+      if (error) { toast({ title: t('Chyba'), description: error.message, variant: 'destructive' }); return; }
     } else {
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
-      if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
+      if (error) { toast({ title: t('Chyba'), description: error.message, variant: 'destructive' }); return; }
     }
-    toast({ title: isCurrentlyAdmin ? 'Admin role odebrána' : 'Admin role přidělena' });
+    toast({ title: isCurrentlyAdmin ? t('Admin role odebrána') : t('Admin role přidělena') });
     fetchAdminList();
   };
 
   const deleteUser = async (userId: string) => {
     const { error } = await supabase.rpc('soft_delete_user', { p_user_id: userId });
-    if (error) { toast({ title: 'Chyba', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: t('Chyba'), description: error.message, variant: 'destructive' }); return; }
     setShowDeleteUser(null);
     fetchUsers();
-    toast({ title: 'Uživatel přesunut do koše' });
+    toast({ title: t('Uživatel přesunut do koše') });
   };
 
   // Insert blank at cursor position
@@ -391,11 +391,11 @@ export default function AdminPanel() {
     if (!aiText.trim() || !selectedLevel) return;
     if (aiForTest) {
       if (!Number.isFinite(aiQuizCount) || !Number.isFinite(aiFillCount)) {
-        toast({ title: 'Chybí hodnota', description: 'Vyplňte počet kvízových a doplňovacích otázek.', variant: 'destructive' });
+        toast({ title: t('Chybí hodnota'), description: t('Vyplňte počet kvízových a doplňovacích otázek.'), variant: 'destructive' });
         return;
       }
     } else if (!Number.isFinite(aiCount)) {
-      toast({ title: 'Chybí hodnota', description: 'Vyplňte počet otázek.', variant: 'destructive' });
+      toast({ title: t('Chybí hodnota'), description: t('Vyplňte počet otázek.'), variant: 'destructive' });
       return;
     }
     // Build per-type targets
@@ -428,7 +428,7 @@ export default function AdminPanel() {
             const detail = q.type === 'fill_blank'
               ? q.back_text
               : correctOption;
-            return [q.question_text, detail].filter(Boolean).join(' | Správně: ');
+            return [q.question_text, detail].filter(Boolean).join(` | ${t('Správně')}: `);
           })
           .filter(Boolean)
       : [];
@@ -454,9 +454,9 @@ export default function AdminPanel() {
           });
           if (error) {
             const ctx: any = (error as any).context;
-            let msg = error.message || 'Chyba generování';
-            if (ctx?.status === 429) msg = 'Příliš mnoho požadavků. Zkuste to za chvíli.';
-            if (ctx?.status === 402) msg = 'AI kredit vyčerpán. Doplňte kredity v nastavení workspace.';
+            let msg = error.message || t('Chyba generování');
+            if (ctx?.status === 429) msg = t('Příliš mnoho požadavků. Zkuste to za chvíli.');
+            if (ctx?.status === 402) msg = t('AI kredit vyčerpán. Doplňte kredity v nastavení workspace.');
             throw new Error(msg);
           }
           if (data?.error) throw new Error(data.error);
@@ -474,9 +474,9 @@ export default function AdminPanel() {
       if (all.length > 0) {
         setAiResults(all);
         setAiSelected(new Set(all.map((_, i) => i)));
-        toast({ title: 'Generování přerušeno', description: `${e.message}. Vygenerováno ${all.length} z ${grandTotal} otázek.`, variant: 'destructive' });
+        toast({ title: t('Generování přerušeno'), description: t('{msg}. Vygenerováno {done} z {total} otázek.', { msg: e.message, done: all.length, total: grandTotal }), variant: 'destructive' });
       } else {
-        toast({ title: 'Chyba', description: e.message || 'Nepodařilo se vygenerovat otázky', variant: 'destructive' });
+        toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se vygenerovat otázky'), variant: 'destructive' });
       }
     } finally {
       setAiLoading(false);
@@ -507,10 +507,10 @@ export default function AdminPanel() {
     if (toInsert.length === 0) return;
     const { error } = await supabase.from('questions').insert(toInsert);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: `${toInsert.length} otázek přidáno` });
+    toast({ title: t('{count} otázek přidáno', { count: toInsert.length }) });
     setShowAiDialog(false);
     setAiResults(null);
     setAiText('');
@@ -548,29 +548,29 @@ export default function AdminPanel() {
             <Shield className="h-6 w-6 text-primary" /> Admin panel
           </h1>
           <Card className="shadow-card">
-            <CardHeader><CardTitle>Nemáte administrátorská oprávnění</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('Nemáte administrátorská oprávnění')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Pokud potřebujete administrátorský přístup, můžete odeslat žádost administrátorovi.
+                {t('Pokud potřebujete administrátorský přístup, můžete odeslat žádost administrátorovi.')}
               </p>
               {myRequest ? (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-                  {myRequest.status === 'pending' && <><Clock className="h-4 w-4 text-warning" /><span className="text-sm">Vaše žádost čeká na schválení...</span></>}
+                  {myRequest.status === 'pending' && <><Clock className="h-4 w-4 text-warning" /><span className="text-sm">{t('Vaše žádost čeká na schválení...')}</span></>}
                   {myRequest.status === 'approved' && (
                     <div className="flex items-center gap-3 flex-wrap">
                       <CheckCircle className="h-4 w-4 text-success" />
-                      <span className="text-sm">Žádost schválena! Klikněte pro načtení oprávnění.</span>
-                      <Button size="sm" variant="outline" onClick={() => window.location.reload()}>Načíst oprávnění</Button>
+                      <span className="text-sm">{t('Žádost schválena! Klikněte pro načtení oprávnění.')}</span>
+                      <Button size="sm" variant="outline" onClick={() => window.location.reload()}>{t('Načíst oprávnění')}</Button>
                     </div>
                   )}
-                  {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">Žádost byla zamítnuta.</span></>}
+                  {myRequest.status === 'rejected' && <><XCircle className="h-4 w-4 text-destructive" /><span className="text-sm">{t('Žádost byla zamítnuta.')}</span></>}
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Vyberte admina, kterému chcete žádost poslat:</label>
+                    <label className="text-sm font-medium mb-1 block">{t('Vyberte admina, kterému chcete žádost poslat:')}</label>
                     <Select value={selectedTargetAdmin || ''} onValueChange={v => setSelectedTargetAdmin(v)}>
-                      <SelectTrigger><SelectValue placeholder="Vyberte admina..." /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t('Vyberte admina...')} /></SelectTrigger>
                       <SelectContent>
                         {adminList.map(a => (
                           <SelectItem key={a.user_id} value={a.user_id}>{a.display_name || 'Admin'}</SelectItem>
@@ -579,7 +579,7 @@ export default function AdminPanel() {
                     </Select>
                   </div>
                   <Button variant="outline" className="flex items-center gap-2" onClick={sendAdminRequest} disabled={!selectedTargetAdmin}>
-                    <Send className="h-4 w-4" /> Požádat o admin přístup
+                    <Send className="h-4 w-4" /> {t('Požádat o admin přístup')}
                   </Button>
                 </div>
               )}
@@ -604,14 +604,14 @@ export default function AdminPanel() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium truncate">{u.display_name || 'Bez jména'}</p>
+                <p className="font-medium truncate">{u.display_name || t('Bez jména')}</p>
                 {userIsAdmin
-                  ? <Badge className="gap-1"><Shield className="h-3 w-3" /> Admin</Badge>
-                  : <Badge variant="secondary">Uživatel</Badge>}
-                {!u.has_paid && <Badge variant="outline" className="text-muted-foreground">Nezaplaceno</Badge>}
+                  ? <Badge className="gap-1"><Shield className="h-3 w-3" /> {t('Admin')}</Badge>
+                  : <Badge variant="secondary">{t('Uživatel')}</Badge>}
+                {!u.has_paid && <Badge variant="outline" className="text-muted-foreground">{t('Nezaplaceno')}</Badge>}
               </div>
               <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
-                <span>Registrace: {new Date(u.created_at).toLocaleDateString('cs')}</span>
+                <span>{t('Registrace: {date}', { date: new Date(u.created_at).toLocaleDateString('cs') })}</span>
               </div>
             </div>
           </div>
@@ -625,23 +625,23 @@ export default function AdminPanel() {
                     </Button>
                   ) : (
                     <Button variant="outline" size="sm">
-                      <Shield className="mr-1 h-3 w-3" /> Přidělit admina
+                      <Shield className="mr-1 h-3 w-3" /> {t('Přidělit admina')}
                     </Button>
                   )}
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      {userIsAdmin ? 'Odebrat admin oprávnění?' : 'Přidělit admin oprávnění?'}
+                      {userIsAdmin ? t('Odebrat admin oprávnění?') : t('Přidělit admin oprávnění?')}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       {userIsAdmin
-                        ? `Uživateli ${u.display_name || 'bez jména'} bude odebrána role administrátora.`
-                        : `Uživatel ${u.display_name || 'bez jména'} získá plný administrátorský přístup k aplikaci.`}
+                        ? t('Uživateli {name} bude odebrána role administrátora.', { name: u.display_name || t('bez jména') })
+                        : t('Uživatel {name} získá plný administrátorský přístup k aplikaci.', { name: u.display_name || t('bez jména') })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                    <AlertDialogCancel>{t('Zrušit')}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => toggleAdmin(u.user_id, userIsAdmin)}>
                       Potvrdit
                     </AlertDialogAction>
@@ -651,8 +651,8 @@ export default function AdminPanel() {
             )}
             {showDeleteUser === u.user_id ? (
               <div className="flex items-center gap-1">
-                <Button variant="destructive" size="sm" onClick={() => deleteUser(u.user_id)}>Potvrdit</Button>
-                <Button variant="outline" size="sm" onClick={() => setShowDeleteUser(null)}>Zrušit</Button>
+                <Button variant="destructive" size="sm" onClick={() => deleteUser(u.user_id)}>{t('Potvrdit')}</Button>
+                <Button variant="outline" size="sm" onClick={() => setShowDeleteUser(null)}>{t('Zrušit')}</Button>
               </div>
             ) : (
               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setShowDeleteUser(u.user_id)}>
@@ -669,12 +669,12 @@ export default function AdminPanel() {
     <div className="space-y-4">
       {/* Type selector */}
       <div>
-        <label className="text-sm font-medium mb-1 block">Typ</label>
+        <label className="text-sm font-medium mb-1 block">{t('Typ')}</label>
         <Select value={qForm.type} onValueChange={v => { setQForm({ ...qForm, type: v }); setBlankInserted(false); }}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="quiz">🧠 Kvíz</SelectItem>
-            <SelectItem value="fill_blank">✏️ Doplňování</SelectItem>
+            <SelectItem value="quiz">{t('🧠 Kvíz')}</SelectItem>
+            <SelectItem value="fill_blank">{t('✏️ Doplňování')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -683,10 +683,10 @@ export default function AdminPanel() {
       {qForm.type !== 'fill_blank' && (
         <div>
           <label className="text-sm font-medium mb-1 block">
-            {qForm.type === 'flashcard' ? 'Přední strana kartičky (otázka)' : 'Text otázky'}
+            {qForm.type === 'flashcard' ? t('Přední strana kartičky (otázka)') : t('Text otázky')}
           </label>
           <Textarea
-            placeholder={qForm.type === 'flashcard' ? 'Co se zobrazí na přední straně kartičky?' : 'Napište otázku...'}
+            placeholder={qForm.type === 'flashcard' ? t('Co se zobrazí na přední straně kartičky?') : t('Napište otázku...')}
             value={qForm.question_text}
             onChange={e => setQForm({ ...qForm, question_text: e.target.value })}
           />
@@ -696,21 +696,21 @@ export default function AdminPanel() {
       {qForm.type === 'quiz' && (
         <>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Možnosti odpovědí</label>
-            <Input placeholder="Možnost 1" value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
-            <Input placeholder="Možnost 2" value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
-            <Input placeholder="Možnost 3" value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
-            <Input placeholder="Možnost 4" value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
+            <label className="text-sm font-medium">{t('Možnosti odpovědí')}</label>
+            <Input placeholder={t('Možnost 1')} value={qForm.option_1} onChange={e => setQForm({ ...qForm, option_1: e.target.value })} />
+            <Input placeholder={t('Možnost 2')} value={qForm.option_2} onChange={e => setQForm({ ...qForm, option_2: e.target.value })} />
+            <Input placeholder={t('Možnost 3')} value={qForm.option_3} onChange={e => setQForm({ ...qForm, option_3: e.target.value })} />
+            <Input placeholder={t('Možnost 4')} value={qForm.option_4} onChange={e => setQForm({ ...qForm, option_4: e.target.value })} />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1 block">Která možnost je správná?</label>
+            <label className="text-sm font-medium mb-1 block">{t('Která možnost je správná?')}</label>
             <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Možnost 1</SelectItem>
-                <SelectItem value="2">Možnost 2</SelectItem>
-                <SelectItem value="3">Možnost 3</SelectItem>
-                <SelectItem value="4">Možnost 4</SelectItem>
+                <SelectItem value="1">{t('Možnost 1')}</SelectItem>
+                <SelectItem value="2">{t('Možnost 2')}</SelectItem>
+                <SelectItem value="3">{t('Možnost 3')}</SelectItem>
+                <SelectItem value="4">{t('Možnost 4')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -720,30 +720,30 @@ export default function AdminPanel() {
       {qForm.type === 'flashcard' && (
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1 block">Zadní strana kartičky (správná odpověď)</label>
+            <label className="text-sm font-medium mb-1 block">{t('Zadní strana kartičky (správná odpověď)')}</label>
             <Textarea
-              placeholder="Co se zobrazí po otočení kartičky?"
+              placeholder={t('Co se zobrazí po otočení kartičky?')}
               value={qForm.back_text}
               onChange={e => setQForm({ ...qForm, back_text: e.target.value })}
             />
           </div>
           <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
-            <label className="text-sm font-medium block">Špatné možnosti pro závěrečný test</label>
+            <label className="text-sm font-medium block">{t('Špatné možnosti pro závěrečný test')}</label>
             <p className="text-xs text-muted-foreground">
-              V testu se kartička zobrazí jako kvíz se 4 možnostmi. Vyplňte 3 nesprávné odpovědi. Bez nich nebude kartička v testu zařazena.
+              {t('V testu se kartička zobrazí jako kvíz se 4 možnostmi. Vyplňte 3 nesprávné odpovědi. Bez nich nebude kartička v testu zařazena.')}
             </p>
             <Input
-              placeholder="Špatná možnost 1"
+              placeholder={t('Špatná možnost 1')}
               value={qForm.wrong_option_1}
               onChange={e => setQForm({ ...qForm, wrong_option_1: e.target.value })}
             />
             <Input
-              placeholder="Špatná možnost 2"
+              placeholder={t('Špatná možnost 2')}
               value={qForm.wrong_option_2}
               onChange={e => setQForm({ ...qForm, wrong_option_2: e.target.value })}
             />
             <Input
-              placeholder="Špatná možnost 3"
+              placeholder={t('Špatná možnost 3')}
               value={qForm.wrong_option_3}
               onChange={e => setQForm({ ...qForm, wrong_option_3: e.target.value })}
             />
@@ -755,13 +755,13 @@ export default function AdminPanel() {
         <div className="space-y-4">
           {/* Step 1: Write the sentence */}
           <div>
-            <label className="text-sm font-medium mb-1 block">1. Napište celou větu</label>
+            <label className="text-sm font-medium mb-1 block">{t('1. Napište celou větu')}</label>
             <p className="text-xs text-muted-foreground mb-2">
-              Napište celou větu i se slovem, které pak chcete vynechat. Např.: <em>„Hlavním městem České republiky je Praha."</em> V dalším kroku si v této větě označíte slovo, které se má vynechat.
+              Napište celou větu i se slovem, které pak chcete vynechat. Např.: <em>{t('„Hlavním městem České republiky je Praha."')}</em> V dalším kroku si v této větě označíte slovo, které se má vynechat.
             </p>
             <Textarea
               ref={sentenceRef}
-              placeholder="Např.: Hlavním městem České republiky je Praha."
+              placeholder={t('Např.: Hlavním městem České republiky je Praha.')}
               value={qForm.back_text}
               onChange={e => { setQForm({ ...qForm, back_text: e.target.value }); if (!e.target.value.includes('______')) setBlankInserted(false); }}
             />
@@ -776,22 +776,22 @@ export default function AdminPanel() {
               onClick={handleInsertBlank}
               disabled={!qForm.back_text || blankInserted}
             >
-              {blankInserted ? '✅ Mezera vložena' : '📍 Vložit mezeru na pozici kurzoru'}
+              {blankInserted ? t('✅ Mezera vložena') : t('📍 Vložit mezeru na pozici kurzoru')}
             </Button>
             {!blankInserted && qForm.back_text && (
               <p className="text-xs text-muted-foreground mt-1">
-                Umístěte kurzor do věty tam, kde chcete vynechat slovo, a klikněte na tlačítko.
+                {t('Umístěte kurzor do věty tam, kde chcete vynechat slovo, a klikněte na tlačítko.')}
               </p>
             )}
             {blankInserted && (
-              <p className="text-xs text-success mt-1">Mezera je označena jako „______" ve větě.</p>
+              <p className="text-xs text-success mt-1">{t('Mezera je označena jako „______" ve větě.')}</p>
             )}
           </div>
 
           {/* Preview */}
           {blankInserted && qForm.back_text.includes('______') && (
             <div className="p-3 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground mb-1">Náhled:</p>
+              <p className="text-xs text-muted-foreground mb-1">{t('Náhled:')}</p>
               <p className="text-sm">
                 {qForm.back_text.split('______').map((part, i, arr) => (
                   <span key={i}>
@@ -808,63 +808,63 @@ export default function AdminPanel() {
 
           {/* Step 3: Answer options */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">3. Možnosti odpovědí (min. 2, max. 4)</label>
+            <label className="text-sm font-medium">{t('3. Možnosti odpovědí (min. 2, max. 4)')}</label>
             <div className="relative">
               <Input
-                placeholder="Možnost 1"
+                placeholder={t('Možnost 1')}
                 value={qForm.option_1}
                 onChange={e => setQForm({ ...qForm, option_1: e.target.value })}
                 className="pr-20"
               />
               {qForm.correct_answer === 1 && (
-                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">{t('správná')}</Badge>
               )}
             </div>
             <div className="relative">
               <Input
-                placeholder="Možnost 2"
+                placeholder={t('Možnost 2')}
                 value={qForm.option_2}
                 onChange={e => setQForm({ ...qForm, option_2: e.target.value })}
                 className="pr-20"
               />
               {qForm.correct_answer === 2 && (
-                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">{t('správná')}</Badge>
               )}
             </div>
             <div className="relative">
               <Input
-                placeholder="Možnost 3 (volitelná)"
+                placeholder={t('Možnost 3 (volitelná)')}
                 value={qForm.option_3}
                 onChange={e => setQForm({ ...qForm, option_3: e.target.value })}
                 className="pr-20"
               />
               {qForm.correct_answer === 3 && (
-                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">{t('správná')}</Badge>
               )}
             </div>
             <div className="relative">
               <Input
-                placeholder="Možnost 4 (volitelná)"
+                placeholder={t('Možnost 4 (volitelná)')}
                 value={qForm.option_4}
                 onChange={e => setQForm({ ...qForm, option_4: e.target.value })}
                 className="pr-20"
               />
               {qForm.correct_answer === 4 && (
-                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">správná</Badge>
+                <Badge className="absolute right-2 top-1/2 -translate-y-1/2 bg-success/15 text-success text-[10px] border-0">{t('správná')}</Badge>
               )}
             </div>
           </div>
 
           {/* Step 4: Select correct answer */}
           <div>
-            <label className="text-sm font-medium mb-1 block">4. Která možnost je správná?</label>
+            <label className="text-sm font-medium mb-1 block">{t('4. Která možnost je správná?')}</label>
             <Select value={String(qForm.correct_answer)} onValueChange={v => setQForm({ ...qForm, correct_answer: parseInt(v) })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Možnost 1</SelectItem>
-                <SelectItem value="2">Možnost 2</SelectItem>
-                {qForm.option_3 && <SelectItem value="3">Možnost 3</SelectItem>}
-                {qForm.option_4 && <SelectItem value="4">Možnost 4</SelectItem>}
+                <SelectItem value="1">{t('Možnost 1')}</SelectItem>
+                <SelectItem value="2">{t('Možnost 2')}</SelectItem>
+                {qForm.option_3 && <SelectItem value="3">{t('Možnost 3')}</SelectItem>}
+                {qForm.option_4 && <SelectItem value="4">{t('Možnost 4')}</SelectItem>}
               </SelectContent>
             </Select>
           </div>
@@ -877,7 +877,7 @@ export default function AdminPanel() {
           qForm.question_text = qForm.back_text;
         }
         saveQuestion();
-      }} className="w-full">Uložit</Button>
+      }} className="w-full">{t('Uložit')}</Button>
     </div>
   );
 
@@ -891,14 +891,14 @@ export default function AdminPanel() {
         <Tabs defaultValue="overview">
           <div className="-mx-4 md:mx-0 overflow-x-auto scrollbar-none">
             <TabsList className="inline-flex w-max md:w-auto mx-4 md:mx-0">
-              <TabsTrigger value="overview"><BarChart3 className="mr-1 h-4 w-4" /> Přehled</TabsTrigger>
-              <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> Obsah</TabsTrigger>
-              <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">Skupiny & certifikáty</span><span className="sm:hidden">Skupiny</span></TabsTrigger>
-              <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> Uživatelé</TabsTrigger>
-              <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> Koš</TabsTrigger>
+              <TabsTrigger value="overview"><BarChart3 className="mr-1 h-4 w-4" /> {t('Přehled')}</TabsTrigger>
+              <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> {t('Obsah')}</TabsTrigger>
+              <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">{t('Skupiny & certifikáty')}</span><span className="sm:hidden">{t('Skupiny')}</span></TabsTrigger>
+              <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> {t('Uživatelé')}</TabsTrigger>
+              <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> {t('Koš')}</TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="requests" className="relative">
-                  <Shield className="mr-1 h-4 w-4" /> Žádosti
+                  <Shield className="mr-1 h-4 w-4" /> {t('Žádosti')}
                   {pendingAdminRequests.length > 0 && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{pendingAdminRequests.length}</span>
                   )}
@@ -917,34 +917,34 @@ export default function AdminPanel() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="sm" onClick={() => setSelectedLevel(null)}>
-                    <ArrowLeft className="mr-1 h-4 w-4" /> Zpět na levely
+                    <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět na levely')}
                   </Button>
                   <h2 className="text-lg font-semibold">{selectedLevel.order_index}. {selectedLevel.title}</h2>
                 </div>
 
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <p className="text-sm text-muted-foreground">
-                    {questions.filter(q => q.type === 'quiz').length} kvízů, {questions.filter(q => q.type === 'fill_blank').length} doplňování
+                    {t('{quiz} kvízů, {fill} doplňování', { quiz: questions.filter(q => q.type === 'quiz').length, fill: questions.filter(q => q.type === 'fill_blank').length })}
                   </p>
                   <div className="flex gap-2">
                     <Dialog open={showAiDialog} onOpenChange={(open) => { setShowAiDialog(open); if (!open) resetAiDialog(); }}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="outline" onClick={() => openAiGenerator()}>
-                          <Sparkles className="mr-1 h-4 w-4" /> AI generování
+                          <Sparkles className="mr-1 h-4 w-4" /> {t('AI generování')}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-h-[85vh] overflow-y-auto max-w-2xl">
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-primary" /> Generování otázek pomocí AI
+                            <Sparkles className="h-5 w-5 text-primary" /> {t('Generování otázek pomocí AI')}
                           </DialogTitle>
                         </DialogHeader>
                         {!aiResults ? (
                           <div className="space-y-4">
                             <div>
-                              <label className="text-sm font-medium mb-1 block">Vložte text nebo téma</label>
+                              <label className="text-sm font-medium mb-1 block">{t('Vložte text nebo téma')}</label>
                               <Textarea
-                                placeholder="Vložte text z učebnice, NotebookLM, poznámek nebo popište téma..."
+                                placeholder={t('Vložte text z učebnice, NotebookLM, poznámek nebo popište téma...')}
                                 value={aiText}
                                 onChange={e => setAiText(e.target.value)}
                                 rows={8}
@@ -952,13 +952,13 @@ export default function AdminPanel() {
                             </div>
                             <label className="flex items-center justify-between gap-2 p-3 rounded-lg border-2 border-border cursor-pointer">
                               <div>
-                                <p className="text-sm font-medium flex items-center gap-1.5">🏁 Pro závěrečný test</p>
-                                <p className="text-xs text-muted-foreground">Otázky se neobjeví v procvičování a budou cílené na závěrečný test.</p>
+                                <p className="text-sm font-medium flex items-center gap-1.5">{t('🏁 Pro závěrečný test')}</p>
+                                <p className="text-xs text-muted-foreground">{t('Otázky se neobjeví v procvičování a budou cílené na závěrečný test.')}</p>
                               </div>
                               <Switch checked={aiForTest} onCheckedChange={setAiForTest} />
                             </label>
                             <div>
-                              <label className="text-sm font-medium mb-2 block">Zdroj pro AI</label>
+                              <label className="text-sm font-medium mb-2 block">{t('Zdroj pro AI')}</label>
                               <div className="grid gap-2 sm:grid-cols-2">
                                 <button
                                   type="button"
@@ -967,8 +967,8 @@ export default function AdminPanel() {
                                   }`}
                                   onClick={() => setAiSourceMode('new_only')}
                                 >
-                                  <p className="text-sm font-medium">Jen nový vstup</p>
-                                  <p className="text-xs text-muted-foreground">AI použije pouze text, který vložíte teď.</p>
+                                  <p className="text-sm font-medium">{t('Jen nový vstup')}</p>
+                                  <p className="text-xs text-muted-foreground">{t('AI použije pouze text, který vložíte teď.')}</p>
                                 </button>
                                 <button
                                   type="button"
@@ -977,19 +977,19 @@ export default function AdminPanel() {
                                   }`}
                                   onClick={() => setAiSourceMode('new_plus_existing')}
                                 >
-                                  <p className="text-sm font-medium">Nový vstup + existující otázky</p>
-                                  <p className="text-xs text-muted-foreground">AI může navázat i na již existující procvičovací otázky v tomto levelu.</p>
+                                  <p className="text-sm font-medium">{t('Nový vstup + existující otázky')}</p>
+                                  <p className="text-xs text-muted-foreground">{t('AI může navázat i na již existující procvičovací otázky v tomto levelu.')}</p>
                                 </button>
                               </div>
                             </div>
                             {!aiForTest ? (
                               <>
                                 <div>
-                                  <label className="text-sm font-medium mb-2 block">Typy otázek k vygenerování</label>
+                                  <label className="text-sm font-medium mb-2 block">{t('Typy otázek k vygenerování')}</label>
                                   <div className="flex gap-2 flex-wrap">
                                     {[
-                                      { type: 'quiz', label: '🧠 Kvíz' },
-                                      { type: 'fill_blank', label: '✏️ Doplňování' },
+                                      { type: 'quiz', label: t('🧠 Kvíz') },
+                                      { type: 'fill_blank', label: t('✏️ Doplňování') },
                                     ].map(opt => (
                                       <button
                                         key={opt.type}
@@ -1004,7 +1004,7 @@ export default function AdminPanel() {
                                   </div>
                                 </div>
                                 <div>
-                                  <label className="text-sm font-medium mb-1 block">Počet otázek (1–100)</label>
+                                  <label className="text-sm font-medium mb-1 block">{t('Počet otázek (1–100)')}</label>
                                   <NumberField
                                     min={1}
                                     max={100}
@@ -1012,18 +1012,18 @@ export default function AdminPanel() {
                                     onChange={v => setAiCount(v)}
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.
+                                    {t('Větší počty se generují postupně po dávkách (~20 otázek). Generování může trvat déle.')}
                                   </p>
                                 </div>
                               </>
                             ) : (
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                  <label className="text-sm font-medium mb-1 block">🧠 Kvízových</label>
+                                  <label className="text-sm font-medium mb-1 block">{t('🧠 Kvízových')}</label>
                                   <NumberField min={0} max={100} value={aiQuizCount} onChange={v => setAiQuizCount(v)} />
                                 </div>
                                 <div>
-                                  <label className="text-sm font-medium mb-1 block">✏️ Doplňovacích</label>
+                                  <label className="text-sm font-medium mb-1 block">{t('✏️ Doplňovacích')}</label>
                                   <NumberField min={0} max={100} value={aiFillCount} onChange={v => setAiFillCount(v)} />
                                 </div>
                               </div>
@@ -1032,16 +1032,16 @@ export default function AdminPanel() {
                               {aiLoading ? (
                                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generuji {aiProgress ? `${aiProgress.done}/${aiProgress.total}` : ''}...</>
                               ) : (
-                                <><Sparkles className="mr-2 h-4 w-4" /> Vygenerovat otázky</>
+                                <><Sparkles className="mr-2 h-4 w-4" /> {t('Vygenerovat otázky')}</>
                               )}
                             </Button>
                           </div>
                         ) : (
                           <div className="space-y-4">
-                            <p className="text-sm text-muted-foreground">Vygenerováno {aiResults.length} otázek. Vyberte které chcete přidat:</p>
+                            <p className="text-sm text-muted-foreground">{t('Vygenerováno {count} otázek. Vyberte které chcete přidat:', { count: aiResults.length })}</p>
                             <div className="flex gap-2 mb-2">
-                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>Vybrat vše</Button>
-                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>Zrušit výběr</Button>
+                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>{t('Vybrat vše')}</Button>
+                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>{t('Zrušit výběr')}</Button>
                             </div>
                             <div className="space-y-2 max-h-[50vh] overflow-y-auto">
                               {aiResults.map((q, i) => (
@@ -1054,7 +1054,7 @@ export default function AdminPanel() {
                                 >
                                   <div className="flex items-center gap-2 mb-1">
                                     <Badge variant="secondary" className="text-[10px]">
-                                      {q.type === 'quiz' ? '🧠 Kvíz' : q.type === 'flashcard' ? '📖 Kartička' : '✏️ Doplňování'}
+                                      {q.type === 'quiz' ? t('🧠 Kvíz') : q.type === 'flashcard' ? t('📖 Kartička') : t('✏️ Doplňování')}
                                     </Badge>
                                     {aiSelected.has(i) && <CheckCircle className="h-4 w-4 text-primary" />}
                                   </div>
@@ -1085,10 +1085,10 @@ export default function AdminPanel() {
                             </div>
                             <div className="flex gap-2">
                               <Button variant="outline" onClick={() => setAiResults(null)} className="flex-1">
-                                ← Zpět
+                                {t('← Zpět')}
                               </Button>
                               <Button onClick={saveAiQuestions} disabled={aiSelected.size === 0} className="flex-1">
-                                <Plus className="mr-1 h-4 w-4" /> Přidat {aiSelected.size} otázek
+                                <Plus className="mr-1 h-4 w-4" /> {t('Přidat {count} otázek', { count: aiSelected.size })}
                               </Button>
                             </div>
                           </div>
@@ -1101,26 +1101,26 @@ export default function AdminPanel() {
                     }}>
                       <DialogTrigger asChild>
                         <Button size="sm" onClick={() => { setEditingQuestion(null); resetQForm(); setAddStep('pick_type'); }}>
-                          <Plus className="mr-1 h-4 w-4" /> Přidat
+                          <Plus className="mr-1 h-4 w-4" /> {t('Přidat')}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>
                             {editingQuestion
-                              ? 'Upravit otázku'
+                              ? t('Upravit otázku')
                               : addStep === 'pick_type'
-                                ? 'Vyberte typ'
+                                ? t('Vyberte typ')
                                 : addStep === 'pick_test_format'
-                                  ? 'Formát otázky pro test'
-                                  : 'Nová otázka'}
+                                  ? t('Formát otázky pro test')
+                                  : t('Nová otázka')}
                           </DialogTitle>
                         </DialogHeader>
                         {!editingQuestion && addStep === 'pick_type' ? (
                           <div className="grid gap-3">
                             {[
-                              { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Procvičování – otázka se 4 možnostmi' },
-                              { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Procvičování – věta s vynechaným slovem' },
+                              { type: 'quiz', icon: '🧠', label: t('Kvíz'), desc: t('Procvičování – otázka se 4 možnostmi') },
+                              { type: 'fill_blank', icon: '✏️', label: t('Doplňování'), desc: t('Procvičování – věta s vynechaným slovem') },
                             ].map(opt => (
                               <button
                                 key={opt.type}
@@ -1140,19 +1140,19 @@ export default function AdminPanel() {
                             >
                               <span className="text-2xl">🏁</span>
                               <div>
-                                <p className="font-medium">Závěrečný test</p>
-                                <p className="text-xs text-muted-foreground">Otázka pouze do testu levelu (nezobrazí se v procvičování)</p>
+                                <p className="font-medium">{t('Závěrečný test')}</p>
+                                <p className="text-xs text-muted-foreground">{t('Otázka pouze do testu levelu (nezobrazí se v procvičování)')}</p>
                               </div>
                             </button>
                           </div>
                         ) : !editingQuestion && addStep === 'pick_test_format' ? (
                           <div className="space-y-3">
-                            <p className="text-sm text-muted-foreground">Vyberte formát otázky pro závěrečný test:</p>
+                            <p className="text-sm text-muted-foreground">{t('Vyberte formát otázky pro závěrečný test:')}</p>
                             <div className="grid gap-3">
                               {[
-                                { type: 'quiz', icon: '🧠', label: 'Kvíz', desc: 'Otázka se 4 možnostmi odpovědí' },
-                                { type: 'fill_blank', icon: '✏️', label: 'Doplňování', desc: 'Věta s vynechaným slovem' },
-                                { type: 'ai_import', icon: '✨', label: 'AI import', desc: 'Vygeneruje kvízové i doplňovací otázky pro závěrečný test' },
+                                { type: 'quiz', icon: '🧠', label: t('Kvíz'), desc: t('Otázka se 4 možnostmi odpovědí') },
+                                { type: 'fill_blank', icon: '✏️', label: t('Doplňování'), desc: t('Věta s vynechaným slovem') },
+                                { type: 'ai_import', icon: '✨', label: t('AI import'), desc: t('Vygeneruje kvízové i doplňovací otázky pro závěrečný test') },
                               ].map(opt => (
                                 <button
                                   key={opt.type}
@@ -1177,14 +1177,14 @@ export default function AdminPanel() {
                               ))}
                             </div>
                             <Button variant="ghost" size="sm" onClick={() => setAddStep('pick_type')}>
-                              <ArrowLeft className="mr-1 h-4 w-4" /> Zpět
+                              <ArrowLeft className="mr-1 h-4 w-4" /> {t('Zpět')}
                             </Button>
                           </div>
                         ) : (
                           <>
                             {!editingQuestion && qForm.in_practice === false && (
                               <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3 text-sm flex items-center gap-2">
-                                🏁 <span>Tato otázka půjde <strong>pouze do závěrečného testu</strong>.</span>
+                                🏁 <span>{t('Tato otázka půjde')} <strong>{t('pouze do závěrečného testu')}</strong>.</span>
                               </div>
                             )}
                             {renderQuestionForm()}
@@ -1199,7 +1199,7 @@ export default function AdminPanel() {
                 {(['quiz', 'fill_blank'] as const).map(type => {
                   const typeQuestions = questions.filter(q => q.type === type);
                   if (typeQuestions.length === 0) return null;
-                  const label = type === 'quiz' ? '🧠 Kvíz' : '✏️ Doplňování';
+                  const label = type === 'quiz' ? t('🧠 Kvíz') : t('✏️ Doplňování');
                   const isOpen = openSections[type] !== false;
                   return (
                     <Card key={type} className="shadow-card overflow-hidden">
@@ -1225,20 +1225,20 @@ export default function AdminPanel() {
                                   <div className="flex items-center gap-2">
                                     <p className="font-medium text-sm truncate">{q.question_text}</p>
                                     {q.in_practice === false && (
-                                      <Badge variant="secondary" className="text-[10px] shrink-0">🏁 Jen test</Badge>
+                                      <Badge variant="secondary" className="text-[10px] shrink-0">{t('🏁 Jen test')}</Badge>
                                     )}
                                   </div>
                                   {q.type === 'quiz' && (
-                                    <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                                    <p className="text-xs text-success mt-0.5">{t('Správně')}: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
                                   {q.type === 'fill_blank' && q.option_1 && (
-                                    <p className="text-xs text-success mt-0.5">Správně: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
+                                    <p className="text-xs text-success mt-0.5">{t('Správně')}: {[q.option_1, q.option_2, q.option_3, q.option_4][(q.correct_answer || 1) - 1]}</p>
                                   )}
                                   {q.type === 'flashcard' && q.back_text && (
                                     <>
                                       <p className="text-xs text-muted-foreground mt-0.5 truncate">→ {q.back_text}</p>
                                       {(!q.wrong_option_1 || !q.wrong_option_2 || !q.wrong_option_3) && (
-                                        <p className="text-[10px] text-warning mt-0.5">⚠ Chybí špatné možnosti pro test</p>
+                                        <p className="text-[10px] text-warning mt-0.5">{t('⚠ Chybí špatné možnosti pro test')}</p>
                                       )}
                                     </>
                                   )}
@@ -1256,35 +1256,35 @@ export default function AdminPanel() {
                   );
                 })}
                 {questions.length === 0 && (
-                  <p className="text-muted-foreground text-center py-8">Žádné otázky v tomto levelu.</p>
+                  <p className="text-muted-foreground text-center py-8">{t('Žádné otázky v tomto levelu.')}</p>
                 )}
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">Levely</h2>
+                  <h2 className="text-lg font-semibold">{t('Levely')}</h2>
                   <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
                     <DialogTrigger asChild>
                       <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category }); }}>
-                        <Plus className="mr-1 h-4 w-4" /> Přidat level
+                        <Plus className="mr-1 h-4 w-4" /> {t('Přidat level')}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
-                      <DialogHeader><DialogTitle>{editingLevel ? 'Upravit level' : 'Nový level'}</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>{editingLevel ? t('Upravit level') : t('Nový level')}</DialogTitle></DialogHeader>
                       <div className="space-y-4">
-                        <Input placeholder="Název" value={levelForm.title} onChange={e => setLevelForm({ ...levelForm, title: e.target.value })} />
-                        <Textarea placeholder="Popis" value={levelForm.description} onChange={e => setLevelForm({ ...levelForm, description: e.target.value })} />
+                        <Input placeholder={t('Název')} value={levelForm.title} onChange={e => setLevelForm({ ...levelForm, title: e.target.value })} />
+                        <Textarea placeholder={t('Popis')} value={levelForm.description} onChange={e => setLevelForm({ ...levelForm, description: e.target.value })} />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-sm text-muted-foreground">Pořadí</label>
+                            <label className="text-sm text-muted-foreground">{t('Pořadí')}</label>
                             <NumberField value={levelForm.order_index} onChange={v => setLevelForm({ ...levelForm, order_index: v })} />
                           </div>
                           <div>
-                            <label className="text-sm text-muted-foreground">Skóre pro postup (%)</label>
+                            <label className="text-sm text-muted-foreground">{t('Skóre pro postup (%)')}</label>
                             <NumberField value={levelForm.passing_score} onChange={v => setLevelForm({ ...levelForm, passing_score: v })} />
                           </div>
                         </div>
-                        <Button onClick={saveLevel} className="w-full">Uložit</Button>
+                        <Button onClick={saveLevel} className="w-full">{t('Uložit')}</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -1312,7 +1312,7 @@ export default function AdminPanel() {
                     </Card>
                   ))}
                   {levels.length === 0 && (
-                    <p className="text-muted-foreground text-center py-8">Zatím žádné levely. Přidejte první!</p>
+                    <p className="text-muted-foreground text-center py-8">{t('Zatím žádné levely. Přidejte první!')}</p>
                   )}
                 </div>
               </div>
@@ -1327,7 +1327,7 @@ export default function AdminPanel() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Hledat podle jména..."
+                placeholder={t('Hledat podle jména...')}
                 value={userSearch}
                 onChange={e => setUserSearch(e.target.value)}
                 className="pl-9"
@@ -1336,9 +1336,9 @@ export default function AdminPanel() {
 
             <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
               <div>
-                <p className="text-sm font-medium">Zobrazit i nezaplacené uživatele</p>
+                <p className="text-sm font-medium">{t('Zobrazit i nezaplacené uživatele')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Ve výchozím nastavení jsou skryti registrovaní uživatelé, kteří ještě neuhradili poplatek.
+                  {t('Ve výchozím nastavení jsou skryti registrovaní uživatelé, kteří ještě neuhradili poplatek.')}
                 </p>
               </div>
               <Switch checked={showUnpaid} onCheckedChange={setShowUnpaid} />
@@ -1346,20 +1346,20 @@ export default function AdminPanel() {
 
             {myInvitedUsers.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vaši pozvaní uživatelé</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('Vaši pozvaní uživatelé')}</h3>
                 {myInvitedUsers.map(renderUserCard)}
               </div>
             )}
 
             <div className="space-y-2">
               {myInvitedUsers.length > 0 && (
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Všichni uživatelé</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('Všichni uživatelé')}</h3>
               )}
               {otherUsers.map(renderUserCard)}
             </div>
 
             {filteredUsers.length === 0 && (
-              <p className="text-muted-foreground text-center py-8">Žádní uživatelé nenalezeni.</p>
+              <p className="text-muted-foreground text-center py-8">{t('Žádní uživatelé nenalezeni.')}</p>
             )}
           </TabsContent>
 
@@ -1370,13 +1370,13 @@ export default function AdminPanel() {
           {isAdmin && (
             <TabsContent value="requests" className="mt-6">
               {adminRequests.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Zatím nejsou žádné žádosti o admin oprávnění.</p>
+                <p className="text-sm text-muted-foreground">{t('Zatím nejsou žádné žádosti o admin oprávnění.')}</p>
               ) : (
                 <div className="space-y-3">
                   {adminRequests.map(req => {
                     const reqUser = users.find(u => u.user_id === req.user_id);
                     const isPending = req.status === 'pending';
-                    const statusLabel = isPending ? 'Čeká' : req.status === 'approved' ? 'Schváleno' : 'Zamítnuto';
+                    const statusLabel = isPending ? t('Čeká') : req.status === 'approved' ? t('Schváleno') : t('Zamítnuto');
                     const statusClass = isPending
                       ? 'bg-warning/15 text-warning'
                       : req.status === 'approved'
@@ -1387,18 +1387,18 @@ export default function AdminPanel() {
                         <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="font-medium flex items-center gap-2">
-                              {reqUser?.display_name || 'Neznámý uživatel'}
+                              {reqUser?.display_name || t('Neznámý uživatel')}
                               <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusClass}`}>{statusLabel}</span>
                             </p>
-                            <p className="text-xs text-muted-foreground">Odesláno: {new Date(req.created_at).toLocaleDateString('cs')}</p>
+                            <p className="text-xs text-muted-foreground">{t('Odesláno: {date}', { date: new Date(req.created_at).toLocaleDateString('cs') })}</p>
                           </div>
                           {isPending && (
                             <div className="flex gap-2">
                               <Button size="sm" variant="outline" className="text-success" onClick={() => handleAdminRequest(req.id, req.user_id, true)}>
-                                <CheckCircle className="mr-1 h-3 w-3" /> Schválit
+                                <CheckCircle className="mr-1 h-3 w-3" /> {t('Schválit')}
                               </Button>
                               <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleAdminRequest(req.id, req.user_id, false)}>
-                                <XCircle className="mr-1 h-3 w-3" /> Zamítnout
+                                <XCircle className="mr-1 h-3 w-3" /> {t('Zamítnout')}
                               </Button>
                             </div>
                           )}

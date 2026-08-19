@@ -14,6 +14,7 @@ import AdminGroupTestDialog from './AdminGroupTestDialog';
 import { NumberField } from './NumberField';
 import DiplomaCertificate from './DiplomaCertificate';
 import { useAuth } from '@/lib/auth';
+import { useT } from '@/lib/i18n';
 
 interface Group {
   id: string;
@@ -31,6 +32,14 @@ interface Group {
   diploma_validity_years: number;
   min_average_score: number;
   final_test_passing_score: number;
+  title_sk: string | null;
+  description_sk: string | null;
+  diploma_title_sk: string | null;
+  diploma_subtitle_sk: string | null;
+  diploma_intro_text_sk: string | null;
+  diploma_award_title_sk: string | null;
+  diploma_note_text_sk: string | null;
+  diploma_issuer_sk: string | null;
 }
 
 interface Level {
@@ -59,9 +68,18 @@ const emptyForm = {
   diploma_validity_years: 1,
   min_average_score: 70,
   final_test_passing_score: 70,
+  title_sk: '',
+  description_sk: '',
+  diploma_title_sk: '',
+  diploma_subtitle_sk: '',
+  diploma_intro_text_sk: '',
+  diploma_award_title_sk: '',
+  diploma_note_text_sk: '',
+  diploma_issuer_sk: '',
 };
 
 export default function AdminGroupsTab() {
+  const t = useT();
   const { category } = useAppPath();
   const { toast } = useToast();
   const { profile } = useAuth();
@@ -70,13 +88,14 @@ export default function AdminGroupsTab() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [editLang, setEditLang] = useState<'cs' | 'sk'>('cs');
 
   const load = async () => {
     const [{ data: g }, { data: l }] = await Promise.all([
       supabase.from('level_groups').select('*').eq('category', category).order('order_index'),
       supabase.from('levels').select('id,title,order_index,group_id,category').eq('category', category).order('order_index'),
     ]);
-    if (g) setGroups(g);
+    if (g) setGroups(g as any);
     if (l) setLevels(l);
   };
 
@@ -85,6 +104,7 @@ export default function AdminGroupsTab() {
   const startCreate = () => {
     setForm({ ...emptyForm, order_index: groups.length + 1 });
     setEditingId(null);
+    setEditLang('cs');
     setShowDialog(true);
   };
 
@@ -103,25 +123,41 @@ export default function AdminGroupsTab() {
       diploma_validity_years: g.diploma_validity_years ?? 1,
       min_average_score: g.min_average_score,
       final_test_passing_score: g.final_test_passing_score ?? 70,
+      title_sk: g.title_sk ?? '',
+      description_sk: g.description_sk ?? '',
+      diploma_title_sk: g.diploma_title_sk ?? '',
+      diploma_subtitle_sk: g.diploma_subtitle_sk ?? '',
+      diploma_intro_text_sk: g.diploma_intro_text_sk ?? '',
+      diploma_award_title_sk: g.diploma_award_title_sk ?? '',
+      diploma_note_text_sk: g.diploma_note_text_sk ?? '',
+      diploma_issuer_sk: g.diploma_issuer_sk ?? '',
     });
     setEditingId(g.id);
+    setEditLang('cs');
     setShowDialog(true);
+  };
+
+  // Generic accessor helpers so the same inputs edit either the Czech or Slovak column.
+  const fv = (key: keyof typeof emptyForm) => (editLang === 'sk' ? (form as any)[`${key}_sk`] ?? '' : (form as any)[key]);
+  const setFv = (key: keyof typeof emptyForm) => (value: string) => {
+    if (editLang === 'sk') setForm({ ...form, [`${key}_sk`]: value } as any);
+    else setForm({ ...form, [key]: value } as any);
   };
 
   const save = async () => {
     if (!form.title.trim()) {
-      toast({ title: 'Chyba', description: 'Vyplňte název skupiny', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: t('Vyplňte název skupiny'), variant: 'destructive' });
       return;
     }
     const numericChecks: Array<[number, string]> = [
-      [form.order_index, 'Pořadí'],
-      [form.min_average_score, 'Min. průměr'],
-      [form.final_test_passing_score, 'Min. skóre závěrečného testu'],
-      [form.diploma_validity_years, 'Platnost diplomu (roky)'],
+      [form.order_index, t('Pořadí')],
+      [form.min_average_score, t('Min. průměr')],
+      [form.final_test_passing_score, t('Min. skóre závěrečného testu')],
+      [form.diploma_validity_years, t('Platnost diplomu (roky)')],
     ];
     for (const [v, label] of numericChecks) {
       if (!Number.isFinite(v)) {
-        toast({ title: 'Chybí hodnota', description: `Vyplňte pole "${label}".`, variant: 'destructive' });
+        toast({ title: t('Chybí hodnota'), description: t('Vyplňte pole "{label}".', { label }), variant: 'destructive' });
         return;
       }
     }
@@ -130,48 +166,72 @@ export default function AdminGroupsTab() {
       ? await supabase.from('level_groups').update(payload).eq('id', editingId)
       : await supabase.from('level_groups').insert(payload);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
     setShowDialog(false);
-    toast({ title: 'Uloženo' });
+    toast({ title: t('Uloženo') });
     load();
   };
 
   const remove = async (id: string) => {
-    if (!confirm('Přesunout skupinu do koše? Skupina, její levely i otázky budou obnovitelné 7 dní.')) return;
+    if (!confirm(t('Přesunout skupinu do koše? Skupina, její levely i otázky budou obnovitelné 7 dní.'))) return;
     const { error } = await supabase.rpc('soft_delete_group', { p_id: id });
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Přesunuto do koše' });
+    toast({ title: t('Přesunuto do koše') });
     load();
   };
 
   const assignLevelToGroup = async (levelId: string, groupId: string | null) => {
     const { error } = await supabase.from('levels').update({ group_id: groupId }).eq('id', levelId);
     if (error) {
-      toast({ title: 'Chyba', description: error.message, variant: 'destructive' });
+      toast({ title: t('Chyba'), description: error.message, variant: 'destructive' });
       return;
     }
     load();
   };
 
+  const LangToggle = () => (
+    <div className="flex items-center gap-2">
+      <div className="inline-flex rounded-md border p-0.5 bg-muted/40">
+        <button
+          type="button"
+          onClick={() => setEditLang('cs')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'cs' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇨🇿 {t('Čeština')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLang('sk')}
+          className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'sk' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🇸🇰 {t('Slovenčina')}
+        </button>
+      </div>
+      {editLang === 'sk' && (
+        <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">Skupiny levelů a certifikáty</h2>
-          <p className="text-sm text-muted-foreground">Certifikát se vydá po dokončení všech levelů ve skupině.</p>
+          <h2 className="text-xl font-bold">{t('Skupiny levelů a certifikáty')}</h2>
+          <p className="text-sm text-muted-foreground">{t('Certifikát se vydá po dokončení všech levelů ve skupině.')}</p>
         </div>
         <Button onClick={startCreate} className="gradient-primary text-primary-foreground">
-          <Plus className="mr-1 h-4 w-4" /> Nová skupina
+          <Plus className="mr-1 h-4 w-4" /> {t('Nová skupina')}
         </Button>
       </div>
 
       {groups.length === 0 ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Zatím žádné skupiny.</CardContent></Card>
+        <Card><CardContent className="p-8 text-center text-muted-foreground">{t('Zatím žádné skupiny.')}</CardContent></Card>
       ) : (
         <div className="grid gap-3">
           {groups.map(g => {
@@ -187,12 +247,12 @@ export default function AdminGroupsTab() {
                       <div className="min-w-0">
                         <h3 className="font-semibold flex items-center gap-2 flex-wrap">
                           <span>{g.title}</span>
-                          <Badge variant="secondary">min. {g.min_average_score}%</Badge>
-                          <Badge variant="outline">{groupLevels.length} levelů</Badge>
+                          <Badge variant="secondary">{t('min. {n}%', { n: g.min_average_score })}</Badge>
+                          <Badge variant="outline">{t('{n} levelů', { n: groupLevels.length })}</Badge>
                         </h3>
                         {g.description && <p className="text-sm text-muted-foreground">{g.description}</p>}
                         <p className="text-xs text-muted-foreground mt-1">
-                          Certifikát: <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
+                          {t('Certifikát:')} <strong>{g.diploma_title}</strong> — {g.diploma_subtitle}
                         </p>
                       </div>
                     </div>
@@ -224,7 +284,7 @@ export default function AdminGroupsTab() {
 
       <Card className="shadow-card">
         <CardContent className="p-4 space-y-3">
-          <h3 className="font-semibold">Přiřazení levelů ke skupinám</h3>
+          <h3 className="font-semibold">{t('Přiřazení levelů ke skupinám')}</h3>
           <div className="space-y-2">
             {levels.map(l => (
               <div key={l.id} className="flex items-center gap-3 p-2 rounded-lg border">
@@ -235,7 +295,7 @@ export default function AdminGroupsTab() {
                 >
                   <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">— Bez skupiny —</SelectItem>
+                    <SelectItem value="none">{t('— Bez skupiny —')}</SelectItem>
                     {groups.map(g => (
                       <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
                     ))}
@@ -243,7 +303,7 @@ export default function AdminGroupsTab() {
                 </Select>
               </div>
             ))}
-            {levels.length === 0 && <p className="text-sm text-muted-foreground">Žádné levely.</p>}
+            {levels.length === 0 && <p className="text-sm text-muted-foreground">{t('Žádné levely.')}</p>}
           </div>
         </CardContent>
       </Card>
@@ -251,77 +311,78 @@ export default function AdminGroupsTab() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-3xl p-0 gap-0 max-h-[90vh] flex flex-col">
           <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle>{editingId ? 'Upravit skupinu' : 'Nová skupina'}</DialogTitle>
+            <DialogTitle>{editingId ? t('Upravit skupinu') : t('Nová skupina')}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+            <LangToggle />
             <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
               <div>
-                <label className="text-sm font-medium">Název skupiny *</label>
-                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="např. Modul: Základy ZGRP" />
+                <label className="text-sm font-medium">{t('Název skupiny *')}</label>
+                <Input value={fv('title')} onChange={e => setFv('title')(e.target.value)} placeholder={t('např. Modul: Základy ZGRP')} />
               </div>
               <div className="md:w-24">
-                <label className="text-sm font-medium">Pořadí</label>
+                <label className="text-sm font-medium">{t('Pořadí')}</label>
                 <NumberField value={form.order_index} onChange={v => setForm({ ...form, order_index: v })} />
               </div>
               <div className="md:w-40">
-                <label className="text-sm font-medium">Min. průměr (%)</label>
+                <label className="text-sm font-medium">{t('Min. průměr (%)')}</label>
                 <NumberField min={0} max={100} value={form.min_average_score} onChange={v => setForm({ ...form, min_average_score: v })} />
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
               <div>
-                <label className="text-sm font-medium">Popis</label>
-                <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
+                <label className="text-sm font-medium">{t('Popis')}</label>
+                <Textarea value={fv('description')} onChange={e => setFv('description')(e.target.value)} rows={2} />
               </div>
               <div className="md:w-56">
-                <label className="text-sm font-medium">Min. skóre záv. testu (%)</label>
+                <label className="text-sm font-medium">{t('Min. skóre záv. testu (%)')}</label>
                 <NumberField min={0} max={100} value={form.final_test_passing_score} onChange={v => setForm({ ...form, final_test_passing_score: v })} />
               </div>
             </div>
 
             <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-medium">Konfigurace certifikátu</p>
+              <p className="text-sm font-medium">{t('Konfigurace certifikátu')}</p>
               <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-                ✨ Jméno absolventa, název kurzu, datum vydání i platnost se doplní <strong>automaticky</strong>.
+                ✨ {t('Jméno absolventa, název kurzu, datum vydání i platnost se doplní')} <strong>{t('automaticky')}</strong>.
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Nadpis certifikátu</label>
-                  <Input value={form.diploma_title} onChange={e => setForm({ ...form, diploma_title: e.target.value })} placeholder="CERTIFIKÁT" />
+                  <label className="text-sm font-medium">{t('Nadpis certifikátu')}</label>
+                  <Input value={fv('diploma_title')} onChange={e => setFv('diploma_title')(e.target.value)} placeholder="CERTIFIKÁT" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Drobný text pod datem</label>
-                  <Input value={form.diploma_subtitle} onChange={e => setForm({ ...form, diploma_subtitle: e.target.value })} placeholder="např. ZGRP Academy" />
+                  <label className="text-sm font-medium">{t('Drobný text pod datem')}</label>
+                  <Input value={fv('diploma_subtitle')} onChange={e => setFv('diploma_subtitle')(e.target.value)} placeholder={t('např. ZGRP Academy')} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Uvozovací věta</label>
+                <label className="text-sm font-medium">{t('Uvozovací věta')}</label>
                 <Textarea
                   rows={2}
-                  value={form.diploma_intro_text}
-                  onChange={e => setForm({ ...form, diploma_intro_text: e.target.value })}
+                  value={fv('diploma_intro_text')}
+                  onChange={e => setFv('diploma_intro_text')(e.target.value)}
                   placeholder="o absolvování kurzu zakončeného odbornou zkouškou a získání titulu"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Vysází se kurzívou hned pod nadpisem „CERTIFIKÁT“.</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('Vysází se kurzívou hned pod nadpisem „CERTIFIKÁT“.')}</p>
               </div>
               <div>
-                <label className="text-sm font-medium">Titul (hlavní nadpis)</label>
+                <label className="text-sm font-medium">{t('Titul (hlavní nadpis)')}</label>
                 <Input
-                  value={form.diploma_award_title}
-                  onChange={e => setForm({ ...form, diploma_award_title: e.target.value })}
+                  value={fv('diploma_award_title')}
+                  onChange={e => setFv('diploma_award_title')(e.target.value)}
                   placeholder="SPECIALISTA ZDRAVOTNÍHO PROTOKOLU"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Vysází se velkým výrazným písmem. Pod ním je vždy „pro“ a jméno absolventa.</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('Vysází se velkým výrazným písmem. Pod ním je vždy „pro“ a jméno absolventa.')}</p>
               </div>
               <div>
-                <label className="text-sm font-medium">Doplňující věta pod jménem <span className="text-muted-foreground font-normal">(nepovinné)</span></label>
+                <label className="text-sm font-medium">{t('Doplňující věta pod jménem')} <span className="text-muted-foreground font-normal">({t('nepovinné')})</span></label>
                 <div className="flex flex-wrap gap-1.5 mt-1 mb-1.5">
                   {[
-                    { label: 'Jméno absolventa', token: '{user_name}' },
-                    { label: 'Název kurzu', token: '{group_title}' },
-                    { label: 'Skóre', token: '{score}' },
-                    { label: 'Datum absolvování', token: '{date}' },
-                    { label: 'Platnost do', token: '{valid_until}' },
+                    { label: t('Jméno absolventa'), token: '{user_name}' },
+                    { label: t('Název kurzu'), token: '{group_title}' },
+                    { label: t('Skóre'), token: '{score}' },
+                    { label: t('Datum absolvování'), token: '{date}' },
+                    { label: t('Platnost do'), token: '{valid_until}' },
                   ].map(({ label, token }) => (
                     <Button
                       key={token}
@@ -331,19 +392,19 @@ export default function AdminGroupsTab() {
                       className="h-7 px-2 text-xs"
                       onClick={() => {
                         const el = document.getElementById('diploma-note-text') as HTMLTextAreaElement | null;
-                        const cur = form.diploma_note_text ?? '';
+                        const cur = fv('diploma_note_text') ?? '';
                         if (el) {
                           const start = el.selectionStart ?? cur.length;
                           const end = el.selectionEnd ?? cur.length;
                           const next = cur.slice(0, start) + token + cur.slice(end);
-                          setForm({ ...form, diploma_note_text: next });
+                          setFv('diploma_note_text')(next);
                           requestAnimationFrame(() => {
                             el.focus();
                             const pos = start + token.length;
                             el.setSelectionRange(pos, pos);
                           });
                         } else {
-                          setForm({ ...form, diploma_note_text: cur + token });
+                          setFv('diploma_note_text')(cur + token);
                         }
                       }}
                     >
@@ -354,38 +415,38 @@ export default function AdminGroupsTab() {
                 <Textarea
                   id="diploma-note-text"
                   rows={2}
-                  value={form.diploma_note_text}
-                  onChange={e => setForm({ ...form, diploma_note_text: e.target.value })}
-                  placeholder="Např.: Kurz {group_title} absolvován s výsledkem {score}."
+                  value={fv('diploma_note_text')}
+                  onChange={e => setFv('diploma_note_text')(e.target.value)}
+                  placeholder={t('Např.: Kurz {group_title} absolvován s výsledkem {score}.')}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tlačítka vloží zástupný text, který se na certifikátu automaticky nahradí skutečnou hodnotou.
+                  {t('Tlačítka vloží zástupný text, který se na certifikátu automaticky nahradí skutečnou hodnotou.')}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">Vydavatel</label>
+                <label className="text-sm font-medium">{t('Vydavatel')}</label>
                 <Input
-                  value={form.diploma_issuer}
-                  onChange={e => setForm({ ...form, diploma_issuer: e.target.value })}
+                  value={fv('diploma_issuer')}
+                  onChange={e => setFv('diploma_issuer')(e.target.value)}
                   placeholder="SPOLEK V ROVNOVÁZE Z.S."
                 />
-                <p className="text-xs text-muted-foreground mt-1">Zobrazí se dole na certifikátu jako „Vydává …“.</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('Zobrazí se dole na certifikátu jako „Vydává …“.')}</p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium">Podpisující osoba (za spolek)</label>
+                  <label className="text-sm font-medium">{t('Podpisující osoba (za spolek)')}</label>
                   <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
-                  <p className="text-xs text-muted-foreground mt-1">Druhý podpis (Ing. Tomáš Brožek, MBA) je na certifikát doplněn automaticky.</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('Druhý podpis (Ing. Tomáš Brožek, MBA) je na certifikát doplněn automaticky.')}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Platnost (roky)</label>
+                  <label className="text-sm font-medium">{t('Platnost (roky)')}</label>
                   <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
-                  <p className="text-xs text-muted-foreground mt-1">0 = bez omezení</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('0 = bez omezení')}</p>
                 </div>
               </div>
 
               <div className="pt-2">
-                <p className="text-sm font-medium mb-2">Živý náhled certifikátu</p>
+                <p className="text-sm font-medium mb-2">{t('Živý náhled certifikátu')}</p>
                 <div className="rounded-lg border bg-muted/30 p-3 flex justify-center">
                   <DiplomaCertificate
                     hidePrint
@@ -399,20 +460,20 @@ export default function AdminGroupsTab() {
                     signatory={form.diploma_signatory}
                     validityYears={form.diploma_validity_years}
                     userName={profile?.display_name || 'Jan Novák'}
-                    groupTitle={form.title || 'Název kurzu'}
+                    groupTitle={form.title || t('Název kurzu')}
                     score={95}
                     issuedAt={new Date().toISOString()}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Ukázkové skóre 95 % a dnešní datum. Skutečné hodnoty se doplní při vydání diplomu uživateli.
+                  {t('Ukázkové skóre 95 % a dnešní datum. Skutečné hodnoty se doplní při vydání diplomu uživateli.')}
                 </p>
               </div>
             </div>
           </div>
           <div className="flex justify-end gap-2 px-6 py-4 border-t bg-background">
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
-            <Button onClick={save} className="gradient-primary text-primary-foreground">Uložit</Button>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>{t('Zrušit')}</Button>
+            <Button onClick={save} className="gradient-primary text-primary-foreground">{t('Uložit')}</Button>
           </div>
         </DialogContent>
       </Dialog>

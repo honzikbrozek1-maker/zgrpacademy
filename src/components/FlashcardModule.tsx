@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, CheckCircle, HelpCircle, XCircle, RotateCcw } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 interface Question {
   id: string;
@@ -20,6 +21,7 @@ interface Props {
 
 export default function FlashcardModule({ questions, onComplete, onReviewItemsChange }: Props) {
   const { user } = useAuth();
+  const t = useT();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [ratings, setRatings] = useState<Record<string, string>>({});
@@ -74,14 +76,14 @@ export default function FlashcardModule({ questions, onComplete, onReviewItemsCh
     return (
       <Card className="shadow-elevated">
         <CardContent className="p-8 text-center space-y-4">
-          <h3 className="text-xl font-bold">Kartičky dokončeny!</h3>
+          <h3 className="text-xl font-bold">{t('Kartičky dokončeny!')}</h3>
           <div className="flex justify-center gap-6 text-sm">
-            <div className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> Umím: {knowCount}</div>
-            <div className="flex items-center gap-1"><HelpCircle className="h-4 w-4 text-warning" /> Částečně: {partialCount}</div>
-            <div className="flex items-center gap-1"><XCircle className="h-4 w-4 text-destructive" /> Neumím: {unknownCount}</div>
+            <div className="flex items-center gap-1"><CheckCircle className="h-4 w-4 text-success" /> {t('Umím')}: {knowCount}</div>
+            <div className="flex items-center gap-1"><HelpCircle className="h-4 w-4 text-warning" /> {t('Částečně')}: {partialCount}</div>
+            <div className="flex items-center gap-1"><XCircle className="h-4 w-4 text-destructive" /> {t('Neumím')}: {unknownCount}</div>
           </div>
           <Button onClick={onComplete} className="gradient-primary text-primary-foreground">
-            Zpět do levelu <ArrowRight className="ml-1 h-4 w-4" />
+            {t('Zpět do levelu')} <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </CardContent>
       </Card>
@@ -100,15 +102,15 @@ export default function FlashcardModule({ questions, onComplete, onReviewItemsCh
           {/* Front */}
           <Card className="absolute inset-0 backface-hidden shadow-elevated">
             <CardContent className="p-8 flex flex-col items-center justify-center min-h-[250px]">
-              <p className="text-xs text-muted-foreground mb-4">Kliknutím otočíte</p>
+              <p className="text-xs text-muted-foreground mb-4">{t('Kliknutím otočíte')}</p>
               <h3 className="text-xl font-semibold text-center">{question.question_text}</h3>
             </CardContent>
           </Card>
           {/* Back */}
           <Card className="absolute inset-0 backface-hidden rotate-y-180 shadow-elevated">
             <CardContent className="p-8 flex flex-col items-center justify-center min-h-[250px]">
-              <p className="text-xs text-muted-foreground mb-4">Odpověď</p>
-              <p className="text-lg text-center">{question.back_text || 'Bez odpovědi'}</p>
+              <p className="text-xs text-muted-foreground mb-4">{t('Odpověď')}</p>
+              <p className="text-lg text-center">{question.back_text || t('Bez odpovědi')}</p>
             </CardContent>
           </Card>
         </div>
@@ -117,23 +119,23 @@ export default function FlashcardModule({ questions, onComplete, onReviewItemsCh
       {flipped && (
         <div className="flex justify-center gap-3 animate-slide-up">
           <Button variant="outline" className="border-success text-success hover:bg-success/10" onClick={() => handleRate('know')}>
-            <CheckCircle className="mr-1 h-4 w-4" /> Umím
+            <CheckCircle className="mr-1 h-4 w-4" /> {t('Umím')}
           </Button>
           <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={() => handleRate('partial')}>
-            <HelpCircle className="mr-1 h-4 w-4" /> Částečně
+            <HelpCircle className="mr-1 h-4 w-4" /> {t('Částečně')}
           </Button>
           <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10" onClick={() => handleRate('unknown')}>
-            <XCircle className="mr-1 h-4 w-4" /> Neumím
+            <XCircle className="mr-1 h-4 w-4" /> {t('Neumím')}
           </Button>
         </div>
       )}
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-          <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+          <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
         </Button>
         <Button variant="ghost" onClick={() => setFlipped(!flipped)}>
-          <RotateCcw className="mr-1 h-4 w-4" /> Otočit
+          <RotateCcw className="mr-1 h-4 w-4" /> {t('Otočit')}
         </Button>
       </div>
     </div>

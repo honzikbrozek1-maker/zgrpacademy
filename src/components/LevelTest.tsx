@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Trophy, AlertTriangle, Loader2 } from 'lucide-react';
+import { useT, useLang } from '@/lib/i18n';
 
 interface TestItem {
   id: string;
@@ -33,6 +34,8 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const t = useT();
+  const { lang } = useLang();
   const [items, setItems] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
@@ -47,13 +50,13 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const startTest = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_level_test', { p_level_id: levelId });
+      const { data, error } = await supabase.rpc('get_level_test', { p_level_id: levelId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
       if (list.length === 0) {
         toast({
-          title: 'Test není připraven',
-          description: 'V tomto levelu nejsou žádné otázky vhodné pro test (u kartiček a doplňování chybí špatné možnosti).',
+          title: t('Test není připraven'),
+          description: t('V tomto levelu nejsou žádné otázky vhodné pro test (u kartiček a doplňování chybí špatné možnosti).'),
           variant: 'destructive',
         });
         return;
@@ -65,7 +68,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       setTestScore(null);
       setStarted(true);
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se načíst test', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se načíst test'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -112,6 +115,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       const { data, error } = await supabase.rpc('complete_level_v2', {
         p_level_id: levelId,
         p_answers: payload,
+        p_lang: lang,
       });
       if (error) throw error;
 
@@ -182,7 +186,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
 
       setFinished(true);
     } catch (e: any) {
-      toast({ title: 'Chyba', description: e.message || 'Nepodařilo se odeslat test', variant: 'destructive' });
+      toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se odeslat test'), variant: 'destructive' });
     } finally {
       setSubmitting(false);
     }
@@ -195,13 +199,12 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
           <div className="w-16 h-16 mx-auto rounded-full gradient-primary flex items-center justify-center">
             <Trophy className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h3 className="text-xl font-bold">Závěrečný test</h3>
+          <h3 className="text-xl font-bold">{t('Závěrečný test')}</h3>
           <p className="text-muted-foreground">
-            Test pokrývá všechny otázky levelu (kvízy, kartičky i doplňování) v jednotné kvízové formě.
-            Pro postup potřebujete minimálně {passingScore}% správných odpovědí.
+            {t('Test pokrývá všechny otázky levelu (kvízy, kartičky i doplňování) v jednotné kvízové formě. Pro postup potřebujete minimálně {passingScore}% správných odpovědí.', { passingScore })}
           </p>
           <Button onClick={startTest} className="gradient-primary text-primary-foreground" disabled={loading}>
-            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Načítám...</> : <>Začít test <ArrowRight className="ml-1 h-4 w-4" /></>}
+            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('Načítám...')}</> : <>{t('Začít test')} <ArrowRight className="ml-1 h-4 w-4" /></>}
           </Button>
         </CardContent>
       </Card>
@@ -216,21 +219,21 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
             <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${testPassed ? 'bg-success/20' : 'bg-destructive/20'}`}>
               {testPassed ? <Trophy className="h-8 w-8 text-success" /> : <AlertTriangle className="h-8 w-8 text-destructive" />}
             </div>
-            <h3 className="text-xl font-bold">{testPassed ? 'Gratulujeme! 🎉' : 'Bohužel neprojdete'}</h3>
+            <h3 className="text-xl font-bold">{testPassed ? t('Gratulujeme! 🎉') : t('Bohužel neprojdete')}</h3>
             <p className="text-2xl font-bold">{testScore}%</p>
             <p className="text-muted-foreground">
-              {testPassed ? 'Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj certifikát...' : `Potřebujete alespoň ${passingScore}%. Zkuste to znovu.`}
+              {testPassed ? t('Úspěšně jste dokončili tento level! Za chvíli uvidíte svůj certifikát...') : t('Potřebujete alespoň {passingScore}%. Zkuste to znovu.', { passingScore })}
             </p>
             <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate(`${basePath}/levels`)}>
-                Zpět na levely
+                {t('Zpět na levely')}
               </Button>
               {!testPassed && (
                 <Button
                   onClick={() => { setStarted(false); setFinished(false); setAnswers({}); setCurrentIndex(0); setTestScore(null); setReviewData([]); }}
                   className="gradient-primary text-primary-foreground"
                 >
-                  Zkusit znovu
+                  {t('Zkusit znovu')}
                 </Button>
               )}
             </div>
@@ -240,7 +243,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
         {reviewData.length > 0 && (
           <Card className="shadow-card">
             <CardContent className="p-6 space-y-4">
-              <h4 className="text-lg font-semibold">Přehled odpovědí</h4>
+              <h4 className="text-lg font-semibold">{t('Přehled odpovědí')}</h4>
               <div className="space-y-3">
                 {reviewData.map((r, idx) => (
                   <div
@@ -257,20 +260,20 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
                           {r.question.question_text}
                         </p>
                         <p className="text-sm">
-                          <span className="text-muted-foreground">Vaše odpověď: </span>
+                          <span className="text-muted-foreground">{t('Vaše odpověď:')} </span>
                           <span className={r.correct ? 'text-success font-medium' : 'text-destructive font-medium'}>
-                            {r.userAnswer || <em className="opacity-70">(bez odpovědi)</em>}
+                            {r.userAnswer || <em className="opacity-70">{t('(bez odpovědi)')}</em>}
                           </span>
                         </p>
                         {!r.correct && r.correctAnswerText && (
                           <p className="text-sm">
-                            <span className="text-muted-foreground">Správná odpověď: </span>
+                            <span className="text-muted-foreground">{t('Správná odpověď:')} </span>
                             <span className="text-success font-medium">{r.correctAnswerText}</span>
                           </p>
                         )}
                         {!r.correct && !r.correctAnswerText && (
                           <p className="text-xs text-muted-foreground italic">
-                            Správnou odpověď najdete v procvičování nebo opakování.
+                            {t('Správnou odpověď najdete v procvičování nebo opakování.')}
                           </p>
                         )}
                       </div>
@@ -322,12 +325,12 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={handlePrev} disabled={currentIndex === 0}>
-          <ArrowLeft className="mr-1 h-4 w-4" /> Předchozí
+          <ArrowLeft className="mr-1 h-4 w-4" /> {t('Předchozí')}
         </Button>
         <div className="flex gap-2">
           {currentIndex < items.length - 1 ? (
             <Button onClick={handleNext} disabled={!answers[currentIndex]} className="gradient-primary text-primary-foreground">
-              Další <ArrowRight className="ml-1 h-4 w-4" />
+              {t('Další')} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button
@@ -335,7 +338,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
               disabled={Object.keys(answers).length < items.length || submitting}
               className="gradient-primary text-primary-foreground"
             >
-              {submitting ? 'Odesílání...' : 'Odevzdat test'}
+              {submitting ? t('Odesílání...') : t('Odevzdat test')}
             </Button>
           )}
         </div>

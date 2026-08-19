@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
+import { useT, useLang } from '@/lib/i18n';
 import logoSpolek from '@/assets/logo-spolek.png';
 import diplomaBorder from '@/assets/diploma-border.png';
 import signatureBrozekAsset from '@/assets/signature-brozek.png.asset.json';
@@ -25,12 +26,14 @@ interface Props {
   maxWidth?: number;      // override default 720 preview width
 }
 
-const fmtDate = (d: Date) => d.toLocaleDateString('cs-CZ');
+const fmtDate = (d: Date, lang: 'cs' | 'sk' = 'cs') => d.toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ');
 
 export default function DiplomaCertificate({
   title, subtitle, introText, awardTitle, noteText, issuer, signatory, validityYears,
   userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
+  const t = useT();
+  const { lang } = useLang();
   const issued = new Date(issuedAt);
   const validUntil = new Date(issued);
   validUntil.setFullYear(validUntil.getFullYear() + (validityYears || 0));
@@ -40,8 +43,8 @@ export default function DiplomaCertificate({
       .replace(/\{user_name\}/gi, userName)
       .replace(/\{group_title\}/gi, groupTitle)
       .replace(/\{score\}/gi, `${score}%`)
-      .replace(/\{date\}/gi, fmtDate(issued))
-      .replace(/\{valid_until\}/gi, validityYears > 0 ? fmtDate(validUntil) : '');
+      .replace(/\{date\}/gi, fmtDate(issued, lang))
+      .replace(/\{valid_until\}/gi, validityYears > 0 ? fmtDate(validUntil, lang) : '');
 
   const intro = interpolate(introText).trim();
   const award = interpolate(awardTitle).trim().toUpperCase();
@@ -112,24 +115,24 @@ export default function DiplomaCertificate({
           <div class="for">pro</div>
           <div class="name">${safe(userName)}</div>
           ${note ? `<div class="note">${safe(note)}</div>` : ''}
-          <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued))}</strong></div>
-          ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil))}</strong></div>` : ''}
+          <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued, lang))}</strong></div>
+          ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil, lang))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
           <div class="sig-row">
             ${signatory ? `
               <div class="sig-block">
                 <div class="sig-line"></div>
                 <div class="sig-name">${safe(signatory)}</div>
-                <div class="sig-role">za spolek</div>
+                <div class="sig-role">${safe(t('za spolek'))}</div>
               </div>` : ''}
             <div class="sig-block">
               <img class="sig-img" src="${sigBrozekUrl}" alt="" />
               <div class="sig-line"></div>
               <div class="sig-name">${safe(SECONDARY_SIGNATORY)}</div>
-              <div class="sig-role">za spolek</div>
+              <div class="sig-role">${safe(t('za spolek'))}</div>
             </div>
           </div>
-          ${issuerLine ? `<div class="issuer">Vydává ${safe(issuerLine)}</div>` : ''}
+          ${issuerLine ? `<div class="issuer">${safe(t('Vydává'))} ${safe(issuerLine)}</div>` : ''}
         </div>
       </div>
       </body></html>
@@ -238,7 +241,7 @@ export default function DiplomaCertificate({
                   <span style={{ display: 'block', width: 60, height: 3, background: '#1a1a1a', margin: '0 auto 14px' }} />
                 </>
               )}
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: '#2a2a2a' }}>pro</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: '#2a2a2a' }}>{t('pro')}</div>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 36, letterSpacing: 2, color: '#111', lineHeight: 1.2, margin: '2px 0 4px' }}>
                 {userName}
               </div>
@@ -249,11 +252,11 @@ export default function DiplomaCertificate({
               )}
 
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
-                Datum absolvování: <strong style={{ color: '#111' }}>{fmtDate(issued)}</strong>
+                Datum absolvování: <strong style={{ color: '#111' }}>{fmtDate(issued, lang)}</strong>
               </div>
               {validityYears > 0 && (
                 <div style={{ fontSize: 12, color: '#444' }}>
-                  Platnost do: <strong style={{ color: '#111' }}>{fmtDate(validUntil)}</strong>
+                  Platnost do: <strong style={{ color: '#111' }}>{fmtDate(validUntil, lang)}</strong>
                 </div>
               )}
               {subtitle && (
@@ -264,19 +267,19 @@ export default function DiplomaCertificate({
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
                     <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
                     <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{signatory}</div>
-                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>{t('za spolek')}</div>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
                   <img src={signatureBrozek} alt="" style={{ height: 50, width: 'auto', maxWidth: 220, objectFit: 'contain', marginBottom: -6 }} />
                   <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
                   <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{SECONDARY_SIGNATORY}</div>
-                  <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>za spolek</div>
+                  <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>{t('za spolek')}</div>
                 </div>
               </div>
               {issuerLine && (
                 <div style={{ marginTop: 14, fontSize: 12, letterSpacing: 3, color: '#333', textTransform: 'uppercase', textAlign: 'center' }}>
-                  Vydává {issuerLine}
+                  {t('Vydává')} {issuerLine}
                 </div>
               )}
             </div>
@@ -286,7 +289,7 @@ export default function DiplomaCertificate({
       {!hidePrint && (
         <div className="flex justify-center">
           <Button onClick={handlePrint} className="gradient-primary text-primary-foreground">
-            <Printer className="mr-1 h-4 w-4" /> Vytisknout certifikát
+            <Printer className="mr-1 h-4 w-4" /> {t('Vytisknout certifikát')}
           </Button>
         </div>
       )}
