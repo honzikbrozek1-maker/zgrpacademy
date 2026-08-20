@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import PathSelection from "./pages/PathSelection";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
