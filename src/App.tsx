@@ -36,6 +36,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Root route: public landing page for visitors, path selection for signed-in users. */
+function RootRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
+  if (!user) return <Landing />;
+  return <ProtectedRoute><PathSelection /></ProtectedRoute>;
+}
+
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
