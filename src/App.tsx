@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import PathSelection from "./pages/PathSelection";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Levels from "./pages/Levels";
 import LevelDetail from "./pages/LevelDetail";
@@ -35,6 +36,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Root route: public landing page for visitors, path selection for signed-in users. */
+function RootRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
+  if (!user) return <Landing />;
+  return <ProtectedRoute><PathSelection /></ProtectedRoute>;
+}
+
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -51,7 +62,7 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
-                <Route path="/" element={<ProtectedRoute><PathSelection /></ProtectedRoute>} />
+                <Route path="/" element={<RootRoute />} />
                 
                 {/* Products path */}
                 <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
