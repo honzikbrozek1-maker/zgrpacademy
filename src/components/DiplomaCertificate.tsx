@@ -112,11 +112,11 @@ export default function DiplomaCertificate({
           <div class="title">${safe(title || 'Certifikát')}</div>
           ${intro ? `<div class="intro">${safe(intro)}</div>` : ''}
           ${award ? `<div class="award">${safe(award)}</div><span class="accent"></span>` : ''}
-          <div class="for">pro</div>
+          <div class="for">${safe(t('pro'))}</div>
           <div class="name">${safe(userName)}</div>
           ${note ? `<div class="note">${safe(note)}</div>` : ''}
-          <div class="meta" style="margin-top:16px">Datum absolvování: <strong>${safe(fmtDate(issued, lang))}</strong></div>
-          ${validityYears > 0 ? `<div class="meta">Platnost do: <strong>${safe(fmtDate(validUntil, lang))}</strong></div>` : ''}
+          <div class="meta" style="margin-top:16px">${safe(t('Datum absolvování'))}: <strong>${safe(fmtDate(issued, lang))}</strong></div>
+          ${validityYears > 0 ? `<div class="meta">${safe(t('Platnost do'))}: <strong>${safe(fmtDate(validUntil, lang))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
           <div class="sig-row">
             ${signatory ? `
@@ -252,11 +252,11 @@ export default function DiplomaCertificate({
               )}
 
               <div style={{ fontSize: 12, color: '#444', marginTop: 16 }}>
-                Datum absolvování: <strong style={{ color: '#111' }}>{fmtDate(issued, lang)}</strong>
+                {t('Datum absolvování')}: <strong style={{ color: '#111' }}>{fmtDate(issued, lang)}</strong>
               </div>
               {validityYears > 0 && (
                 <div style={{ fontSize: 12, color: '#444' }}>
-                  Platnost do: <strong style={{ color: '#111' }}>{fmtDate(validUntil, lang)}</strong>
+                  {t('Platnost do')}: <strong style={{ color: '#111' }}>{fmtDate(validUntil, lang)}</strong>
                 </div>
               )}
               {subtitle && (
