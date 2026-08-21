@@ -118,14 +118,8 @@ export default function DiplomaCertificate({
           <div class="meta" style="margin-top:16px">${safe(t('Datum absolvování'))}: <strong>${safe(fmtDate(issued, lang))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">${safe(t('Platnost do'))}: <strong>${safe(fmtDate(validUntil, lang))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
-          <div class="sig-row">
-            ${signatory ? `
-              <div class="sig-block">
-                <div class="sig-line"></div>
-                <div class="sig-name">${safe(signatory)}</div>
-                <div class="sig-role">${safe(t('za spolek'))}</div>
-              </div>` : ''}
-            <div class="sig-block">
+          <div class="sig-row" style="justify-content:center">
+            <div class="sig-block" style="flex:0 0 auto">
               <img class="sig-img" src="${sigBrozekUrl}" alt="" />
               <div class="sig-line"></div>
               <div class="sig-name">${safe(SECONDARY_SIGNATORY)}</div>
