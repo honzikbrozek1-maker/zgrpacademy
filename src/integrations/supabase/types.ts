@@ -739,6 +739,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_level_unlocked: {
+        Args: { _level_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_paid: { Args: { _user_id: string }; Returns: boolean }
       issue_diploma_if_eligible: { Args: { p_group_id: string }; Returns: Json }
       list_admins: {
