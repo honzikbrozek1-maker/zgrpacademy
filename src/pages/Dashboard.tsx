@@ -131,14 +131,15 @@ export default function Dashboard() {
     ? Math.round(levels.reduce((sum, level) => sum + getProgressPercent(level.id, getLevelProgress(level.id)), 0) / levels.length)
     : 0;
   // Group-based unlocking: a level is unlocked if its group is unlocked.
-  // A group is unlocked if it's the first by order_index, or the previous group's final test was passed.
+  // A group unlocks only when EVERY preceding group in the section was passed.
   // Ungrouped levels are always unlocked.
   const isGroupUnlocked = (groupId: string | null): boolean => {
     if (!groupId) return true;
     const idx = groups.findIndex(g => g.id === groupId);
     if (idx <= 0) return true;
-    const prev = groups[idx - 1];
-    return groupProgress.some(p => p.group_id === prev.id && p.passed);
+    return groups
+      .slice(0, idx)
+      .every(g => groupProgress.some(p => p.group_id === g.id && p.passed));
   };
   const isLevelUnlocked = (level: Level) => isGroupUnlocked(level.group_id);
 

@@ -87,6 +87,19 @@ export default function LevelDetail() {
       return;
     }
     const lvl = levelRes.data;
+
+    // Locked group => level is not accessible (server enforces this too).
+    if (lvl.group_id) {
+      const { data: unlocked } = await supabase.rpc('is_level_unlocked' as any, {
+        _user_id: user.id,
+        _level_id: lvl.id,
+      });
+      if (unlocked === false) {
+        navigate(`${basePath}/levels`, { replace: true });
+        return;
+      }
+    }
+
     setLevel(lvl);
 
     const [questionsRes, progressRes] = await Promise.all([

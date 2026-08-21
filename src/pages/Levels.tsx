@@ -110,12 +110,9 @@ export default function Levels() {
   const getLevelProgress = (id: string) => progress.find(p => p.level_id === id);
   const getGroupProgress = (id: string) => groupProgress.find(p => p.group_id === id);
 
-  const isGroupUnlocked = (group: Group, index: number) => {
-    if (index === 0) return true;
-    const prev = groups[index - 1];
-    if (!prev) return true;
-    return getGroupProgress(prev.id)?.passed === true;
-  };
+  // A group unlocks only when EVERY preceding group in the section is passed.
+  const isGroupUnlocked = (group: Group, index: number) =>
+    groups.slice(0, index).every(g => getGroupProgress(g.id)?.passed === true);
 
   const getLevelProgressPercentFor = (levelId: string, prog: UserProgressRow | undefined) =>
     getLevelProgressPercent(
