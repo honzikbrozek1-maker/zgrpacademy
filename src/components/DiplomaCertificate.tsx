@@ -16,7 +16,7 @@ interface Props {
   awardTitle: string;     // big highlighted title (e.g. "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU")
   noteText?: string;      // optional sentence under the recipient name
   issuer?: string;        // issuing organisation, rendered at the bottom
-  signatory: string;      // person who signs the certificate
+  signatory?: string;     // deprecated - no longer rendered
   validityYears: number;  // 0 = unlimited
   userName: string;       // auto: recipient
   groupTitle: string;     // auto: course / group name
@@ -29,7 +29,7 @@ interface Props {
 const fmtDate = (d: Date, lang: 'cs' | 'sk' = 'cs') => d.toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ');
 
 export default function DiplomaCertificate({
-  title, subtitle, introText, awardTitle, noteText, issuer, signatory, validityYears,
+  title, subtitle, introText, awardTitle, noteText, issuer, validityYears,
   userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
   const t = useT();
