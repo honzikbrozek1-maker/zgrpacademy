@@ -64,7 +64,7 @@ const emptyForm = {
   diploma_award_title: DEFAULT_AWARD,
   diploma_note_text: '',
   diploma_issuer: DEFAULT_ISSUER,
-  diploma_signatory: 'MUDr. Gabriela Hanslianová',
+  diploma_signatory: '',
   diploma_validity_years: 1,
   min_average_score: 70,
   final_test_passing_score: 70,
