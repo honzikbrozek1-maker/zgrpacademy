@@ -64,7 +64,7 @@ const emptyForm = {
   diploma_award_title: DEFAULT_AWARD,
   diploma_note_text: '',
   diploma_issuer: DEFAULT_ISSUER,
-  diploma_signatory: 'MUDr. Gabriela Hanslianová',
+  diploma_signatory: '',
   diploma_validity_years: 1,
   min_average_score: 70,
   final_test_passing_score: 70,
@@ -432,17 +432,10 @@ export default function AdminGroupsTab() {
                 />
                 <p className="text-xs text-muted-foreground mt-1">{t('Zobrazí se dole na certifikátu jako „Vydává …“.')}</p>
               </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">{t('Podpisující osoba (za spolek)')}</label>
-                  <Input value={form.diploma_signatory} onChange={e => setForm({ ...form, diploma_signatory: e.target.value })} />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Druhý podpis (Ing. Tomáš Brožek, MBA) je na certifikát doplněn automaticky.')}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">{t('Platnost (roky)')}</label>
-                  <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
-                  <p className="text-xs text-muted-foreground mt-1">{t('0 = bez omezení')}</p>
-                </div>
+              <div>
+                <label className="text-sm font-medium">{t('Platnost (roky)')}</label>
+                <NumberField min={0} value={form.diploma_validity_years} onChange={v => setForm({ ...form, diploma_validity_years: v })} />
+                <p className="text-xs text-muted-foreground mt-1">{t('0 = bez omezení')}</p>
               </div>
 
               <div className="pt-2">

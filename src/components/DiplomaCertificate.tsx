@@ -16,7 +16,7 @@ interface Props {
   awardTitle: string;     // big highlighted title (e.g. "SPECIALISTA ZDRAVOTNÍHO PROTOKOLU")
   noteText?: string;      // optional sentence under the recipient name
   issuer?: string;        // issuing organisation, rendered at the bottom
-  signatory: string;      // person who signs the certificate
+  signatory?: string;     // deprecated - no longer rendered
   validityYears: number;  // 0 = unlimited
   userName: string;       // auto: recipient
   groupTitle: string;     // auto: course / group name
@@ -29,7 +29,7 @@ interface Props {
 const fmtDate = (d: Date, lang: 'cs' | 'sk' = 'cs') => d.toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ');
 
 export default function DiplomaCertificate({
-  title, subtitle, introText, awardTitle, noteText, issuer, signatory, validityYears,
+  title, subtitle, introText, awardTitle, noteText, issuer, validityYears,
   userName, groupTitle, score, issuedAt, hidePrint, maxWidth = 720,
 }: Props) {
   const t = useT();
@@ -118,14 +118,8 @@ export default function DiplomaCertificate({
           <div class="meta" style="margin-top:16px">${safe(t('Datum absolvování'))}: <strong>${safe(fmtDate(issued, lang))}</strong></div>
           ${validityYears > 0 ? `<div class="meta">${safe(t('Platnost do'))}: <strong>${safe(fmtDate(validUntil, lang))}</strong></div>` : ''}
           ${subtitle ? `<div class="sub">${safe(subtitle)}</div>` : ''}
-          <div class="sig-row">
-            ${signatory ? `
-              <div class="sig-block">
-                <div class="sig-line"></div>
-                <div class="sig-name">${safe(signatory)}</div>
-                <div class="sig-role">${safe(t('za spolek'))}</div>
-              </div>` : ''}
-            <div class="sig-block">
+          <div class="sig-row" style="justify-content:center">
+            <div class="sig-block" style="flex:0 0 auto">
               <img class="sig-img" src="${sigBrozekUrl}" alt="" />
               <div class="sig-line"></div>
               <div class="sig-name">${safe(SECONDARY_SIGNATORY)}</div>
@@ -262,15 +256,8 @@ export default function DiplomaCertificate({
               {subtitle && (
                 <div style={{ fontSize: 11, color: '#666', marginTop: 6, letterSpacing: 1 }}>{subtitle}</div>
               )}
-              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', gap: 20 }}>
-                {signatory && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
-                    <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
-                    <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{signatory}</div>
-                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>{t('za spolek')}</div>
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
                   <img src={signatureBrozek} alt="" style={{ height: 50, width: 'auto', maxWidth: 220, objectFit: 'contain', marginBottom: -6 }} />
                   <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
                   <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{SECONDARY_SIGNATORY}</div>
