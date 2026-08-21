@@ -256,15 +256,8 @@ export default function DiplomaCertificate({
               {subtitle && (
                 <div style={{ fontSize: 11, color: '#666', marginTop: 6, letterSpacing: 1 }}>{subtitle}</div>
               )}
-              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', gap: 20 }}>
-                {signatory && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
-                    <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
-                    <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{signatory}</div>
-                    <div style={{ fontSize: 10, color: '#666', letterSpacing: 1, marginTop: 2, textTransform: 'uppercase' }}>{t('za spolek')}</div>
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <div style={{ marginTop: 'auto', paddingTop: 18, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
                   <img src={signatureBrozek} alt="" style={{ height: 50, width: 'auto', maxWidth: 220, objectFit: 'contain', marginBottom: -6 }} />
                   <div style={{ width: 220, maxWidth: '100%', borderTop: '1px solid #555', margin: '0 auto 4px' }} />
                   <div style={{ fontSize: 13, color: '#111', textAlign: 'center' }}>{SECONDARY_SIGNATORY}</div>
