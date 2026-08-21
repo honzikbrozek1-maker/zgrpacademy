@@ -64,7 +64,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
   const [showAi, setShowAi] = useState(false);
   const [aiText, setAiText] = useState('');
   const [aiTypes, setAiTypes] = useState<string[]>(['quiz', 'fill_blank']);
-  const [aiCount, setAiCount] = useState(10);
+  const [aiCount, setAiCount] = useState(30);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResults, setAiResults] = useState<any[] | null>(null);
   const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
@@ -301,6 +301,9 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                 <div>
                   <label className="text-sm font-medium mb-1 block">{t('Počet otázek')}</label>
                   <NumberField min={1} max={30} value={aiCount} onChange={v => setAiCount(v)} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('Doporučeno: 30 (15 kvízových + 15 doplňovacích).')}
+                  </p>
                 </div>
                 <Button onClick={generateAi} disabled={aiLoading || !aiText.trim() || aiTypes.length === 0} className="w-full">
                   {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('Generuji...')}</> : <><Sparkles className="mr-2 h-4 w-4" /> {t('Vygenerovat')}</>}
