@@ -95,7 +95,7 @@ export default function AdminPanel() {
   const [adminList, setAdminList] = useState<{ user_id: string; display_name: string }[]>([]);
   const [selectedTargetAdmin, setSelectedTargetAdmin] = useState<string | null>(null);
 
-  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 70, category });
+  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 90, category });
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
@@ -236,7 +236,7 @@ export default function AdminPanel() {
     }
     setShowLevelDialog(false);
     setEditingLevel(null);
-    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category });
+    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 90, category });
     fetchLevels();
     toast({ title: t('Uloženo') });
   };
@@ -1335,7 +1335,7 @@ export default function AdminPanel() {
                   <h2 className="text-lg font-semibold">{t('Levely')}</h2>
                   <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 70, category }); }}>
+                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 90, category }); }}>
                         <Plus className="mr-1 h-4 w-4" /> {t('Přidat level')}
                       </Button>
                     </DialogTrigger>
