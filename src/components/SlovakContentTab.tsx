@@ -67,7 +67,20 @@ export default function SlovakContentTab() {
       while (remaining > 0 && guard < 200) {
         guard++;
         const { data, error } = await supabase.functions.invoke('translate-content', { body: { entity } });
-        if (error) throw error;
+        if (error) {
+          // FunctionsHttpError hides the real message — read it from the body.
+          let detail = error.message;
+          try {
+            const ctx = (error as { context?: Response }).context;
+            if (ctx) {
+              const body = await ctx.json();
+              if (body?.error) detail = body.error;
+            }
+          } catch {
+            /* keep generic message */
+          }
+          throw new Error(detail);
+        }
         const res = data as { translated: number; remaining: number; error?: string };
         if (res?.error) throw new Error(res.error);
         if (!res || res.translated === 0) {

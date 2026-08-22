@@ -135,11 +135,12 @@ PRAVIDLA:
 
     const aiData = await aiResp.json();
     const content: string = aiData?.choices?.[0]?.message?.content ?? "";
-    const match = content.match(/\[[\s\S]*\]/);
-    let translated: Record<string, string>[] = [];
+    let translated: Record<string, string>[];
     try {
-      translated = JSON.parse(match ? match[0] : content);
+      translated = parseJsonLenient(content) as Record<string, string>[];
+      if (!Array.isArray(translated)) throw new Error("not an array");
     } catch {
+      console.error("translate-content: AI returned invalid JSON:", content.slice(0, 500));
       return json({ error: "AI vrátila neplatný formát" }, 500);
     }
 
@@ -171,4 +172,44 @@ function json(payload: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Parses the AI's JSON output tolerantly. Models sometimes emit literal
+ * newlines/tabs inside JSON string values, which is invalid JSON — escape
+ * those control characters (only inside string literals) and retry.
+ */
+function parseJsonLenient(raw: string): unknown {
+  const match = raw.match(/\[[\s\S]*\]/);
+  const text = (match ? match[0] : raw).trim();
+  try {
+    return JSON.parse(text);
+  } catch {
+    let out = "";
+    let inString = false;
+    let escaped = false;
+    for (const ch of text) {
+      if (escaped) {
+        out += ch;
+        escaped = false;
+        continue;
+      }
+      if (ch === "\\") {
+        out += ch;
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        out += ch;
+        continue;
+      }
+      if (inString && (ch === "\n" || ch === "\r" || ch === "\t")) {
+        out += ch === "\n" ? "\\n" : ch === "\r" ? "\\r" : "\\t";
+        continue;
+      }
+      out += ch;
+    }
+    return JSON.parse(out);
+  }
 }
