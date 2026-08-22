@@ -135,11 +135,12 @@ PRAVIDLA:
 
     const aiData = await aiResp.json();
     const content: string = aiData?.choices?.[0]?.message?.content ?? "";
-    const match = content.match(/\[[\s\S]*\]/);
-    let translated: Record<string, string>[] = [];
+    let translated: Record<string, string>[];
     try {
-      translated = JSON.parse(match ? match[0] : content);
+      translated = parseJsonLenient(content) as Record<string, string>[];
+      if (!Array.isArray(translated)) throw new Error("not an array");
     } catch {
+      console.error("translate-content: AI returned invalid JSON:", content.slice(0, 500));
       return json({ error: "AI vrátila neplatný formát" }, 500);
     }
 
