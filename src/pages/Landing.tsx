@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Package, Briefcase, GraduationCap, CheckCircle2, ArrowRight } from 'lucide-react';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useT } from '@/lib/i18n';
+
 
 export default function Landing() {
   const t = useT();
