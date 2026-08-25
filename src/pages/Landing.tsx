@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Package, Briefcase, GraduationCap, CheckCircle2, ArrowRight } from 'lucide-react';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useT } from '@/lib/i18n';
+
 
 export default function Landing() {
   const t = useT();
@@ -43,9 +45,12 @@ export default function Landing() {
             />
             <span className="font-semibold">ZGRP Academy</span>
           </div>
-          <Button asChild size="sm">
-            <Link to="/auth">{t('Přihlásit se')}</Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Button asChild size="sm">
+              <Link to="/auth">{t('Přihlásit se')}</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
