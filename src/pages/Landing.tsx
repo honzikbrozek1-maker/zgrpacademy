@@ -45,9 +45,12 @@ export default function Landing() {
             />
             <span className="font-semibold">ZGRP Academy</span>
           </div>
-          <Button asChild size="sm">
-            <Link to="/auth">{t('Přihlásit se')}</Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Button asChild size="sm">
+              <Link to="/auth">{t('Přihlásit se')}</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
