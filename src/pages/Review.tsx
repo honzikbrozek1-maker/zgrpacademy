@@ -367,14 +367,17 @@ export default function Review() {
               {fillinSentence ? (
                 <div className="text-lg leading-relaxed">
                   <span>{fillinSentence.before}</span>
-                  <span className={`font-bold px-2 py-0.5 rounded ${
-                    showResult
-                      ? selected === correctAnswer ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
-                      : 'bg-primary/10 text-primary'
-                  }`}>
-                    {showResult ? fillinCorrectText : '______'}
-                  </span>
+                  {showResult ? (
+                    <span className={`font-bold px-2 py-0.5 rounded ${
+                      selected === correctAnswer ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
+                    }`}>
+                      {fillinCorrectText}
+                    </span>
+                  ) : (
+                    <span className="inline-block align-baseline w-16 border-b-2 border-primary mx-1 rounded-sm bg-primary/10">&nbsp;</span>
+                  )}
                   <span>{fillinSentence.after}</span>
+
                 </div>
               ) : (
                 <h3 className="text-lg font-semibold">{q?.question_text}</h3>
