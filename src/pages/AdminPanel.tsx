@@ -841,7 +841,7 @@ export default function AdminPanel() {
               ref={sentenceRef}
               placeholder={t('Např.: Hlavním městem České republiky je Praha.')}
               value={qVal('back_text')}
-              onChange={e => { qSet('back_text', e.target.value); if (!e.target.value.includes('______')) setBlankInserted(false); }}
+              onChange={e => { qSet('back_text', e.target.value); if (!hasBlank(e.target.value)) setBlankInserted(false); else setBlankInserted(true); }}
             />
           </div>
 
