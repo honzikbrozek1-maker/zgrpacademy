@@ -311,25 +311,24 @@ export default function Review() {
     ].filter((option): option is { text: string; index: number } => Boolean(option));
 
     const backText = q?.back_text || '';
-    const blankIndex = backText.indexOf('______');
-    const blankSentence = blankIndex >= 0
-      ? { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) }
-      : null;
+    const source = blankSentence(q?.question_text, backText);
+    const blankSplit = splitBlank(source);
 
     const fillinCorrectText = correctAnswer !== null
       ? [q?.option_1, q?.option_2, q?.option_3, q?.option_4][correctAnswer - 1] || ''
       : '';
 
-    const fillinSentence = showResult && correctAnswer !== null && backText
+    const fillinSentence = showResult && correctAnswer !== null
       ? (() => {
-          if (blankIndex >= 0) return { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) };
-          if (fillinCorrectText) {
+          if (blankSplit) return blankSplit;
+          if (fillinCorrectText && backText) {
             const idx = backText.toLowerCase().indexOf(fillinCorrectText.toLowerCase());
             if (idx >= 0) return { before: backText.slice(0, idx), after: backText.slice(idx + fillinCorrectText.length) };
           }
           return null;
         })()
-      : blankSentence;
+      : blankSplit;
+
 
     const handleSelectFillin = async (optIndex: number) => {
       if (showResult || checking) return;
