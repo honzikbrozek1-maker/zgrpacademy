@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
 import { useT } from '@/lib/i18n';
+import { blankSentence, splitBlank } from '@/lib/fillBlank';
+
 
 interface Question {
   id: string;
@@ -69,38 +71,32 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
     ? [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || ''
     : '';
 
+  // The blank can live either in back_text (manually created) or in question_text (AI generated)
+  const sourceSentence = useMemo(
+    () => blankSentence(question?.question_text, question?.back_text),
+    [question]
+  );
+
   const sentenceData = useMemo(() => {
-    if (!question?.back_text || !showResult || !correctAnswerText) return null;
-    const blankIdx = question.back_text.indexOf('______');
-    if (blankIdx === -1) {
-      const word = correctAnswerText;
-      if (!word) return null;
-      const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
-      if (idx === -1) return { before: question.back_text, after: '' };
-      return {
-        before: question.back_text.substring(0, idx),
-        after: question.back_text.substring(idx + word.length),
-      };
-    }
+    if (!showResult || !correctAnswerText) return null;
+    const split = splitBlank(sourceSentence);
+    if (split) return split;
+    if (!question?.back_text) return null;
+    const idx = question.back_text.toLowerCase().indexOf(correctAnswerText.toLowerCase());
+    if (idx === -1) return { before: question.back_text, after: '' };
     return {
-      before: question.back_text.substring(0, blankIdx),
-      after: question.back_text.substring(blankIdx + 6),
+      before: question.back_text.substring(0, idx),
+      after: question.back_text.substring(idx + correctAnswerText.length),
     };
-  }, [question, correctAnswerText, showResult]);
+  }, [question, sourceSentence, correctAnswerText, showResult]);
 
   const blankSentenceData = useMemo(() => {
-    if (!question?.back_text || showResult) return null;
-    const blankIdx = question.back_text.indexOf('______');
-    if (blankIdx >= 0) {
-      return {
-        before: question.back_text.substring(0, blankIdx),
-        after: question.back_text.substring(blankIdx + 6),
-      };
-    }
-    return null;
-  }, [question, showResult]);
+    if (showResult) return null;
+    return splitBlank(sourceSentence);
+  }, [sourceSentence, showResult]);
 
   const displaySentence = showResult ? sentenceData : blankSentenceData;
+
 
   const options = useMemo(() => {
     const opts: { text: string; index: number }[] = [];
@@ -278,18 +274,26 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
           {displaySentence ? (
             <div className="text-lg leading-relaxed">
               <span>{displaySentence.before}</span>
-              <span className={`font-bold px-2 py-0.5 rounded ${
-                showResult
-                  ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
-                  : 'bg-primary/10 text-primary'
-              }`}>
-                {showResult ? correctAnswerText : '______'}
-              </span>
+              {showResult ? (
+                <span className={`font-bold px-2 py-0.5 rounded ${
+                  isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                }`}>
+                  {correctAnswerText}
+                </span>
+              ) : (
+                <span
+                  aria-label={t('vynechané slovo')}
+                  className="inline-block align-baseline w-16 border-b-2 border-primary mx-1 rounded-sm bg-primary/10"
+                >
+                  &nbsp;
+                </span>
+              )}
               <span>{displaySentence.after}</span>
             </div>
           ) : (
             <h3 className="text-lg font-semibold">{question.question_text}</h3>
           )}
+
 
           <div className="grid grid-cols-2 gap-3">
             {options.map((opt) => {

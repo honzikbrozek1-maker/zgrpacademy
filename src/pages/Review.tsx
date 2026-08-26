@@ -11,6 +11,8 @@ import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft, Pen
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Seo from '@/components/Seo';
+import { blankSentence, splitBlank } from '@/lib/fillBlank';
+
 
 interface ReviewItem {
   id: string;
@@ -311,25 +313,24 @@ export default function Review() {
     ].filter((option): option is { text: string; index: number } => Boolean(option));
 
     const backText = q?.back_text || '';
-    const blankIndex = backText.indexOf('______');
-    const blankSentence = blankIndex >= 0
-      ? { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) }
-      : null;
+    const source = blankSentence(q?.question_text, backText);
+    const blankSplit = splitBlank(source);
 
     const fillinCorrectText = correctAnswer !== null
       ? [q?.option_1, q?.option_2, q?.option_3, q?.option_4][correctAnswer - 1] || ''
       : '';
 
-    const fillinSentence = showResult && correctAnswer !== null && backText
+    const fillinSentence = showResult && correctAnswer !== null
       ? (() => {
-          if (blankIndex >= 0) return { before: backText.slice(0, blankIndex), after: backText.slice(blankIndex + 6) };
-          if (fillinCorrectText) {
+          if (blankSplit) return blankSplit;
+          if (fillinCorrectText && backText) {
             const idx = backText.toLowerCase().indexOf(fillinCorrectText.toLowerCase());
             if (idx >= 0) return { before: backText.slice(0, idx), after: backText.slice(idx + fillinCorrectText.length) };
           }
           return null;
         })()
-      : blankSentence;
+      : blankSplit;
+
 
     const handleSelectFillin = async (optIndex: number) => {
       if (showResult || checking) return;
@@ -366,14 +367,17 @@ export default function Review() {
               {fillinSentence ? (
                 <div className="text-lg leading-relaxed">
                   <span>{fillinSentence.before}</span>
-                  <span className={`font-bold px-2 py-0.5 rounded ${
-                    showResult
-                      ? selected === correctAnswer ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
-                      : 'bg-primary/10 text-primary'
-                  }`}>
-                    {showResult ? fillinCorrectText : '______'}
-                  </span>
+                  {showResult ? (
+                    <span className={`font-bold px-2 py-0.5 rounded ${
+                      selected === correctAnswer ? 'bg-success/20 text-success' : 'bg-destructive/10 text-destructive'
+                    }`}>
+                      {fillinCorrectText}
+                    </span>
+                  ) : (
+                    <span className="inline-block align-baseline w-16 border-b-2 border-primary mx-1 rounded-sm bg-primary/10">&nbsp;</span>
+                  )}
                   <span>{fillinSentence.after}</span>
+
                 </div>
               ) : (
                 <h3 className="text-lg font-semibold">{q?.question_text}</h3>
