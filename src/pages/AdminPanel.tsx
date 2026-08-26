@@ -313,13 +313,20 @@ export default function AdminPanel() {
   };
 
   const editQuestion = (q: Question) => {
+    // Blank may be stored in back_text (manual) or question_text (AI generated)
+    const cs = q.type === 'fill_blank'
+      ? normalizeBlank(blankSentence(q.question_text, q.back_text) || q.back_text || '')
+      : (q.back_text || '');
+    const sk = q.type === 'fill_blank'
+      ? normalizeBlank(blankSentence(q.question_text_sk, q.back_text_sk) || q.back_text_sk || '')
+      : (q.back_text_sk || '');
     setQForm({
       type: q.type,
       question_text: q.question_text,
       option_1: q.option_1 || '', option_2: q.option_2 || '',
       option_3: q.option_3 || '', option_4: q.option_4 || '',
       correct_answer: q.correct_answer || 1,
-      back_text: q.back_text || '',
+      back_text: cs,
       wrong_option_1: q.wrong_option_1 || '',
       wrong_option_2: q.wrong_option_2 || '',
       wrong_option_3: q.wrong_option_3 || '',
@@ -328,17 +335,18 @@ export default function AdminPanel() {
       question_text_sk: q.question_text_sk || '',
       option_1_sk: q.option_1_sk || '', option_2_sk: q.option_2_sk || '',
       option_3_sk: q.option_3_sk || '', option_4_sk: q.option_4_sk || '',
-      back_text_sk: q.back_text_sk || '',
+      back_text_sk: sk,
       wrong_option_1_sk: q.wrong_option_1_sk || '',
       wrong_option_2_sk: q.wrong_option_2_sk || '',
       wrong_option_3_sk: q.wrong_option_3_sk || '',
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
-    setBlankInserted(q.type === 'fill_blank' && (q.back_text || '').includes('______'));
+    setBlankInserted(q.type === 'fill_blank' && hasBlank(cs));
     setShowQuestionDialog(true);
     setQEditLang('cs');
   };
+
 
   const resetQForm = () => {
     setQForm({
