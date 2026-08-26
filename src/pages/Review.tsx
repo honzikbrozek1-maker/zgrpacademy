@@ -11,6 +11,8 @@ import { CheckCircle, HelpCircle, XCircle, RotateCcw, ArrowRight, ArrowLeft, Pen
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Seo from '@/components/Seo';
+import { blankSentence, splitBlank } from '@/lib/fillBlank';
+
 
 interface ReviewItem {
   id: string;
