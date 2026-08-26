@@ -274,18 +274,26 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
           {displaySentence ? (
             <div className="text-lg leading-relaxed">
               <span>{displaySentence.before}</span>
-              <span className={`font-bold px-2 py-0.5 rounded ${
-                showResult
-                  ? isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
-                  : 'bg-primary/10 text-primary'
-              }`}>
-                {showResult ? correctAnswerText : '______'}
-              </span>
+              {showResult ? (
+                <span className={`font-bold px-2 py-0.5 rounded ${
+                  isCorrect ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                }`}>
+                  {correctAnswerText}
+                </span>
+              ) : (
+                <span
+                  aria-label={t('vynechané slovo')}
+                  className="inline-block align-baseline w-16 border-b-2 border-primary mx-1 rounded-sm bg-primary/10"
+                >
+                  &nbsp;
+                </span>
+              )}
               <span>{displaySentence.after}</span>
             </div>
           ) : (
             <h3 className="text-lg font-semibold">{question.question_text}</h3>
           )}
+
 
           <div className="grid grid-cols-2 gap-3">
             {options.map((opt) => {
