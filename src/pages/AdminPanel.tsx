@@ -22,6 +22,8 @@ import RecycleBinTab from '@/components/RecycleBinTab';
 import SlovakContentTab from '@/components/SlovakContentTab';
 import { NumberField } from '@/components/NumberField';
 import { useT } from '@/lib/i18n';
+import { blankSentence, hasBlank, normalizeBlank } from '@/lib/fillBlank';
+
 
 interface Level {
   id: string;
