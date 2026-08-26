@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { playCorrectSound, playIncorrectSound } from '@/lib/sounds';
 import { useT } from '@/lib/i18n';
+import { blankSentence, splitBlank } from '@/lib/fillBlank';
+
 
 interface Question {
   id: string;
