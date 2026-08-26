@@ -69,38 +69,32 @@ export default function FillInBlankModule({ questions, levelId, onComplete, onRe
     ? [question?.option_1, question?.option_2, question?.option_3, question?.option_4][correctAnswerIndex - 1] || ''
     : '';
 
+  // The blank can live either in back_text (manually created) or in question_text (AI generated)
+  const sourceSentence = useMemo(
+    () => blankSentence(question?.question_text, question?.back_text),
+    [question]
+  );
+
   const sentenceData = useMemo(() => {
-    if (!question?.back_text || !showResult || !correctAnswerText) return null;
-    const blankIdx = question.back_text.indexOf('______');
-    if (blankIdx === -1) {
-      const word = correctAnswerText;
-      if (!word) return null;
-      const idx = question.back_text.toLowerCase().indexOf(word.toLowerCase());
-      if (idx === -1) return { before: question.back_text, after: '' };
-      return {
-        before: question.back_text.substring(0, idx),
-        after: question.back_text.substring(idx + word.length),
-      };
-    }
+    if (!showResult || !correctAnswerText) return null;
+    const split = splitBlank(sourceSentence);
+    if (split) return split;
+    if (!question?.back_text) return null;
+    const idx = question.back_text.toLowerCase().indexOf(correctAnswerText.toLowerCase());
+    if (idx === -1) return { before: question.back_text, after: '' };
     return {
-      before: question.back_text.substring(0, blankIdx),
-      after: question.back_text.substring(blankIdx + 6),
+      before: question.back_text.substring(0, idx),
+      after: question.back_text.substring(idx + correctAnswerText.length),
     };
-  }, [question, correctAnswerText, showResult]);
+  }, [question, sourceSentence, correctAnswerText, showResult]);
 
   const blankSentenceData = useMemo(() => {
-    if (!question?.back_text || showResult) return null;
-    const blankIdx = question.back_text.indexOf('______');
-    if (blankIdx >= 0) {
-      return {
-        before: question.back_text.substring(0, blankIdx),
-        after: question.back_text.substring(blankIdx + 6),
-      };
-    }
-    return null;
-  }, [question, showResult]);
+    if (showResult) return null;
+    return splitBlank(sourceSentence);
+  }, [sourceSentence, showResult]);
 
   const displaySentence = showResult ? sentenceData : blankSentenceData;
+
 
   const options = useMemo(() => {
     const opts: { text: string; index: number }[] = [];
