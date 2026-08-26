@@ -867,19 +867,22 @@ export default function AdminPanel() {
           </div>
 
           {/* Preview */}
-          {blankInserted && qVal('back_text').includes('______') && (
+          {blankInserted && hasBlank(qVal('back_text')) && (
             <div className="p-3 rounded-lg bg-muted/50 border">
               <p className="text-xs text-muted-foreground mb-1">{t('Náhled:')}</p>
               <p className="text-sm">
-                {qVal('back_text').split('______').map((part, i, arr) => (
+                {normalizeBlank(qVal('back_text')).split('______').map((part, i, arr) => (
                   <span key={i}>
                     {part}
-                    {i < arr.length - 1 && <span className="font-bold text-primary px-1 bg-primary/10 rounded">______</span>}
+                    {i < arr.length - 1 && (
+                      <span className="inline-block align-baseline w-14 border-b-2 border-primary mx-1 rounded-sm bg-primary/10">&nbsp;</span>
+                    )}
                   </span>
                 ))}
               </p>
             </div>
           )}
+
 
           {/* Hidden question_text = same as back_text for display */}
           <input type="hidden" value={qVal('back_text')} />
