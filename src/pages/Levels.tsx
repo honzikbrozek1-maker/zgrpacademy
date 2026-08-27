@@ -61,7 +61,8 @@ export default function Levels() {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
+    const load = async () => {
+
       const [groupsRes, levelsRes, gpRes, diplomasRes] = await Promise.all([
         supabase.from('level_groups').select('*').eq('category', category).order('order_index'),
         supabase.from('levels').select('*').eq('category', category).order('order_index'),
