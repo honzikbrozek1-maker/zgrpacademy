@@ -44,8 +44,8 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
-  const { lang } = useLang();
   const testLangRef = useRef(lang);
+  const [items, setItems] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
