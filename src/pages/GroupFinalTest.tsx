@@ -34,6 +34,7 @@ export default function GroupFinalTest() {
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
+  const testLangRef = useRef(lang);
 
   const [group, setGroup] = useState<GroupInfo | null>(null);
   const [items, setItems] = useState<TestItem[]>([]);
