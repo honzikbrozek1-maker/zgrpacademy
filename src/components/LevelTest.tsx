@@ -59,7 +59,8 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const startTest = async () => {
     setLoading(true);
     try {
-      const { data, error } = await (testLangRef.current = lang, await supabase.rpc('get_level_test', { p_level_id: levelId, p_lang: lang }));
+      testLangRef.current = lang;
+      const { data, error } = await supabase.rpc('get_level_test', { p_level_id: levelId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
       if (list.length === 0) {
