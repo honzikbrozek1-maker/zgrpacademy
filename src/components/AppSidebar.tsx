@@ -80,7 +80,7 @@ export function AppSidebar() {
     { to: `${basePath}/levels`, icon: Layers, label: t('Levely') },
     { to: `${basePath}/diplomas`, icon: GraduationCap, label: t('Moje certifikáty') },
     { to: `${basePath}/share`, icon: Share2, label: t('Sdílet aplikaci') },
-    { to: `${basePath}/admin`, icon: Shield, label: t('Admin panel') },
+    ...(isAdmin ? [{ to: `${basePath}/admin`, icon: Shield, label: t('Admin panel') }] : []),
   ];
 
   const handleToggleSound = () => {
