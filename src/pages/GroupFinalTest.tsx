@@ -140,7 +140,7 @@ export default function GroupFinalTest() {
       const { data, error } = await supabase.rpc('complete_group_test_v2', {
         p_group_id: groupId,
         p_answers: payload,
-        p_lang: lang,
+        p_lang: testLangRef.current,
       });
       if (error) throw error;
       const res = data as { score: number; passed: boolean; per_question?: typeof perQuestion };
