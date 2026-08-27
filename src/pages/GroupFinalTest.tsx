@@ -87,6 +87,7 @@ export default function GroupFinalTest() {
     if (!groupId) return;
     setLoading(true);
     try {
+      testLangRef.current = lang;
       const { data, error } = await supabase.rpc('get_group_test', { p_group_id: groupId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
