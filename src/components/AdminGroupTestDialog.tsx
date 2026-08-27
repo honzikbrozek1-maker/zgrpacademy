@@ -121,27 +121,29 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       return;
     }
     const isFillBlank = form.type === 'fill_blank';
+    const clean = (value: string) => value.trim().replace(/[\u00a0\u202f\u2009]/g, ' ');
+    const optional = (value: string) => clean(value) || null;
     const payload: any = {
       group_id: groupId,
       level_id: null,
       type: form.type,
-      question_text: isFillBlank ? form.back_text : form.question_text,
-      option_1: form.option_1 || null,
-      option_2: form.option_2 || null,
-      option_3: form.option_3 || null,
-      option_4: form.option_4 || null,
+      question_text: clean(isFillBlank ? form.back_text : form.question_text),
+      option_1: optional(form.option_1),
+      option_2: optional(form.option_2),
+      option_3: optional(form.option_3),
+      option_4: optional(form.option_4),
       correct_answer: form.correct_answer,
-      back_text: isFillBlank ? form.back_text : null,
+      back_text: isFillBlank ? optional(form.back_text) : null,
       wrong_option_1: null,
       wrong_option_2: null,
       wrong_option_3: null,
       order_index: form.order_index,
-      question_text_sk: isFillBlank ? (form.back_text_sk || null) : (form.question_text_sk || null),
-      option_1_sk: form.option_1_sk || null,
-      option_2_sk: form.option_2_sk || null,
-      option_3_sk: form.option_3_sk || null,
-      option_4_sk: form.option_4_sk || null,
-      back_text_sk: isFillBlank ? (form.back_text_sk || null) : null,
+      question_text_sk: isFillBlank ? optional(form.back_text_sk) : optional(form.question_text_sk),
+      option_1_sk: optional(form.option_1_sk),
+      option_2_sk: optional(form.option_2_sk),
+      option_3_sk: optional(form.option_3_sk),
+      option_4_sk: optional(form.option_4_sk),
+      back_text_sk: isFillBlank ? optional(form.back_text_sk) : null,
     };
     const { error } = editingId
       ? await supabase.from('questions').update(payload).eq('id', editingId)
