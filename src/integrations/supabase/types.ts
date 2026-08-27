@@ -780,6 +780,7 @@ export type Database = {
           used_by: string
         }[]
       }
+      normalize_test_answer: { Args: { p_value: string }; Returns: string }
       pick_lang: {
         Args: { p_cs: string; p_lang: string; p_sk: string }
         Returns: string
