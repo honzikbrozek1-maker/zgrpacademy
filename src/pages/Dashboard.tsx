@@ -117,7 +117,19 @@ export default function Dashboard() {
     };
     fetchData();
     refreshSectionProfile();
+    const onFocus = () => {
+      if (document.visibilityState !== 'visible') return;
+      fetchData();
+      refreshSectionProfile();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
   }, [user, category, refreshSectionProfile, lang]);
+
 
   const getLevelProgress = (levelId: string) => progress.find(p => p.level_id === levelId);
 
