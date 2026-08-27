@@ -16,6 +16,14 @@ interface TestItem {
   options: string[];
 }
 
+interface TestResultItem {
+  question_id: string;
+  question_text: string;
+  correct: boolean;
+  user_answer: string | null;
+  correct_answer: string;
+}
+
 interface Props {
   levelId: string;
   passingScore: number;
@@ -122,7 +130,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       const result = data as unknown as {
         score: number;
         passed: boolean;
-        per_question?: Array<{ question_id: string; correct: boolean }>;
+        per_question?: TestResultItem[];
       };
       const score = result?.score ?? 0;
       const passed = Boolean(result?.passed);
@@ -130,28 +138,18 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       setTestScore(score);
       setTestPassed(passed);
 
-      // Build review data with correct answers for incorrect quiz questions
-      const perQuestionMap = new Map<string, boolean>();
-      (result?.per_question || []).forEach(r => perQuestionMap.set(r.question_id, r.correct));
-
-      const review = await Promise.all(items.map(async (q, i) => {
-        const userAnswer = answers[i] ?? '';
-        const correct = perQuestionMap.get(q.id) ?? false;
-        let correctAnswerText: string | undefined;
-        if (!correct && q.type === 'quiz') {
-          try {
-            const { data: chk } = await supabase.rpc('check_quiz_answer', {
-              p_question_id: q.id,
-              p_answer: 1,
-            });
-            const ca = (chk as any)?.correct_answer;
-            if (typeof ca === 'number' && q.options[ca - 1]) {
-              correctAnswerText = q.options[ca - 1];
-            }
-          } catch {}
-        }
-        return { question: q, userAnswer, correct, correctAnswerText };
-      }));
+      const resultByQuestion = new Map(
+        (result?.per_question || []).map(item => [item.question_id, item])
+      );
+      const review = items.map((question, index) => {
+        const itemResult = resultByQuestion.get(question.id);
+        return {
+          question,
+          userAnswer: itemResult?.user_answer ?? answers[index] ?? '',
+          correct: itemResult?.correct ?? false,
+          correctAnswerText: itemResult?.correct_answer,
+        };
+      });
       setReviewData(review);
 
       if (user && Array.isArray(result?.per_question)) {
@@ -269,11 +267,6 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
                           <p className="text-sm">
                             <span className="text-muted-foreground">{t('Správná odpověď:')} </span>
                             <span className="text-success font-medium">{r.correctAnswerText}</span>
-                          </p>
-                        )}
-                        {!r.correct && !r.correctAnswerText && (
-                          <p className="text-xs text-muted-foreground italic">
-                            {t('Správnou odpověď najdete v procvičování nebo opakování.')}
                           </p>
                         )}
                       </div>
