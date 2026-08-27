@@ -71,6 +71,7 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
+                <Route path="/landing" element={<Landing />} />
                 <Route path="/" element={<RootRoute />} />
                 
                 {/* Products path */}
