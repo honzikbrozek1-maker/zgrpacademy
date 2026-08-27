@@ -105,8 +105,17 @@ export default function Levels() {
         if (q.level_id) map[q.level_id]?.push(q.type);
       }
       setLevelQuestionTypes(map);
-    })();
+    };
+    load();
+    const onFocus = () => { if (document.visibilityState === 'visible') load(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
   }, [user, category, lang]);
+
 
   const getLevelProgress = (id: string) => progress.find(p => p.level_id === id);
   const getGroupProgress = (id: string) => groupProgress.find(p => p.group_id === id);
