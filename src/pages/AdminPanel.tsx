@@ -261,28 +261,31 @@ export default function AdminPanel() {
     if (!selectedLevel) return;
     const needsOptions = qForm.type === 'quiz' || qForm.type === 'fill_blank';
     const isFlashcard = qForm.type === 'flashcard';
+    const clean = (value: string) => value.trim().replace(/[\u00a0\u202f\u2009]/g, ' ');
+    const optional = (value: string) => clean(value) || null;
     const payload = {
       ...qForm,
       level_id: selectedLevel.id,
-      option_1: needsOptions ? qForm.option_1 : null,
-      option_2: needsOptions ? qForm.option_2 : null,
-      option_3: needsOptions ? qForm.option_3 : null,
-      option_4: needsOptions ? qForm.option_4 : null,
+      question_text: clean(qForm.question_text),
+      option_1: needsOptions ? optional(qForm.option_1) : null,
+      option_2: needsOptions ? optional(qForm.option_2) : null,
+      option_3: needsOptions ? optional(qForm.option_3) : null,
+      option_4: needsOptions ? optional(qForm.option_4) : null,
       correct_answer: (qForm.type === 'quiz' || qForm.type === 'fill_blank') ? qForm.correct_answer : null,
-      back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? qForm.back_text : null,
-      wrong_option_1: isFlashcard ? (qForm.wrong_option_1 || null) : null,
-      wrong_option_2: isFlashcard ? (qForm.wrong_option_2 || null) : null,
-      wrong_option_3: isFlashcard ? (qForm.wrong_option_3 || null) : null,
+      back_text: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? optional(qForm.back_text) : null,
+      wrong_option_1: isFlashcard ? optional(qForm.wrong_option_1) : null,
+      wrong_option_2: isFlashcard ? optional(qForm.wrong_option_2) : null,
+      wrong_option_3: isFlashcard ? optional(qForm.wrong_option_3) : null,
       in_practice: qForm.in_practice,
-      question_text_sk: qForm.question_text_sk || null,
-      option_1_sk: needsOptions ? (qForm.option_1_sk || null) : null,
-      option_2_sk: needsOptions ? (qForm.option_2_sk || null) : null,
-      option_3_sk: needsOptions ? (qForm.option_3_sk || null) : null,
-      option_4_sk: needsOptions ? (qForm.option_4_sk || null) : null,
-      back_text_sk: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? (qForm.back_text_sk || null) : null,
-      wrong_option_1_sk: isFlashcard ? (qForm.wrong_option_1_sk || null) : null,
-      wrong_option_2_sk: isFlashcard ? (qForm.wrong_option_2_sk || null) : null,
-      wrong_option_3_sk: isFlashcard ? (qForm.wrong_option_3_sk || null) : null,
+      question_text_sk: optional(qForm.question_text_sk),
+      option_1_sk: needsOptions ? optional(qForm.option_1_sk) : null,
+      option_2_sk: needsOptions ? optional(qForm.option_2_sk) : null,
+      option_3_sk: needsOptions ? optional(qForm.option_3_sk) : null,
+      option_4_sk: needsOptions ? optional(qForm.option_4_sk) : null,
+      back_text_sk: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? optional(qForm.back_text_sk) : null,
+      wrong_option_1_sk: isFlashcard ? optional(qForm.wrong_option_1_sk) : null,
+      wrong_option_2_sk: isFlashcard ? optional(qForm.wrong_option_2_sk) : null,
+      wrong_option_3_sk: isFlashcard ? optional(qForm.wrong_option_3_sk) : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
