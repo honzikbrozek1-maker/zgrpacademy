@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -34,6 +34,7 @@ export default function GroupFinalTest() {
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
+  const testLangRef = useRef(lang);
 
   const [group, setGroup] = useState<GroupInfo | null>(null);
   const [items, setItems] = useState<TestItem[]>([]);
@@ -87,6 +88,7 @@ export default function GroupFinalTest() {
     if (!groupId) return;
     setLoading(true);
     try {
+      testLangRef.current = lang;
       const { data, error } = await supabase.rpc('get_group_test', { p_group_id: groupId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
@@ -138,7 +140,7 @@ export default function GroupFinalTest() {
       const { data, error } = await supabase.rpc('complete_group_test_v2', {
         p_group_id: groupId,
         p_answers: payload,
-        p_lang: lang,
+        p_lang: testLangRef.current,
       });
       if (error) throw error;
       const res = data as { score: number; passed: boolean; per_question?: typeof perQuestion };

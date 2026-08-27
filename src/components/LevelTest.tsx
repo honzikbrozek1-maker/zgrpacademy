@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -44,6 +44,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
+  const testLangRef = useRef(lang);
   const [items, setItems] = useState<TestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
@@ -58,6 +59,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
   const startTest = async () => {
     setLoading(true);
     try {
+      testLangRef.current = lang;
       const { data, error } = await supabase.rpc('get_level_test', { p_level_id: levelId, p_lang: lang });
       if (error) throw error;
       const list = (data as unknown as TestItem[]) || [];
@@ -123,7 +125,7 @@ export default function LevelTest({ levelId, passingScore, basePath, existingPro
       const { data, error } = await supabase.rpc('complete_level_v2', {
         p_level_id: levelId,
         p_answers: payload,
-        p_lang: lang,
+        p_lang: testLangRef.current,
       });
       if (error) throw error;
 
