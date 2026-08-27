@@ -40,7 +40,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RootRoute() {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Načítání...</p></div>;
-  if (!user) return <Landing />;
+  if (!user) {
+    // Landing page only on first visit; afterwards go straight to sign-in
+    let seen = false;
+    try {
+      seen = localStorage.getItem('zgrp_landing_seen') === '1';
+      localStorage.setItem('zgrp_landing_seen', '1');
+    } catch { /* private mode etc. — show landing */ }
+    if (seen) return <Navigate to="/auth" replace />;
+    return <Landing />;
+  }
   return <ProtectedRoute><PathSelection /></ProtectedRoute>;
 }
 
