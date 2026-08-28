@@ -112,6 +112,7 @@ export default function ResetPassword() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="password"
+                    aria-label={t('Nové heslo')}
                     placeholder={t('Nové heslo')}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -128,6 +129,7 @@ export default function ResetPassword() {
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="password"
+                  aria-label={t('Nové heslo znovu')}
                   placeholder={t('Nové heslo znovu')}
                   value={confirm}
                   onChange={e => setConfirm(e.target.value)}

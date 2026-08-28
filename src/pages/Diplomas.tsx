@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth';
 import { useT, useLang } from '@/lib/i18n';
 import DiplomaCertificate from '@/components/DiplomaCertificate';
 import Seo from '@/components/Seo';
+import { useAppPath } from '@/lib/pathContext';
 
 interface Diploma {
   diploma_id: string;
@@ -33,6 +34,8 @@ export default function Diplomas() {
   const { profile } = useAuth();
   const t = useT();
   const { lang } = useLang();
+  const { currentPath, basePath } = useAppPath();
+  const isBackoffice = currentPath === 'backoffice';
   const [diplomas, setDiplomas] = useState<Diploma[]>([]);
   const [selected, setSelected] = useState<Diploma | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,10 +85,12 @@ export default function Diplomas() {
   return (
     <AppLayout>
       <Seo
-        title={t('Moje certifikáty – ZGRP Academy')}
-        description={t('Zobrazte a vytiskněte si certifikáty získané za úspěšné absolvování kurzů ZGRP Academy.')}
-        canonical="https://zgrpacademy.lovable.app/products/diplomas"
-        ogUrl="https://zgrpacademy.lovable.app/products/diplomas"
+        title={isBackoffice ? t('Certifikáty – Backoffice & Odměny | ZGRP Academy') : t('Certifikáty – Produkty Zinzino | ZGRP Academy')}
+        description={isBackoffice ? t('Certifikáty získané za absolvování skupin levelů v sekci Backoffice & Odměny.') : t('Certifikáty získané za absolvování skupin levelů v sekci Produkty Zinzino.')}
+        ogTitle={isBackoffice ? t('Certifikáty Backoffice & Odměny – ZGRP Academy') : t('Certifikáty Produkty Zinzino – ZGRP Academy')}
+        ogDescription={isBackoffice ? t('Přehled certifikátů ze studia backoffice systému a odměn.') : t('Přehled certifikátů ze studia produktů Zinzino.')}
+        canonical={`https://zgrpacademy.lovable.app${basePath}/diplomas`}
+        ogUrl={`https://zgrpacademy.lovable.app${basePath}/diplomas`}
       />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 animate-slide-up pb-20">
         <div className="flex items-center gap-3">

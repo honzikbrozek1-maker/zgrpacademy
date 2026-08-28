@@ -160,11 +160,14 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <Seo
-        title={t('Přehled studia – ZGRP Academy')}
-        description={t('Sledujte svůj postup v kurzech, dokončené levely a doporučené další kroky v ZGRP Academy.')}
+        title={isBackoffice ? t('Backoffice & Odměny – přehled studia | ZGRP Academy') : t('Produkty Zinzino – přehled studia | ZGRP Academy')}
+        description={isBackoffice ? t('Přehled studia v sekci Backoffice & Odměny: postup v levelech, dokončené testy a další kroky v ZGRP Academy.') : t('Přehled studia v sekci Produkty Zinzino: postup v levelech, dokončené testy a další kroky v ZGRP Academy.')}
+        ogTitle={isBackoffice ? t('Backoffice & Odměny – ZGRP Academy') : t('Produkty Zinzino – ZGRP Academy')}
+        ogDescription={isBackoffice ? t('Studium backoffice systému a odměn pro partnery ZinzinoGroup.') : t('Studium produktů Zinzino pro partnery ZinzinoGroup.')}
         canonical={`https://zgrpacademy.lovable.app${basePath}`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}`}
       />
+
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-4 md:space-y-6 animate-slide-up">
         <div className="flex items-center gap-3">
           {headerIcon}

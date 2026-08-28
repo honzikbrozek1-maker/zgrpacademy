@@ -187,11 +187,11 @@ export default function Auth() {
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
+                  <Input aria-label={t('E-mail')} placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" autoComplete="email" required />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
+                  <Input aria-label={t('Heslo')} placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" autoComplete="current-password" required />
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
@@ -217,6 +217,7 @@ export default function Auth() {
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
+                      aria-label={t('Jméno a příjmení')}
                       placeholder={t('Např. Tomáš Fuk')}
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
@@ -231,12 +232,12 @@ export default function Auth() {
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+                  <Input aria-label={t('E-mail')} placeholder={t('E-mail')} type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
                 </div>
                 <div className="space-y-1">
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={8} />
+                    <Input aria-label={t('Heslo')} placeholder={t('Heslo')} type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={8} />
                   </div>
                   <p className="text-xs text-muted-foreground pl-1">
                     {t('Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo. Speciální znaky nejsou nutné.')}
@@ -263,6 +264,7 @@ export default function Auth() {
             <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               type="email"
+              aria-label={t('E-mail')}
               placeholder={t('E-mail')}
               value={resetEmail}
               onChange={e => setResetEmail(e.target.value)}
