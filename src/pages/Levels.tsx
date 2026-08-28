@@ -189,11 +189,14 @@ export default function Levels() {
   return (
     <AppLayout>
       <Seo
-        title={t('Levely a skupiny kurzů – ZGRP Academy')}
-        description={t('Přehled všech levelů a skupin kurzů ZGRP Academy včetně postupu a závěrečných testů.')}
+        title={category === 'backoffice' ? t('Levely – Backoffice & Odměny | ZGRP Academy') : t('Levely – Produkty Zinzino | ZGRP Academy')}
+        description={category === 'backoffice' ? t('Přehled levelů a skupin v sekci Backoffice & Odměny včetně postupu a závěrečných testů.') : t('Přehled levelů a skupin v sekci Produkty Zinzino včetně postupu a závěrečných testů.')}
+        ogTitle={category === 'backoffice' ? t('Levely Backoffice & Odměny – ZGRP Academy') : t('Levely Produkty Zinzino – ZGRP Academy')}
+        ogDescription={category === 'backoffice' ? t('Seznam levelů pro backoffice systém a odměny.') : t('Seznam levelů pro produktové znalosti Zinzino.')}
         canonical={`https://zgrpacademy.lovable.app${basePath}/levels`}
         ogUrl={`https://zgrpacademy.lovable.app${basePath}/levels`}
       />
+
       <div className="p-3 md:p-8 max-w-4xl mx-auto space-y-3 md:space-y-8 animate-slide-up">
         <h1 className="text-xl md:text-2xl font-bold">{t('Levely')}</h1>
 
