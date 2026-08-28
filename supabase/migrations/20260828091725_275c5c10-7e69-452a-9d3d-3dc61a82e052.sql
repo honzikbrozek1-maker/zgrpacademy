@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.normalize_test_answer(text) TO authenticated;
