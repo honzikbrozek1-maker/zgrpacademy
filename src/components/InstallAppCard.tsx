@@ -96,9 +96,31 @@ export function InstallAppCard() {
             </Dialog>
           </div>
         ) : (
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className="text-xs text-muted-foreground space-y-2">
             <p>{t('V prohlížeči otevřete nabídku (⋮ nebo ikona instalace v adresním řádku) a zvolte:')}</p>
             <p>{t('„Instalovat aplikaci“ / „Přidat na plochu“.')}</p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button type="button" className="block w-full">
+                  <img
+                    src={iosGuideAsset.url}
+                    alt={t('Návod – jak si přidat aplikaci na plochu (iPhone, Safari)')}
+                    className="w-full max-w-xs rounded-lg border shadow-sm hover:opacity-90 transition-opacity cursor-zoom-in"
+                    loading="lazy"
+                  />
+                  <span className="block mt-1 text-[11px] text-muted-foreground">
+                    {t('Obrázkový návod – klepnutím zvětšíte. Platí pro zařízení Apple (iPhone/iPad) v prohlížeči Safari.')}
+                  </span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl p-2">
+                <img
+                  src={iosGuideAsset.url}
+                  alt={t('Návod – jak si přidat aplikaci na plochu (iPhone, Safari)')}
+                  className="w-full h-auto rounded-md"
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </CardContent>
