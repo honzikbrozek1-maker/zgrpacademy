@@ -375,6 +375,49 @@ export default function LevelDetail() {
               )}
             </div>
 
+            {(level.infographic_landscape || level.infographic_portrait) && (
+              <Card className="shadow-card mt-4">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-primary" />
+                    <h2 className="font-semibold">{t('Infografika')}</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{t('Klepnutím na miniaturu obrázek zvětšíte.')}</p>
+                  <div className="flex flex-wrap gap-4">
+                    {[level.infographic_landscape, level.infographic_portrait]
+                      .filter((src): src is string => Boolean(src))
+                      .map((src) => (
+                        <Dialog key={src}>
+                          <DialogTrigger asChild>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-border overflow-hidden hover:shadow-elevated transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <img
+                                src={src}
+                                alt={t('Infografika – {title}', { title: pickLang(level, 'title', lang) })}
+                                loading="lazy"
+                                className="h-40 w-auto object-contain bg-background"
+                              />
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-5xl p-2">
+                            <DialogTitle className="sr-only">{t('Infografika')}</DialogTitle>
+                            <img
+                              src={src}
+                              alt={t('Infografika – {title}', { title: pickLang(level, 'title', lang) })}
+                              className="w-full h-auto max-h-[85vh] object-contain rounded"
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+
+
             {progress?.completed && (
               <Card className="shadow-elevated mt-4 border-success/30">
                 <CardContent className="p-6 text-center space-y-3">
