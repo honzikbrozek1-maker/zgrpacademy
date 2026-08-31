@@ -132,7 +132,9 @@ export default function DiplomaCertificate({
           </div>
           ${issuerLine ? `<div class="issuer">${safe(t('Vydává'))} ${safe(issuerLine)}</div>` : ''}
         </div>
+        </div>
       </div>
+
       </body></html>
     `;
     doc.open();
