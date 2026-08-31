@@ -81,10 +81,12 @@ export default function DiplomaCertificate({
       <html><head><title>${safe(title)} - ${safe(groupTitle)}</title>
       <style>
         @page { size: A4 portrait; margin: 0; }
-        html, body { margin: 0; padding: 0; background: white; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; }
-        .page { position: relative; width: 210mm; height: 297mm; margin: 0 auto; background: white; overflow: hidden; }
+        html, body { margin: 0; padding: 0; background: white; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; width: 210mm; height: 296mm; overflow: hidden; }
+        .page { position: relative; width: 210mm; height: 296mm; margin: 0 auto; background: white; overflow: hidden; page-break-inside: avoid; break-inside: avoid; page-break-after: avoid; break-after: avoid; }
         .frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-        .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; overflow: hidden; }
+        .fit { transform-origin: top center; display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; height: 100%; }
+
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 56px; letter-spacing: 8px; margin: 6px 0 8px; font-weight: 600; text-transform: uppercase; color: #111; }
         .intro { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
@@ -108,8 +110,10 @@ export default function DiplomaCertificate({
       <div class="page">
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
+        <div class="fit">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
           <div class="title">${safe(title || 'Certifikát')}</div>
+
           ${intro ? `<div class="intro">${safe(intro)}</div>` : ''}
           ${award ? `<div class="award">${safe(award)}</div><span class="accent"></span>` : ''}
           <div class="for">${safe(t('pro'))}</div>
@@ -128,7 +132,9 @@ export default function DiplomaCertificate({
           </div>
           ${issuerLine ? `<div class="issuer">${safe(t('Vydává'))} ${safe(issuerLine)}</div>` : ''}
         </div>
+        </div>
       </div>
+
       </body></html>
     `;
     doc.open();
@@ -137,6 +143,18 @@ export default function DiplomaCertificate({
 
     const triggerPrint = () => {
       try {
+        // Auto-shrink content if it would overflow the A4 safe area (prevents a 2nd page)
+        const safeEl = doc.querySelector('.safe') as HTMLElement | null;
+        const fitEl = doc.querySelector('.fit') as HTMLElement | null;
+        if (safeEl && fitEl) {
+          const available = safeEl.clientHeight;
+          const needed = fitEl.scrollHeight;
+          if (needed > available && available > 0) {
+            const s = Math.max(0.6, available / needed);
+            fitEl.style.transform = `scale(${s})`;
+            fitEl.style.height = `${available / s}px`;
+          }
+        }
         const win = iframe.contentWindow;
         if (!win) { cleanup(); return; }
         win.focus();
@@ -144,6 +162,7 @@ export default function DiplomaCertificate({
       } catch {
         // ignore
       } finally {
+
         const onAfter = () => cleanup();
         try {
           iframe.contentWindow?.addEventListener('afterprint', onAfter, { once: true });
