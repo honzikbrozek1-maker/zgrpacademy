@@ -41,6 +41,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(colorStorageKey, sectionProfile.color_scheme);
+      localStorage.setItem('last-color-scheme', sectionProfile.color_scheme);
     }
 
     setColorScheme(sectionProfile.color_scheme);
