@@ -264,6 +264,8 @@ export type Database = {
           description_sk: string | null
           group_id: string | null
           id: string
+          infographic_landscape: string | null
+          infographic_portrait: string | null
           order_index: number
           passing_score: number
           title: string
@@ -276,6 +278,8 @@ export type Database = {
           description_sk?: string | null
           group_id?: string | null
           id?: string
+          infographic_landscape?: string | null
+          infographic_portrait?: string | null
           order_index?: number
           passing_score?: number
           title: string
@@ -288,6 +292,8 @@ export type Database = {
           description_sk?: string | null
           group_id?: string | null
           id?: string
+          infographic_landscape?: string | null
+          infographic_portrait?: string | null
           order_index?: number
           passing_score?: number
           title?: string
