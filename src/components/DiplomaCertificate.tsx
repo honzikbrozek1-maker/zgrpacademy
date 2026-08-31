@@ -143,11 +143,26 @@ export default function DiplomaCertificate({
 
     const triggerPrint = () => {
       try {
+        // Auto-shrink content if it would overflow the A4 safe area (prevents a 2nd page)
+        const safeEl = doc.querySelector('.safe') as HTMLElement | null;
+        const fitEl = doc.querySelector('.fit') as HTMLElement | null;
+        if (safeEl && fitEl) {
+          const available = safeEl.clientHeight;
+          const needed = fitEl.scrollHeight;
+          if (needed > available && available > 0) {
+            const s = Math.max(0.6, available / needed);
+            fitEl.style.transform = `scale(${s})`;
+            fitEl.style.height = `${available / s}px`;
+          }
+        }
         const win = iframe.contentWindow;
         if (!win) { cleanup(); return; }
         win.focus();
         win.print();
       } catch {
+        // ignore
+      } finally {
+
         // ignore
       } finally {
         const onAfter = () => cleanup();
