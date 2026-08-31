@@ -7,7 +7,8 @@ import { useT, useLang, pickLang } from '@/lib/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Brain, ClipboardCheck, RotateCcw, Trophy, PenLine, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Brain, ClipboardCheck, RotateCcw, Trophy, PenLine, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Seo from '@/components/Seo';
@@ -44,7 +45,7 @@ export default function LevelDetail() {
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
-  const [level, setLevel] = useState<{ id: string; title: string; title_sk?: string | null; description: string | null; description_sk?: string | null; passing_score: number; order_index: number; group_id: string | null } | null>(null);
+  const [level, setLevel] = useState<{ id: string; title: string; title_sk?: string | null; description: string | null; description_sk?: string | null; passing_score: number; order_index: number; group_id: string | null; infographic_landscape?: string | null; infographic_portrait?: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);
@@ -373,6 +374,49 @@ export default function LevelDetail() {
                 </Link>
               )}
             </div>
+
+            {(level.infographic_landscape || level.infographic_portrait) && (
+              <Card className="shadow-card mt-4">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-primary" />
+                    <h2 className="font-semibold">{t('Infografika')}</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{t('Klepnutím na miniaturu obrázek zvětšíte.')}</p>
+                  <div className="flex flex-wrap gap-4">
+                    {[level.infographic_landscape, level.infographic_portrait]
+                      .filter((src): src is string => Boolean(src))
+                      .map((src) => (
+                        <Dialog key={src}>
+                          <DialogTrigger asChild>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-border overflow-hidden hover:shadow-elevated transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <img
+                                src={src}
+                                alt={t('Infografika – {title}', { title: pickLang(level, 'title', lang) })}
+                                loading="lazy"
+                                className="h-40 w-auto object-contain bg-background"
+                              />
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-5xl p-2">
+                            <DialogTitle className="sr-only">{t('Infografika')}</DialogTitle>
+                            <img
+                              src={src}
+                              alt={t('Infografika – {title}', { title: pickLang(level, 'title', lang) })}
+                              className="w-full h-auto max-h-[85vh] object-contain rounded"
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+
 
             {progress?.completed && (
               <Card className="shadow-elevated mt-4 border-success/30">
