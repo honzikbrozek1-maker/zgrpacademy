@@ -110,8 +110,10 @@ export default function DiplomaCertificate({
       <div class="page">
         <img class="frame" src="${borderUrl}" alt="" />
         <div class="safe">
+        <div class="fit">
           <img class="logo" src="${logoUrl}" alt="Spolek v Rovnováze z.s." />
           <div class="title">${safe(title || 'Certifikát')}</div>
+
           ${intro ? `<div class="intro">${safe(intro)}</div>` : ''}
           ${award ? `<div class="award">${safe(award)}</div><span class="accent"></span>` : ''}
           <div class="for">${safe(t('pro'))}</div>
