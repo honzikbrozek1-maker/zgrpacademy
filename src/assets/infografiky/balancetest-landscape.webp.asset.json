@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "2b80dc99-b2fb-49df-8789-010e92cb547d",
+  "asset_id": "cd60cda1-dfd4-43ce-a2a4-2086e65f78ff",
   "project_id": "7316d316-29fe-4772-9766-96eec5831cc2",
-  "url": "/__l5e/assets-v1/2b80dc99-b2fb-49df-8789-010e92cb547d/balancetest-landscape.webp",
-  "r2_key": "a/v1/7316d316-29fe-4772-9766-96eec5831cc2/2b80dc99-b2fb-49df-8789-010e92cb547d/balancetest-landscape.webp",
-  "original_filename": "balancetest-landscape.webp",
-  "size": 140450,
+  "url": "/__l5e/assets-v1/cd60cda1-dfd4-43ce-a2a4-2086e65f78ff/balancetest-landscape-v2.webp",
+  "r2_key": "a/v1/7316d316-29fe-4772-9766-96eec5831cc2/cd60cda1-dfd4-43ce-a2a4-2086e65f78ff/balancetest-landscape-v2.webp",
+  "original_filename": "balancetest-landscape-v2.webp",
+  "size": 192800,
   "content_type": "image/webp",
-  "created_at": "2026-08-31T12:28:09Z"
+  "created_at": "2026-08-31T12:35:28Z"
 }
