@@ -81,6 +81,7 @@ export default function Account() {
     setColorScheme(schemeId);
     if (typeof window !== 'undefined') {
       localStorage.setItem(`section-color-scheme:${category}`, schemeId);
+      localStorage.setItem('last-color-scheme', schemeId);
     }
 
     if (user) {

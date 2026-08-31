@@ -31,7 +31,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const cachedColorScheme = localStorage.getItem(colorStorageKey) || 'teal';
+    const cachedColorScheme = localStorage.getItem(colorStorageKey) || localStorage.getItem('last-color-scheme') || 'teal';
+    localStorage.setItem('last-color-scheme', cachedColorScheme);
     setColorScheme(cachedColorScheme);
   }, [colorStorageKey, setColorScheme]);
 
@@ -40,6 +41,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(colorStorageKey, sectionProfile.color_scheme);
+      localStorage.setItem('last-color-scheme', sectionProfile.color_scheme);
     }
 
     setColorScheme(sectionProfile.color_scheme);

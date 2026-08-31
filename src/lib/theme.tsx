@@ -20,7 +20,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return 'light';
   });
 
-  const [colorScheme, setColorSchemeState] = useState('teal');
+  const [colorScheme, setColorSchemeState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('last-color-scheme') || 'teal';
+    }
+    return 'teal';
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
