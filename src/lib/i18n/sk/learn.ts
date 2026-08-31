@@ -155,4 +155,7 @@ export const skLearn: Record<string, string> = {
   'Vydává': 'Vydáva',
   'pro': 'pre',
   'Vytisknout certifikát': 'Vytlačiť certifikát',
+  'Infografika': 'Infografika',
+  'Klepnutím na miniaturu obrázek zvětšíte.': 'Kliknutím na miniatúru obrázok zväčšíte.',
+  'Infografika – {title}': 'Infografika – {title}',
 };
