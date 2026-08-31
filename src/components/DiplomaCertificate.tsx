@@ -81,10 +81,12 @@ export default function DiplomaCertificate({
       <html><head><title>${safe(title)} - ${safe(groupTitle)}</title>
       <style>
         @page { size: A4 portrait; margin: 0; }
-        html, body { margin: 0; padding: 0; background: white; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; }
-        .page { position: relative; width: 210mm; height: 297mm; margin: 0 auto; background: white; overflow: hidden; }
+        html, body { margin: 0; padding: 0; background: white; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; width: 210mm; height: 296mm; overflow: hidden; }
+        .page { position: relative; width: 210mm; height: 296mm; margin: 0 auto; background: white; overflow: hidden; page-break-inside: avoid; break-inside: avoid; page-break-after: avoid; break-after: avoid; }
         .frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-        .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .safe { position: absolute; inset: 38mm 40mm 32mm 40mm; overflow: hidden; }
+        .fit { transform-origin: top center; display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; height: 100%; }
+
         .logo { width: 150px; height: auto; margin-bottom: 10px; }
         .title { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-size: 56px; letter-spacing: 8px; margin: 6px 0 8px; font-weight: 600; text-transform: uppercase; color: #111; }
         .intro { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; line-height: 1.5; color: #2a2a2a; max-width: 140mm; margin: 0 auto; white-space: pre-line; }
