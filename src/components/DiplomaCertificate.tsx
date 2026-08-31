@@ -163,8 +163,6 @@ export default function DiplomaCertificate({
         // ignore
       } finally {
 
-        // ignore
-      } finally {
         const onAfter = () => cleanup();
         try {
           iframe.contentWindow?.addEventListener('afterprint', onAfter, { once: true });
