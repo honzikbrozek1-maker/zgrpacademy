@@ -377,13 +377,13 @@ export default function LevelDetail() {
 
             {(level.infographic_landscape || level.infographic_portrait) && (
               <Card className="shadow-card mt-4">
-                <CardContent className="p-6 space-y-3">
+                <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5 text-primary" />
-                    <h2 className="font-semibold">{t('Infografika')}</h2>
+                    <ImageIcon className="h-4 w-4 text-primary" />
+                    <h2 className="font-medium text-sm">{t('Infografika')}</h2>
                   </div>
-                  <p className="text-sm text-muted-foreground">{t('Klepnutím na miniaturu obrázek zvětšíte.')}</p>
-                  <div className="flex flex-wrap gap-4">
+                  <p className="text-xs text-muted-foreground">{t('Klepnutím na miniaturu obrázek zvětšíte.')}</p>
+                  <div className="flex flex-wrap gap-2">
                     {[level.infographic_landscape, level.infographic_portrait]
                       .filter((src): src is string => Boolean(src))
                       .map((src) => (
@@ -391,16 +391,17 @@ export default function LevelDetail() {
                           <DialogTrigger asChild>
                             <button
                               type="button"
-                              className="rounded-lg border border-border overflow-hidden hover:shadow-elevated transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                              className="rounded-md border border-border overflow-hidden hover:shadow-elevated transition-all focus:outline-none focus:ring-2 focus:ring-ring"
                             >
                               <img
                                 src={src}
                                 alt={t('Infografika – {title}', { title: pickLang(level, 'title', lang) })}
                                 loading="lazy"
-                                className="h-40 w-auto object-contain bg-background"
+                                className="h-16 w-auto object-contain bg-background"
                               />
                             </button>
                           </DialogTrigger>
+
                           <DialogContent className="max-w-5xl p-2">
                             <DialogTitle className="sr-only">{t('Infografika')}</DialogTitle>
                             <img
