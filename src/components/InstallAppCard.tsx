@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Smartphone, Share, Plus } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import iosGuideAsset from '@/assets/ios-pridat-na-plochu.png.asset.json';
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
@@ -61,7 +63,7 @@ export function InstallAppCard() {
             </Button>
           </>
         ) : isIOS ? (
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className="text-xs text-muted-foreground space-y-2">
             <p>{t('Na iPhonu/iPadu (v prohlížeči Safari):')}</p>
             <ol className="list-decimal pl-4 space-y-0.5">
               <li className="flex items-center gap-1">
@@ -70,6 +72,28 @@ export function InstallAppCard() {
               <li>{t('Vyberte „Přidat na plochu“')}</li>
               <li>{t('Potvrďte tlačítkem „Přidat“')}</li>
             </ol>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button type="button" className="block w-full">
+                  <img
+                    src={iosGuideAsset.url}
+                    alt={t('Návod – jak si přidat aplikaci na plochu (iPhone, Safari)')}
+                    className="w-full max-w-xs rounded-lg border shadow-sm hover:opacity-90 transition-opacity cursor-zoom-in"
+                    loading="lazy"
+                  />
+                  <span className="block mt-1 text-[11px] text-muted-foreground">
+                    {t('Obrázkový návod – klepnutím zvětšíte. Platí pro zařízení Apple (iPhone/iPad) v prohlížeči Safari.')}
+                  </span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl p-2">
+                <img
+                  src={iosGuideAsset.url}
+                  alt={t('Návod – jak si přidat aplikaci na plochu (iPhone, Safari)')}
+                  className="w-full h-auto rounded-md"
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         ) : (
           <div className="text-xs text-muted-foreground space-y-1">
