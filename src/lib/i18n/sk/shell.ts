@@ -38,6 +38,8 @@ export const skShell: Record<string, string> = {
   'Přehled (dashboard)': 'Prehľad (dashboard)',
   'Opakování': 'Opakovanie',
   'Výběr sekce': 'Výber sekcie',
+  'Návod – jak si přidat aplikaci na plochu (iPhone, Safari)': 'Návod – ako si pridať aplikáciu na plochu (iPhone, Safari)',
+  'Obrázkový návod – klepnutím zvětšíte. Platí pro zařízení Apple (iPhone/iPad) v prohlížeči Safari.': 'Obrázkový návod – kliknutím zväčšíte. Platí pre zariadenia Apple (iPhone/iPad) v prehliadači Safari.',
   'Přepnout na Backoffice': 'Prepnúť na Backoffice',
   'Přepnout na Produkty': 'Prepnúť na Produkty',
   'Administrace': 'Administrácia',
