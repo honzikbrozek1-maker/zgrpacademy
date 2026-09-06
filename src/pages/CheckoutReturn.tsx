@@ -55,18 +55,20 @@ export default function CheckoutReturn() {
       />
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {profile?.has_paid ? (
-              <>
-                <CheckCircle2 className="h-6 w-6 text-green-600" /> {t("Platba dokončena")}
-              </>
-            ) : polling ? (
-              <>
-                <Loader2 className="h-6 w-6 animate-spin" /> {t("Ověřujeme platbu...")}
-              </>
-            ) : (
-              t("Platba zpracována")
-            )}
+          <CardTitle asChild>
+            <h1 className="flex items-center gap-2">
+              {profile?.has_paid ? (
+                <>
+                  <CheckCircle2 className="h-6 w-6 text-green-600" /> {t("Platba dokončena")}
+                </>
+              ) : polling ? (
+                <>
+                  <Loader2 className="h-6 w-6 animate-spin" /> {t("Ověřujeme platbu...")}
+                </>
+              ) : (
+                t("Platba zpracována")
+              )}
+            </h1>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
