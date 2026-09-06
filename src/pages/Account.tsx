@@ -134,7 +134,7 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> {t('Profil')}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4" /> {t('Profil')}</h2>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">{user?.email}</span>
@@ -157,7 +157,7 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> {t('Barevné schéma ({category})', { category: category === 'products' ? t('Produkty') : t('Backoffice') })}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><Palette className="h-4 w-4" /> {t('Barevné schéma ({category})', { category: category === 'products' ? t('Produkty') : t('Backoffice') })}</h2>
             <div className="grid grid-cols-6 gap-2">
               {colorSchemes.map(scheme => {
                 const isActive = currentSchemeId === scheme.id;
@@ -184,7 +184,7 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> {t('Změna hesla')}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><Lock className="h-4 w-4" /> {t('Změna hesla')}</h2>
             <div className="flex gap-2">
               <Input type="password" placeholder={t('Nové heslo (min. 6 znaků)')} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="flex-1" />
               <Button onClick={handleChangePassword} disabled={loading} variant="outline" size="sm">
@@ -196,14 +196,14 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> {t('Faktury')}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><Receipt className="h-4 w-4" /> {t('Faktury')}</h2>
             <InvoicesList />
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> {t('Aplikace')}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold"><RotateCcw className="h-4 w-4" /> {t('Aplikace')}</h2>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -230,14 +230,14 @@ export default function Account() {
 
         <Card className="shadow-card">
           <CardContent className="p-4 flex items-center justify-between">
-            <span className="text-sm font-semibold">{t('Jazyk aplikace')}</span>
+            <h2 className="text-sm font-semibold">{t('Jazyk aplikace')}</h2>
             <LanguageSwitcher />
           </CardContent>
         </Card>
 
         <Card className="shadow-card border-destructive/30">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t('Smazání účtu')}</div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t('Smazání účtu')}</h2>
             {!showDeleteConfirm ? (
               <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setShowDeleteConfirm(true)}>
                 {t('Smazat účet')}
