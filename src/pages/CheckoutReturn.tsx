@@ -55,7 +55,7 @@ export default function CheckoutReturn() {
       />
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold leading-none tracking-tight">
             {profile?.has_paid ? (
               <>
                 <CheckCircle2 className="h-6 w-6 text-green-600" /> {t("Platba dokončena")}
@@ -67,7 +67,7 @@ export default function CheckoutReturn() {
             ) : (
               t("Platba zpracována")
             )}
-          </CardTitle>
+          </h1>
         </CardHeader>
         <CardContent className="space-y-4">
           {sessionId && (
