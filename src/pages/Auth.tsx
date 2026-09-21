@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Seo from '@/components/Seo';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import { supabase } from '@/integrations/supabase/client';
