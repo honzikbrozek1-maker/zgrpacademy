@@ -5,6 +5,7 @@ import { GraduationCap, Package, Briefcase, ArrowRight } from 'lucide-react';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
 import { useT } from '@/lib/i18n';
+import LegalFooter from '@/components/LegalFooter';
 
 export default function PathSelection() {
   const { profile } = useAuth();
@@ -12,7 +13,7 @@ export default function PathSelection() {
   const t = useT();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <Seo
         title={t('Výběr sekce – ZGRP Academy')}
         description={t('Vyberte si, zda chcete procvičovat produktové znalosti, nebo backoffice ZinzinoGroup.')}
@@ -80,6 +81,7 @@ export default function PathSelection() {
           </Card>
         </div>
       </div>
+      <LegalFooter className="mt-8 w-full max-w-2xl border-t-0" />
     </div>
   );
 }
