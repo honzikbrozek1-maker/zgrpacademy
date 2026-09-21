@@ -26,6 +26,7 @@ export const skLegal: Record<string, string> = {
   'Poslední aktualizace': 'Posledná aktualizácia',
 
   // Registrace
-  'Registrací souhlasíte s obchodními podmínkami a zásadami ochrany osobních údajů.':
-    'Registráciou súhlasíte s obchodnými podmienkami a zásadami ochrany osobných údajov.',
+  'Registrací souhlasíte s': 'Registráciou súhlasíte s',
+  'obchodními podmínkami': 'obchodnými podmienkami',
+  'zásadami ochrany osobních údajů': 'zásadami ochrany osobných údajov',
 };
