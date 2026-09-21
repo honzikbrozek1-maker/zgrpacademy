@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Seo from '@/components/Seo';
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
 import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LegalFooter from '@/components/LegalFooter';
 import { useT } from '@/lib/i18n';
 
 export default function Auth() {
@@ -246,6 +247,12 @@ export default function Auth() {
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                   {loading ? t('Registrace...') : t('Zaregistrovat se')}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  {t('Registrací souhlasíte s')}{' '}
+                  <Link to="/obchodni-podminky" className="underline">{t('obchodními podmínkami')}</Link>{' '}
+                  {t('a')}{' '}
+                  <Link to="/ochrana-osobnich-udaju" className="underline">{t('zásadami ochrany osobních údajů')}</Link>.
+                </p>
               </form>
             </TabsContent>
           </Tabs>
@@ -284,6 +291,8 @@ export default function Auth() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <LegalFooter className="border-t-0 w-full max-w-md" />
     </main>
   );
 }

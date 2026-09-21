@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 import Seo from "@/components/Seo";
+import LegalFooter from "@/components/LegalFooter";
 import { useT } from "@/lib/i18n";
 
 export default function Checkout() {
@@ -183,6 +184,7 @@ export default function Checkout() {
           </Button>
         </p>
 
+        <LegalFooter className="border-t-0" />
       </div>
     </div>
   );

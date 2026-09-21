@@ -25,6 +25,10 @@ import AdminPanel from "./pages/AdminPanel";
 import AdminShare from "./pages/AdminShare";
 import InvitePage from "./pages/InvitePage";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/legal/Privacy";
+import CookiesPolicy from "./pages/legal/CookiesPolicy";
+import Terms from "./pages/legal/Terms";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +76,9 @@ const App = () => (
                 <Route path="/checkout/return" element={<CheckoutReturn />} />
                 <Route path="/invite/:code" element={<InvitePage />} />
                 <Route path="/landing" element={<Landing />} />
+                <Route path="/ochrana-osobnich-udaju" element={<Privacy />} />
+                <Route path="/cookies" element={<CookiesPolicy />} />
+                <Route path="/obchodni-podminky" element={<Terms />} />
                 <Route path="/" element={<RootRoute />} />
                 
                 {/* Products path */}
@@ -113,6 +120,7 @@ const App = () => (
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CookieConsent />
             </PathProvider>
           </BrowserRouter>
         </TooltipProvider>

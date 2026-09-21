@@ -5,6 +5,7 @@ import { Package, Briefcase, GraduationCap, CheckCircle2, ArrowRight } from 'luc
 import zgrpLogo from '@/assets/zgrp-logo.jpg.asset.json';
 import Seo from '@/components/Seo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LegalFooter from '@/components/LegalFooter';
 import { useT } from '@/lib/i18n';
 
 
@@ -143,9 +144,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        ZGRP Academy
-      </footer>
+      <LegalFooter />
     </div>
   );
 }
