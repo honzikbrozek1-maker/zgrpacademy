@@ -12,6 +12,7 @@ import { useTheme } from '@/lib/theme';
 import { useAdminRequestNotifications } from '@/hooks/useAdminRequestNotifications';
 import { useT } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LegalFooter from '@/components/LegalFooter';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const t = useT();
@@ -115,9 +116,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               )}
             </div>
           </header>
-          <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
+          <main className="flex-1">
             {children}
           </main>
+          <LegalFooter className="pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-6" />
           <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
           <MobileBottomNav />
         </div>
