@@ -29,4 +29,7 @@ export const skLegal: Record<string, string> = {
   'Registrací souhlasíte s': 'Registráciou súhlasíte s',
   'obchodními podmínkami': 'obchodnými podmienkami',
   'zásadami ochrany osobních údajů': 'zásadami ochrany osobných údajov',
+  'Souhlasím s': 'Súhlasím s',
+  'a se': 'a so',
+  'zpracováním osobních údajů': 'spracovaním osobných údajov',
 };

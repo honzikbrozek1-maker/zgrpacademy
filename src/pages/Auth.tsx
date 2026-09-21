@@ -31,6 +31,7 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSending, setResetSending] = useState(false);
@@ -244,15 +245,18 @@ export default function Auth() {
                     {t('Alespoň 8 znaků, jedno velké písmeno, jedno malé písmeno a číslo. Speciální znaky nejsou nutné.')}
                   </p>
                 </div>
-                <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
+                <label className="flex cursor-pointer items-start gap-3 text-xs text-muted-foreground">
+                  <Checkbox checked={acceptTerms} onCheckedChange={v => setAcceptTerms(v === true)} className="mt-0.5" />
+                  <span>
+                    {t('Souhlasím s')}{' '}
+                    <Link to="/obchodni-podminky" className="underline" target="_blank" rel="noreferrer">{t('obchodními podmínkami')}</Link>{' '}
+                    {t('a se')}{' '}
+                    <Link to="/ochrana-osobnich-udaju" className="underline" target="_blank" rel="noreferrer">{t('zpracováním osobních údajů')}</Link>.
+                  </span>
+                </label>
+                <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading || !acceptTerms}>
                   {loading ? t('Registrace...') : t('Zaregistrovat se')}
                 </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  {t('Registrací souhlasíte s')}{' '}
-                  <Link to="/obchodni-podminky" className="underline">{t('obchodními podmínkami')}</Link>{' '}
-                  {t('a')}{' '}
-                  <Link to="/ochrana-osobnich-udaju" className="underline">{t('zásadami ochrany osobních údajů')}</Link>.
-                </p>
               </form>
             </TabsContent>
           </Tabs>
