@@ -246,6 +246,12 @@ export default function Auth() {
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                   {loading ? t('Registrace...') : t('Zaregistrovat se')}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  {t('Registrací souhlasíte s')}{' '}
+                  <Link to="/obchodni-podminky" className="underline">{t('obchodními podmínkami')}</Link>{' '}
+                  {t('a')}{' '}
+                  <Link to="/ochrana-osobnich-udaju" className="underline">{t('zásadami ochrany osobních údajů')}</Link>.
+                </p>
               </form>
             </TabsContent>
           </Tabs>
