@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock, User } from 'lucide-react';
 import { InAppBrowserNotice } from '@/components/InAppBrowserNotice';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LegalFooter from '@/components/LegalFooter';
 import { useT } from '@/lib/i18n';
 
 export default function Auth() {
@@ -290,6 +291,8 @@ export default function Auth() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <LegalFooter className="border-t-0 w-full max-w-md" />
     </main>
   );
 }
