@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     // Strip control characters so request data cannot break out of its
     // delimited section or smuggle instructions into the prompt.
     const sanitize = (s: unknown, max: number) =>
-      String(s ?? "").replace(/[-]/g, " ").slice(0, max);
+      String(s ?? "").replace(/[\x00-\x1f\x7f]/g, " ").slice(0, max);
 
     const existing = Array.isArray(body.existing_questions)
       ? body.existing_questions.slice(0, 200).map((s) => sanitize(s, 300))
