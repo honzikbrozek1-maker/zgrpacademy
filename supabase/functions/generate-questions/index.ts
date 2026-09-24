@@ -137,7 +137,7 @@ Vytvoř PŘESNĚ ${count} otázek pokrývajících klíčové pojmy z textu.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: body.text },
+          { role: "user", content: userMessage },
         ],
       }),
     });
