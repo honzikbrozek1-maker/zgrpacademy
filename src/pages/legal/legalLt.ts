@@ -3,12 +3,12 @@ import type { LegalDoc } from './legalContent';
 export const privacyLt: LegalDoc = {
   "title": "Privatumo politika",
   "description": "Kaip „ZGRP Academy“ tvarko naudotojų asmens duomenis pagal BDAR – apimtis, tikslas, saugojimo laikotarpis ir jūsų teisės.",
-  "updated": "2026-09-21",
+  "updated": "21. 9. 2026",
   "sections": [
     {
       "heading": "1. Asmens duomenų valdytojas",
       "paragraphs": [
-        "Asmens duomenų valdytojas yra „Zinzinogroup z.s.“, įmonės kodas 08720746, kurios registruota buveinė yra Jaurisova 515/4, Michle, 140 00 Prague 4, atstovaujama pirmininko Adam Škoda, el. paštas info@zinzinogroup.com.",
+        "Asmens duomenų valdytojas yra Zinzinogroup z.s., įmonės kodas 08720746, registruotos buveinės adresas Jaurisova 515/4, Michle, 140 00 Praha 4, Čekijos Respublika, atstovaujama pirmininko Adamo Škodos, el. paštas info@zinzinogroup.com.",
         "Mes valdome ZGRP Academy mokymosi platformą, kurią galima rasti zgrpacademy.lovable.app."
       ]
     },
@@ -33,7 +33,7 @@ export const privacyLt: LegalDoc = {
     {
       "heading": "4. Duomenų gavėjai",
       "paragraphs": [
-        "Supabase (duomenų bazė, prisijungimas prie programėlės ir svečių priėmimas).",
+        "Supabase (duomenų bazė, prisijungimas ir programėlės priegloba).",
         "Stripe Payments Europe, Ltd. (mokėjimų apdorojimas).",
         "„Google“ (paieškos konsolė – paieškos statistika; neprivalomas srauto matavimas, tik gavus jūsų sutikimą).",
         "Mes neperduodame duomenų kitiems asmenims rinkodaros tikslais ir jų neparduodame."
@@ -51,7 +51,7 @@ export const privacyLt: LegalDoc = {
       "paragraphs": [
         "Turite teisę susipažinti, ištaisyti, ištrinti, apriboti tvarkymą, perkelti, prieštarauti ir atšaukti sutikimą.",
         "Savo teisėmis pasinaudosite el. paštu info@zinzinogroup.com. Paskyrą ir duomenis taip pat galite ištrinti patys Paskyros nustatymuose.",
-        "Turite teisę pateikti skundą Slovakijos Respublikos asmens duomenų apsaugos tarnybai (dataprotection.gov.sk) Asmens duomenų apsaugos tarnybai (uoou.gov.cz)."
+        "Turite teisę pateikti skundą Valstybinei duomenų apsaugos inspekcijai Lietuvoje (vdai.lrv.lt) arba Čekijos asmens duomenų apsaugos tarnybai (uoou.gov.cz)."
       ]
     },
     {
@@ -66,7 +66,7 @@ export const privacyLt: LegalDoc = {
 export const cookiesLt: LegalDoc = {
   "title": "Slapukų politika",
   "description": "Kokius slapukus ir vietinę saugyklą naudoja ZGRP Academy ir kaip bet kuriuo metu pakeičiate savo sutikimą.",
-  "updated": "2026-09-21",
+  "updated": "21. 9. 2026",
   "sections": [
     {
       "heading": "Kas yra slapukai",
@@ -77,7 +77,7 @@ export const cookiesLt: LegalDoc = {
     {
       "heading": "Būtini slapukai (visada aktyvūs)",
       "paragraphs": [
-        "Prisijunkite ir prižiūrėkite seansą (Supabase Auth).",
+        "Prisijungimas ir naudotojo seanso palaikymas (Supabase Auth).",
         "Mokėjimų saugumas ir apsauga nuo sukčiavimo (Stripe).",
         "„Likite prisijungę“ parinktis ir darbalaukio programos funkcija (PWA).",
         "Teisinis pagrindas yra būtinybė teikti jūsų prašomą paslaugą – sutikimas nebūtinas."
@@ -86,13 +86,13 @@ export const cookiesLt: LegalDoc = {
     {
       "heading": "Funkcinis laikymas",
       "paragraphs": [
-        "Paraiškos kalba, spalvų schema, garsai ir praktikoje atliekami darbai. Jis saugomas tik jūsų naršyklėje."
+        "Programėlės kalba, spalvų schema, garsai ir pratimų eiga. Šie duomenys saugomi tik jūsų naršyklėje."
       ]
     },
     {
       "heading": "Analitiniai slapukai (neprivaloma)",
       "paragraphs": [
-        "Jis naudojamas anonimiškai matuoti srautą. Jie bus įkeliami tik tuo atveju, jei duosite sutikimą slapukų juostoje."
+        "Jie naudojami anonimiškai lankomumui matuoti. Įkeliami tik tada, kai slapukų juostoje duodate sutikimą."
       ]
     },
     {
@@ -113,12 +113,12 @@ export const cookiesLt: LegalDoc = {
 export const termsLt: LegalDoc = {
   "title": "Prekybos sąlygos",
   "description": "ZGRP Academy edukacinės platformos sąlygos – registracija, vienkartinis 150 CZK mokestis, skundai ir sutarties atsisakymas.",
-  "updated": "2026-09-21",
+  "updated": "21. 9. 2026",
   "sections": [
     {
       "heading": "1. Operatorius",
       "paragraphs": [
-        "ZGRP Academy platformos operatorius yra Zinzinogroup z.s., įmonės kodas 08720746, registruota buveinė Jaurisova 515/4, Michle, 140 00 Prague 4, atstovaujama pirmininko Adam Škoda, el. paštas info@zinzinogroup.com."
+        "ZGRP Academy platformos valdytojas yra Zinzinogroup z.s., įmonės kodas 08720746, registruotos buveinės adresas Jaurisova 515/4, Michle, 140 00 Praha 4, Čekijos Respublika, atstovaujama pirmininko Adamo Škodos, el. paštas info@zinzinogroup.com."
       ]
     },
     {
@@ -153,7 +153,7 @@ export const termsLt: LegalDoc = {
       "heading": "6. Skundai ir pagalba",
       "paragraphs": [
         "Siųskite skundus ir klausimus info@zinzinogroup.com. Juos apdorosime ne vėliau kaip per 30 dienų.",
-        "Vartotojas turi teisę į neteisminį ginčų sprendimą Čekijos prekybos inspekcijoje (coi.cz), Slovakijoje, Slovakijos prekybos inspekcijoje (soi.sk)."
+        "Vartotojas turi teisę kreiptis dėl neteisminio ginčo sprendimo į Čekijos prekybos inspekciją (coi.cz); Lietuvoje taip pat galima kreiptis į Valstybinę vartotojų teisių apsaugos tarnybą (vvtat.lrv.lt)."
       ]
     },
     {

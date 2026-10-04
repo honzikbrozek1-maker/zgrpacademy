@@ -81,7 +81,7 @@ export default function Auth() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!/^(?=.*[a-zá-ž])(?=.*[A-ZÁ-Ž])(?=.*\d).{8,}$/.test(password)) {
+    if (!/^(?=.*[a-zá-žąčęėįšųū])(?=.*[A-ZÁ-ŽĄČĘĖĮŠŲŪ])(?=.*\d).{8,}$/.test(password)) {
       toast({
         title: t('Slabé heslo'),
         description: t('Heslo musí mít alespoň 8 znaků a obsahovat velké písmeno, malé písmeno a číslo.'),
