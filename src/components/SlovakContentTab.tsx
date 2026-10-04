@@ -4,15 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Languages, RefreshCw } from 'lucide-react';
-import { useT } from '@/lib/i18n';
+import { useT, type Lang } from '@/lib/i18n';
 import { toast } from '@/hooks/use-toast';
 
 type Entity = 'levels' | 'groups' | 'questions';
 
-const ENTITIES: { key: Entity; table: 'levels' | 'level_groups' | 'questions'; field: string }[] = [
-  { key: 'groups', table: 'level_groups', field: 'title_sk' },
-  { key: 'levels', table: 'levels', field: 'title_sk' },
-  { key: 'questions', table: 'questions', field: 'question_text_sk' },
+const ENTITIES: { key: Entity; table: 'levels' | 'level_groups' | 'questions'; baseField: string }[] = [
+  { key: 'groups', table: 'level_groups', baseField: 'title' },
+  { key: 'levels', table: 'levels', baseField: 'title' },
+  { key: 'questions', table: 'questions', baseField: 'question_text' },
 ];
 
 interface Counts {
@@ -30,6 +30,7 @@ export default function SlovakContentTab() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState<Entity | null>(null);
   const [progress, setProgress] = useState(0);
+  const [targetLang, setTargetLang] = useState<Extract<Lang, 'sk' | 'lt'>>('lt');
 
   const labels: Record<Entity, string> = {
     groups: t('Skupiny a certifikáty'),
@@ -45,12 +46,12 @@ export default function SlovakContentTab() {
       const { count: missing } = await supabase
         .from(e.table)
         .select('id', { count: 'exact', head: true })
-        .or(`${e.field}.is.null,${e.field}.eq.`);
+        .or(`${e.baseField}_${targetLang}.is.null,${e.baseField}_${targetLang}.eq.`);
       next[e.key] = { total: total ?? 0, missing: missing ?? 0 };
     }
     setCounts(next);
     setLoading(false);
-  }, []);
+  }, [targetLang]);
 
   useEffect(() => {
     load();
@@ -66,7 +67,7 @@ export default function SlovakContentTab() {
     try {
       while (remaining > 0 && guard < 200) {
         guard++;
-        const { data, error } = await supabase.functions.invoke('translate-content', { body: { entity } });
+        const { data, error } = await supabase.functions.invoke('translate-content', { body: { entity, target_lang: targetLang } });
         if (error) {
           // FunctionsHttpError hides the real message — read it from the body.
           let detail = error.message;
@@ -110,13 +111,18 @@ export default function SlovakContentTab() {
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Languages className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold">{t('Slovenský obsah')}</h2>
+            <h2 className="font-semibold">{t('Překlady obsahu')}</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('Automatický překlad českého obsahu do slovenštiny. Přeloží se jen položky, které slovenskou verzi zatím nemají — ručně upravené texty zůstanou beze změny.')}
+            {t('Automatický překlad českého obsahu. Přeloží se jen prázdné položky — ručně upravené texty zůstanou beze změny.')}
           </p>
         </CardContent>
       </Card>
+
+      <div className="inline-flex rounded-md border p-1">
+        <Button size="sm" variant={targetLang === 'sk' ? 'default' : 'ghost'} onClick={() => setTargetLang('sk')}>🇸🇰 {t('Slovenčina')}</Button>
+        <Button size="sm" variant={targetLang === 'lt' ? 'default' : 'ghost'} onClick={() => setTargetLang('lt')}>🇱🇹 {t('Litevština')}</Button>
+      </div>
 
       {ENTITIES.map(e => {
         const c = counts[e.key];

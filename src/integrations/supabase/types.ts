@@ -171,21 +171,29 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          description_lt: string | null
           description_sk: string | null
           diploma_award_title: string
+          diploma_award_title_lt: string | null
           diploma_award_title_sk: string | null
           diploma_body_text: string
+          diploma_body_text_lt: string | null
           diploma_body_text_sk: string | null
           diploma_intro_text: string
+          diploma_intro_text_lt: string | null
           diploma_intro_text_sk: string | null
           diploma_issuer: string
+          diploma_issuer_lt: string | null
           diploma_issuer_sk: string | null
           diploma_note_text: string
+          diploma_note_text_lt: string | null
           diploma_note_text_sk: string | null
           diploma_signatory: string
           diploma_subtitle: string
+          diploma_subtitle_lt: string | null
           diploma_subtitle_sk: string | null
           diploma_title: string
+          diploma_title_lt: string | null
           diploma_title_sk: string | null
           diploma_validity_years: number
           final_test_passing_score: number
@@ -193,6 +201,7 @@ export type Database = {
           min_average_score: number
           order_index: number
           title: string
+          title_lt: string | null
           title_sk: string | null
           updated_at: string
         }
@@ -200,21 +209,29 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          description_lt?: string | null
           description_sk?: string | null
           diploma_award_title?: string
+          diploma_award_title_lt?: string | null
           diploma_award_title_sk?: string | null
           diploma_body_text?: string
+          diploma_body_text_lt?: string | null
           diploma_body_text_sk?: string | null
           diploma_intro_text?: string
+          diploma_intro_text_lt?: string | null
           diploma_intro_text_sk?: string | null
           diploma_issuer?: string
+          diploma_issuer_lt?: string | null
           diploma_issuer_sk?: string | null
           diploma_note_text?: string
+          diploma_note_text_lt?: string | null
           diploma_note_text_sk?: string | null
           diploma_signatory?: string
           diploma_subtitle?: string
+          diploma_subtitle_lt?: string | null
           diploma_subtitle_sk?: string | null
           diploma_title?: string
+          diploma_title_lt?: string | null
           diploma_title_sk?: string | null
           diploma_validity_years?: number
           final_test_passing_score?: number
@@ -222,6 +239,7 @@ export type Database = {
           min_average_score?: number
           order_index?: number
           title: string
+          title_lt?: string | null
           title_sk?: string | null
           updated_at?: string
         }
@@ -229,21 +247,29 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          description_lt?: string | null
           description_sk?: string | null
           diploma_award_title?: string
+          diploma_award_title_lt?: string | null
           diploma_award_title_sk?: string | null
           diploma_body_text?: string
+          diploma_body_text_lt?: string | null
           diploma_body_text_sk?: string | null
           diploma_intro_text?: string
+          diploma_intro_text_lt?: string | null
           diploma_intro_text_sk?: string | null
           diploma_issuer?: string
+          diploma_issuer_lt?: string | null
           diploma_issuer_sk?: string | null
           diploma_note_text?: string
+          diploma_note_text_lt?: string | null
           diploma_note_text_sk?: string | null
           diploma_signatory?: string
           diploma_subtitle?: string
+          diploma_subtitle_lt?: string | null
           diploma_subtitle_sk?: string | null
           diploma_title?: string
+          diploma_title_lt?: string | null
           diploma_title_sk?: string | null
           diploma_validity_years?: number
           final_test_passing_score?: number
@@ -251,6 +277,7 @@ export type Database = {
           min_average_score?: number
           order_index?: number
           title?: string
+          title_lt?: string | null
           title_sk?: string | null
           updated_at?: string
         }
@@ -261,6 +288,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          description_lt: string | null
           description_sk: string | null
           group_id: string | null
           id: string
@@ -269,12 +297,14 @@ export type Database = {
           order_index: number
           passing_score: number
           title: string
+          title_lt: string | null
           title_sk: string | null
         }
         Insert: {
           category?: string
           created_at?: string
           description?: string | null
+          description_lt?: string | null
           description_sk?: string | null
           group_id?: string | null
           id?: string
@@ -283,12 +313,14 @@ export type Database = {
           order_index?: number
           passing_score?: number
           title: string
+          title_lt?: string | null
           title_sk?: string | null
         }
         Update: {
           category?: string
           created_at?: string
           description?: string | null
+          description_lt?: string | null
           description_sk?: string | null
           group_id?: string | null
           id?: string
@@ -297,6 +329,7 @@ export type Database = {
           order_index?: number
           passing_score?: number
           title?: string
+          title_lt?: string | null
           title_sk?: string | null
         }
         Relationships: [
@@ -399,6 +432,7 @@ export type Database = {
       questions: {
         Row: {
           back_text: string | null
+          back_text_lt: string | null
           back_text_sk: string | null
           correct_answer: number | null
           created_at: string
@@ -408,26 +442,35 @@ export type Database = {
           in_practice: boolean
           level_id: string | null
           option_1: string | null
+          option_1_lt: string | null
           option_1_sk: string | null
           option_2: string | null
+          option_2_lt: string | null
           option_2_sk: string | null
           option_3: string | null
+          option_3_lt: string | null
           option_3_sk: string | null
           option_4: string | null
+          option_4_lt: string | null
           option_4_sk: string | null
           order_index: number
           question_text: string
+          question_text_lt: string | null
           question_text_sk: string | null
           type: string
           wrong_option_1: string | null
+          wrong_option_1_lt: string | null
           wrong_option_1_sk: string | null
           wrong_option_2: string | null
+          wrong_option_2_lt: string | null
           wrong_option_2_sk: string | null
           wrong_option_3: string | null
+          wrong_option_3_lt: string | null
           wrong_option_3_sk: string | null
         }
         Insert: {
           back_text?: string | null
+          back_text_lt?: string | null
           back_text_sk?: string | null
           correct_answer?: number | null
           created_at?: string
@@ -437,26 +480,35 @@ export type Database = {
           in_practice?: boolean
           level_id?: string | null
           option_1?: string | null
+          option_1_lt?: string | null
           option_1_sk?: string | null
           option_2?: string | null
+          option_2_lt?: string | null
           option_2_sk?: string | null
           option_3?: string | null
+          option_3_lt?: string | null
           option_3_sk?: string | null
           option_4?: string | null
+          option_4_lt?: string | null
           option_4_sk?: string | null
           order_index?: number
           question_text: string
+          question_text_lt?: string | null
           question_text_sk?: string | null
           type: string
           wrong_option_1?: string | null
+          wrong_option_1_lt?: string | null
           wrong_option_1_sk?: string | null
           wrong_option_2?: string | null
+          wrong_option_2_lt?: string | null
           wrong_option_2_sk?: string | null
           wrong_option_3?: string | null
+          wrong_option_3_lt?: string | null
           wrong_option_3_sk?: string | null
         }
         Update: {
           back_text?: string | null
+          back_text_lt?: string | null
           back_text_sk?: string | null
           correct_answer?: number | null
           created_at?: string
@@ -466,22 +518,30 @@ export type Database = {
           in_practice?: boolean
           level_id?: string | null
           option_1?: string | null
+          option_1_lt?: string | null
           option_1_sk?: string | null
           option_2?: string | null
+          option_2_lt?: string | null
           option_2_sk?: string | null
           option_3?: string | null
+          option_3_lt?: string | null
           option_3_sk?: string | null
           option_4?: string | null
+          option_4_lt?: string | null
           option_4_sk?: string | null
           order_index?: number
           question_text?: string
+          question_text_lt?: string | null
           question_text_sk?: string | null
           type?: string
           wrong_option_1?: string | null
+          wrong_option_1_lt?: string | null
           wrong_option_1_sk?: string | null
           wrong_option_2?: string | null
+          wrong_option_2_lt?: string | null
           wrong_option_2_sk?: string | null
           wrong_option_3?: string | null
+          wrong_option_3_lt?: string | null
           wrong_option_3_sk?: string | null
         }
         Relationships: [
@@ -787,10 +847,15 @@ export type Database = {
         }[]
       }
       normalize_test_answer: { Args: { p_value: string }; Returns: string }
-      pick_lang: {
-        Args: { p_cs: string; p_lang: string; p_sk: string }
-        Returns: string
-      }
+      pick_lang:
+        | {
+            Args: { p_cs: string; p_lang: string; p_sk: string }
+            Returns: string
+          }
+        | {
+            Args: { p_cs: string; p_lang: string; p_lt: string; p_sk: string }
+            Returns: string
+          }
       purge_expired_deleted_items: { Args: never; Returns: number }
       reset_my_progress: { Args: never; Returns: undefined }
       restore_deleted_item: { Args: { p_id: string }; Returns: Json }

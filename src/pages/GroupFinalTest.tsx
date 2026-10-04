@@ -23,6 +23,7 @@ interface GroupInfo {
   id: string;
   title: string;
   title_sk?: string | null;
+  title_lt?: string | null;
   final_test_passing_score: number;
 }
 
@@ -56,7 +57,7 @@ export default function GroupFinalTest() {
       setLoading(true);
       const { data: g } = await supabase
         .from('level_groups')
-        .select('id, title, title_sk, final_test_passing_score')
+        .select('id, title, title_sk, title_lt, final_test_passing_score')
         .eq('id', groupId)
         .maybeSingle();
       if (!g) {

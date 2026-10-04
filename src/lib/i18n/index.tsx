@@ -2,8 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, R
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { sk } from './sk';
+import { lt } from './lt';
 
-export type Lang = 'cs' | 'sk';
+export type Lang = 'cs' | 'sk' | 'lt';
 
 const STORAGE_KEY = 'app-language';
 
@@ -11,11 +12,12 @@ function detectLang(): Lang {
   if (typeof window === 'undefined') return 'cs';
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'sk' || stored === 'cs') return stored;
+    if (stored === 'sk' || stored === 'cs' || stored === 'lt') return stored;
   } catch {
     /* storage may be unavailable */
   }
   const langs = [navigator.language, ...(navigator.languages ?? [])];
+  if (langs.some(l => l?.toLowerCase().startsWith('lt'))) return 'lt';
   return langs.some(l => l?.toLowerCase().startsWith('sk')) ? 'sk' : 'cs';
 }
 
@@ -49,7 +51,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     (async () => {
       const { data } = await supabase.from('profiles').select('language').eq('user_id', user.id).maybeSingle();
       const stored = (data as { language?: string } | null)?.language;
-      if (!cancelled && (stored === 'sk' || stored === 'cs')) {
+      if (!cancelled && (stored === 'sk' || stored === 'cs' || stored === 'lt')) {
         setLangState(stored);
         try {
           localStorage.setItem(STORAGE_KEY, stored);
@@ -83,7 +85,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   const t = useCallback(
-    (cs: string, vars?: Vars) => interpolate(lang === 'sk' ? sk[cs] ?? cs : cs, vars),
+    (cs: string, vars?: Vars) => interpolate(lang === 'sk' ? sk[cs] ?? cs : lang === 'lt' ? lt[cs] ?? cs : cs, vars),
     [lang],
   );
 
@@ -101,13 +103,13 @@ export function useT() {
 
 /**
  * Picks the localized value of a content field coming from the database.
- * Falls back to the Czech value when the Slovak translation is missing.
+ * Falls back to the Czech value when a translation is missing.
  */
 export function pickLang(row: object | null | undefined, field: string, lang: Lang): string {
   if (!row) return '';
   const rec = row as Record<string, unknown>;
   const cs = (rec[field] as string | null) ?? '';
-  if (lang !== 'sk') return cs;
-  const skVal = (rec[`${field}_sk`] as string | null) ?? '';
-  return skVal.trim() ? skVal : cs;
+  if (lang === 'cs') return cs;
+  const localized = (rec[`${field}_${lang}`] as string | null) ?? '';
+  return localized.trim() ? localized : cs;
 }

@@ -8,9 +8,9 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
     <div
       className={cn('inline-flex items-center rounded-lg border p-0.5 text-xs font-medium', className)}
       role="group"
-      aria-label={lang === 'sk' ? 'Voľba jazyka' : 'Volba jazyka'}
+      aria-label={lang === 'sk' ? 'Voľba jazyka' : lang === 'lt' ? 'Kalbos pasirinkimas' : 'Volba jazyka'}
     >
-      {(['cs', 'sk'] as const).map(code => (
+      {(['cs', 'sk', 'lt'] as const).map(code => (
         <button
           key={code}
           type="button"
@@ -21,7 +21,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
             lang === code ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted',
           )}
         >
-          {code === 'cs' ? 'CZ' : 'SK'}
+          {code === 'cs' ? 'CZ' : code === 'sk' ? 'SK' : 'LT'}
         </button>
       ))}
     </div>

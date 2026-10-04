@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
-import { useT, useLang } from '@/lib/i18n';
+import { useT, useLang, type Lang } from '@/lib/i18n';
 import logoSpolek from '@/assets/logo-spolek.png';
 import diplomaBorder from '@/assets/diploma-border.png';
 import signatureBrozekAsset from '@/assets/signature-brozek.png.asset.json';
@@ -26,7 +26,7 @@ interface Props {
   maxWidth?: number;      // override default 720 preview width
 }
 
-const fmtDate = (d: Date, lang: 'cs' | 'sk' = 'cs') => d.toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ');
+const fmtDate = (d: Date, lang: Lang = 'cs') => d.toLocaleDateString(lang === 'sk' ? 'sk-SK' : lang === 'lt' ? 'lt-LT' : 'cs-CZ');
 
 export default function DiplomaCertificate({
   title, subtitle, introText, awardTitle, noteText, issuer, validityYears,
