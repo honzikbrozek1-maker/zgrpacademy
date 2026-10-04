@@ -45,7 +45,7 @@ export default function LevelDetail() {
   const { toast } = useToast();
   const t = useT();
   const { lang } = useLang();
-  const [level, setLevel] = useState<{ id: string; title: string; title_sk?: string | null; description: string | null; description_sk?: string | null; passing_score: number; order_index: number; group_id: string | null; infographic_landscape?: string | null; infographic_portrait?: string | null } | null>(null);
+  const [level, setLevel] = useState<{ id: string; title: string; title_sk?: string | null; title_lt?: string | null; description: string | null; description_sk?: string | null; description_lt?: string | null; passing_score: number; order_index: number; group_id: string | null; infographic_landscape?: string | null; infographic_portrait?: string | null } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [progress, setProgress] = useState<UserProgressRow | null>(null);

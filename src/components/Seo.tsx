@@ -53,7 +53,7 @@ export default function Seo({
       }
       link.href = canonical;
 
-      (["cs", "sk"] as const).forEach(hreflang => {
+      (["cs", "sk", "lt"] as const).forEach(hreflang => {
         let altLink = document.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${hreflang}"]`);
         if (!altLink) {
           altLink = document.createElement("link");

@@ -123,7 +123,7 @@ export default function Diplomas() {
                   <div className="flex-1 min-w-0">
                     <h2 className="font-semibold truncate">{d.group_title}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {d.diploma_title} · {new Date(d.issued_at).toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ')}
+                      {d.diploma_title} · {new Date(d.issued_at).toLocaleDateString(lang === 'sk' ? 'sk-SK' : lang === 'lt' ? 'lt-LT' : 'cs-CZ')}
                     </p>
                   </div>
                   <span className="text-lg font-bold text-primary shrink-0">{d.average_score}%</span>

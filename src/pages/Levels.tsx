@@ -16,8 +16,10 @@ interface Level {
   id: string;
   title: string;
   title_sk?: string | null;
+  title_lt?: string | null;
   description: string | null;
   description_sk?: string | null;
+  description_lt?: string | null;
   order_index: number;
   passing_score: number;
   group_id: string | null;
@@ -27,8 +29,10 @@ interface Group {
   id: string;
   title: string;
   title_sk?: string | null;
+  title_lt?: string | null;
   description: string | null;
   description_sk?: string | null;
+  description_lt?: string | null;
   order_index: number;
   final_test_passing_score: number;
 }

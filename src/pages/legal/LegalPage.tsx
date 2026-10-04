@@ -3,10 +3,10 @@ import Seo from '@/components/Seo';
 import LegalFooter from '@/components/LegalFooter';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useLang, useT } from '@/lib/i18n';
+import { useLang, useT, type Lang } from '@/lib/i18n';
 import type { LegalDoc } from './legalContent';
 
-export default function LegalPage({ doc, path }: { doc: Record<'cs' | 'sk', LegalDoc>; path: string }) {
+export default function LegalPage({ doc, path }: { doc: Record<Lang, LegalDoc>; path: string }) {
   const { lang } = useLang();
   const t = useT();
   const content = doc[lang] ?? doc.cs;

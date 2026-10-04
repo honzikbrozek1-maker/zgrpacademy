@@ -27,6 +27,7 @@ interface LevelRow {
   id: string;
   title: string;
   title_sk?: string | null;
+  title_lt?: string | null;
   order_index: number;
   group_id: string | null;
 }
@@ -35,6 +36,7 @@ interface GroupRow {
   id: string;
   title: string;
   title_sk?: string | null;
+  title_lt?: string | null;
 }
 
 interface QuestionRow {
@@ -69,10 +71,10 @@ export default function GlobalSearch({ open, onOpenChange }: { open: boolean; on
       const [{ data: levelData }, { data: groupData }] = await Promise.all([
         supabase
           .from('levels')
-          .select('id, title, title_sk, order_index, group_id')
+          .select('id, title, title_sk, title_lt, order_index, group_id')
           .eq('category', category)
           .order('order_index'),
-        supabase.from('level_groups').select('id, title, title_sk').eq('category', category).order('order_index'),
+        supabase.from('level_groups').select('id, title, title_sk, title_lt').eq('category', category).order('order_index'),
       ]);
       if (cancelled) return;
       setLevels(levelData ?? []);

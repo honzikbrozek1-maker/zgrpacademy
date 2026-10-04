@@ -45,7 +45,7 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
         <p class="detail">${safe(t('úspěšně absolvoval/a kurz'))}</p>
         <p class="name">${safe(levelTitle)}</p>
         <p class="score">${Number(score)}%</p>
-        <p class="detail">${safe(t('Datum:'))} ${safe(new Date(completedAt).toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ'))}</p>
+        <p class="detail">${safe(t('Datum:'))} ${safe(new Date(completedAt).toLocaleDateString(lang === 'sk' ? 'sk-SK' : lang === 'lt' ? 'lt-LT' : 'cs-CZ'))}</p>
       </div>
       </body></html>
     `);
@@ -72,7 +72,7 @@ export default function LevelDiploma({ levelTitle, userName, score, completedAt,
             </div>
             <p className="text-4xl font-extrabold text-primary">{score}%</p>
             <p className="text-sm text-muted-foreground">
-              {t('Datum:')} {new Date(completedAt).toLocaleDateString(lang === 'sk' ? 'sk-SK' : 'cs-CZ')}
+              {t('Datum:')} {new Date(completedAt).toLocaleDateString(lang === 'sk' ? 'sk-SK' : lang === 'lt' ? 'lt-LT' : 'cs-CZ')}
             </p>
           </CardContent>
         </Card>
