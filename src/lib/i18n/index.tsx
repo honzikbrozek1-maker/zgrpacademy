@@ -96,6 +96,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export const useLang = () => useContext(LanguageContext);
 
+/** Forces Czech UI for a subtree (e.g. the admin panel), regardless of the user's language. */
+export function ForceCzech({ children }: { children: ReactNode }) {
+  const { setLang } = useContext(LanguageContext);
+  const value = useMemo<LanguageContextValue>(
+    () => ({ lang: 'cs', setLang, t: (cs, vars) => interpolate(cs, vars) }),
+    [setLang],
+  );
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+}
+
 /** Convenience hook: const t = useT(); t('Uložit') */
 export function useT() {
   return useContext(LanguageContext).t;
