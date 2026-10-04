@@ -102,8 +102,8 @@ const App = () => (
                 {/* Shared - per section */}
                 <Route path="/products/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/backoffice/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                <Route path="/products/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-                <Route path="/backoffice/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                <Route path="/products/admin" element={<ProtectedRoute><ForceCzech><AdminPanel /></ForceCzech></ProtectedRoute>} />
+                <Route path="/backoffice/admin" element={<ProtectedRoute><ForceCzech><AdminPanel /></ForceCzech></ProtectedRoute>} />
                 <Route path="/products/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
                 <Route path="/backoffice/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
                 
