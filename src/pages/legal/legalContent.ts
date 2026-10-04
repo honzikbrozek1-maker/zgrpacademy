@@ -1,10 +1,11 @@
 /**
- * Právní texty (CZ/SK) pro zásady ochrany osobních údajů, cookies a obchodní podmínky.
+ * Právní texty (CZ/SK/LT) pro zásady ochrany osobních údajů, cookies a obchodní podmínky.
  * Provozovatel: Zinzinogroup z.s., IČO 08720746, Jaurisova 515/4, Michle, 140 00 Praha 4.
  */
 
 export type LegalSection = { heading: string; paragraphs: string[] };
 export type LegalDoc = { title: string; description: string; updated: string; sections: LegalSection[] };
+import { privacyLt, cookiesLt, termsLt } from './legalLt';
 
 const OPERATOR_CS =
   'Zinzinogroup z.s., IČO 08720746, se sídlem Jaurisova 515/4, Michle, 140 00 Praha 4, zastoupený předsedou Adamem Škodou, e-mail info@zinzinogroup.com.';
@@ -13,7 +14,7 @@ const OPERATOR_SK =
 
 const UPDATED = '21. 9. 2026';
 
-export const privacyDoc: Record<'cs' | 'sk', LegalDoc> = {
+export const privacyDoc: Record<'cs' | 'sk' | 'lt', LegalDoc> = {
   cs: {
     title: 'Zásady ochrany osobních údajů',
     description:
@@ -140,9 +141,10 @@ export const privacyDoc: Record<'cs' | 'sk', LegalDoc> = {
       },
     ],
   },
+  lt: privacyLt,
 };
 
-export const cookiesDoc: Record<'cs' | 'sk', LegalDoc> = {
+export const cookiesDoc: Record<'cs' | 'sk' | 'lt', LegalDoc> = {
   cs: {
     title: 'Zásady používání cookies',
     description: 'Jaké cookies a místní úložiště ZGRP Academy používá a jak svůj souhlas kdykoli změníte.',
@@ -231,9 +233,10 @@ export const cookiesDoc: Record<'cs' | 'sk', LegalDoc> = {
       },
     ],
   },
+  lt: cookiesLt,
 };
 
-export const termsDoc: Record<'cs' | 'sk', LegalDoc> = {
+export const termsDoc: Record<'cs' | 'sk' | 'lt', LegalDoc> = {
   cs: {
     title: 'Obchodní podmínky',
     description:
@@ -340,4 +343,5 @@ export const termsDoc: Record<'cs' | 'sk', LegalDoc> = {
       },
     ],
   },
+  lt: termsLt,
 };
