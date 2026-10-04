@@ -1,40 +1,41 @@
-# Cookie souhlas (cookie consent banner)
-
-## Proč to přidáváme
-V ČR a na Slovensku platí GDPR + ePrivacy. V aplikaci zatím nejsou analytické ani marketingové cookies, ale Supabase (přihlášení), Stripe (platba) a PWA ukládají technické cookies. Pro bezpečný provoz a případné budoucí měření (Google Analytics apod.) přidáme jednoduchý, nenápadný cookie banner s možností výběru kategorií.
-
-## Co se postaví
-
-### 1. Nový komponent `CookieConsent`
-- Zobrazí se při první návštěvě na spodní části obrazovky (desktop i mobil).
-- Dvě tlačítka: **„Přijmout vše"** a **„Podrobné nastavení"**.
-- V detailním nastavení kategorie:
-  - **Nezbytné** – vždy zapnuté, nelze vypnout (auth, Stripe, bezpečnost, PWA).
-  - **Funkční** – jazyk, barevné schéma, preference zvuku (výchozí zapnuto).
-  - **Analytické** – výchozí vypnuto, připraveno pro Google Analytics / jiné měření.
-  - **Marketingové** – výchozí vypnuto, připraveno pro reklamní pixely.
-- Souhlas se uloží do `localStorage` pod klíčem `cookie-consent`.
-- Po uložení banner zmizí a znovu se nezobrazí, dokud uživatel nevymaže localStorage.
-
-### 2. Integrace do aplikace
-- Komponent se vloží do `src/App.tsx` mimo router, aby byl viditelný na všech stránkách (včetně landing page).
-- Vytvoří se hook `useCookieConsent` pro čtení souhlasu v jiných částech aplikace (např. pro budoucí analytiku).
-
-### 3. Překlady
-- Přidá se slovníkový klíč do českého a slovenského jazykového souboru (`src/lib/i18n/sk/shell.ts` nebo nový `src/lib/i18n/sk/cookies.ts`).
-- Texty budou přeložené do češtiny i slovenštiny.
-
-### 4. Odkaz na zásady cookies
-- Do banneru se přidá odkaz na stránku se zásadami používání cookies. Pro jednoduchost využijeme existující landing page nebo přidáme nový statický text na landing page (`/`), dokud nebude samostatná stránka podmínek.
-
-### 5. Budoucí rozšířitelnost
-- Kód analytických/marketingových skriptů se bude načítat jen při souhlasu. V tuto chvíli se žádné nové skripty nepřidávají.
-
-## Technické detaily
-- Bez nových závislostí (postavíme na shadcn/ui komponentech – Sheet/Dialog, Switch, Button).
-- Responzivní design, nezastínění důležitého obsahu na mobilu.
-- Barevné schéma bude respektovat aktuální theme pomocí existujících CSS proměnných.
-- Výchozí jazyk banneru dle aktuálního nastavení aplikace.
+# Plnohodnotná litevská verze ZGRP Academy
 
 ## Výsledek
-Návštěvník uvidí při první návštěvě jednoduchý dolní banner, může buď jedním kliknutím přijmout vše, nebo si nastavit kategorie. Souhlas se uloží, banner se nebude opakovat. Aplikace bude připravena na bezpečné připojení analytiky bez porušení GDPR.
+Aplikace dostane třetí jazyk **LT – litevštinu**. Litevský návštěvník ji uvidí automaticky podle jazyka prohlížeče, jazyk si však bude moci kdykoli přepnout mezi CZ, SK a LT. Přeloženy budou obrazovky, studijní obsah, otázky, testy, právní stránky i certifikáty.
+
+## Co upravím
+
+### 1. Jazyk celé aplikace
+- Rozšířím volbu jazyka na CZ / SK / LT a uložení preference do profilu i prohlížeče.
+- Pro prohlížeče s litevštinou (`lt`) nastavím při první návštěvě automaticky litevštinu; uložená volba uživatele má vždy přednost.
+- Doplním litevské formátování data a správné označení jazyka stránky pro přístupnost a vyhledávače.
+
+### 2. Všechny obrazovky a systémové texty
+- Přeložím přihlášení, registraci, platbu, navigaci, účet, vyhledávání, výuku, procvičování, testy, výsledky, administraci, cookie lištu a chybové či potvrzovací zprávy.
+- Zachovám význam českých vět, proměnné jako jména a skóre i názvy značek.
+- Doplním litevské texty SEO pro veřejné stránky.
+
+### 3. Studijní obsah a otázky
+- Přidám litevská pole k levelům, skupinám, otázkám a všem textům certifikátů.
+- Rozšířím zabezpečené funkce pro procvičování a testy, aby vracely litevské otázky i správně kontrolovaly litevské odpovědi.
+- Existující český obsah přeložím do přirozené litevštiny po dávkách. Česká verze zůstane bezpečnou zálohou, pokud nový obsah ještě nebude přeložen.
+
+### 4. Certifikáty
+- Litevsky se zobrazí název skupiny, nadpis, úvod, titul, poznámka, vydavatel, datum, platnost i ovládací texty.
+- Tisk zůstane na jedné stránce A4 a bude používat litevský formát data.
+
+### 5. Administrace překladů
+- Stávající správu slovenského obsahu rozšířím na přehled překladů podle jazyka.
+- Administrátor uvidí chybějící litevské překlady a bude je moci bezpečně doplnit; ruční překlady se bez výslovného požadavku nepřepíšou.
+- Editace otázek a skupin bude podporovat samostatnou litevskou záložku.
+
+### 6. Ověření
+- Zkontroluji úplnost překladového slovníku proti skutečně používaným textům.
+- Otestuji automatický výběr litevštiny, ruční přepínání a zachování volby po obnovení.
+- Ověřím přihlášení, veřejné a právní stránky, studijní obsah, testy a náhled i tisk certifikátu v litevštině.
+
+## Technické detaily
+- Databázové sloupce budou používat příponu `_lt`; jazykový kód bude `lt`.
+- Lokalizační výběr bude podporovat `cs`, `sk` a `lt` s návratem k češtině pouze při chybějícím překladu.
+- Aktualizované databázové funkce zachovají nynější kontroly přihlášení, zaplacení a přístupu k levelům.
+- Cena a obchodní pravidla se tímto úkolem nemění; pouze se věrně přeloží jejich znění.
