@@ -1019,7 +1019,7 @@ export default function AdminPanel() {
               <TabsTrigger value="content"><BookOpen className="mr-1 h-4 w-4" /> {t('Obsah')}</TabsTrigger>
               <TabsTrigger value="groups"><GraduationCap className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">{t('Skupiny & certifikáty')}</span><span className="sm:hidden">{t('Skupiny')}</span></TabsTrigger>
               <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> {t('Uživatelé')}</TabsTrigger>
-              <TabsTrigger value="translations"><Languages className="mr-1 h-4 w-4" /> {t('Slovenština')}</TabsTrigger>
+              <TabsTrigger value="translations"><Languages className="mr-1 h-4 w-4" /> {t('Překlady')}</TabsTrigger>
               <TabsTrigger value="trash"><Trash2 className="mr-1 h-4 w-4" /> {t('Koš')}</TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="requests" className="relative">
