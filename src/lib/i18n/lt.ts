@@ -176,7 +176,7 @@ export const lt: Record<string, string> = {
   "Nastavení účtu": "Paskyros nustatymai",
   "Nastavit nové heslo": "Nustatykite naują slaptažodį",
   "Nastavte si nové heslo do ZGRP Academy.": "Nustatykite naują ZGRP akademijos slaptažodį.",
-  "Naučte se produkty Zinzino i práci s backoffice systémem. Procvičujte pomocí kvízů a doplňovaček, skládejte testy a získejte certifikát o absolvování.": "Išmokite „Zinzino“ produktų ir dirbkite su „backoffice“ sistema. Praktikuokite su viktorinomis ir užpildais, atlikite testus ir gaukite baigimo sertifikatą.",
+  "Naučte se produkty Zinzino i práci s backoffice systémem. Procvičujte pomocí kvízů a doplňovaček, skládejte testy a získejte certifikát o absolvování.": "Išmokite „Zinzino“ produktų ir dirbkite su „backoffice“ sistema. Praktikuokitės su viktorinomis ir žodžių įrašymo užduotimis, atlikite testus ir gaukite baigimo sertifikatą.",
   "Načíst oprávnění": "Įkelti leidimus",
   "Načíst platbu znovu": "Dar kartą įkelkite mokėjimą",
   "Načítám...": "Įkeliama...",
