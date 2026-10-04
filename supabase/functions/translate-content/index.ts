@@ -117,29 +117,34 @@ PRAVIDLA:
 - Zachovej PŘESNĚ strukturu JSON, stejná pole i stejné "id".
 - Nepřekládej ani neměň zástupné texty jako ______ (podtržítka), {group_title}, {score}, čísla, značky a vlastní jména organizací (ZGRP).
 - Neměň pořadí ani počet položek — správné odpovědi jsou určeny pořadím možností.
-- Pokud je věta s mezerou ______, slovenský překlad musí mezeru ______ obsahovat na odpovídajícím místě.
+- Pokud je věta s mezerou ______, překlad musí mezeru ______ obsahovat na odpovídajícím místě.
 - Vrať POUZE JSON pole, žádný jiný text ani markdown.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+      signal: req.signal,
+      headers: { "Lovable-API-Key": lovableKey, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
         input: [
           { role: "system", content: systemPrompt },
           { role: "user", content: JSON.stringify(payload) },
         ],
+        stream: true,
+        store: false,
+        reasoning: { effort: "low", summary: "auto" },
+        include: ["reasoning.encrypted_content"],
       }),
     });
 
     if (aiResp.status === 429) return json({ error: "Rate limit. Zkuste to později." }, 429);
     if (aiResp.status === 402) return json({ error: "AI kredit vyčerpán." }, 402);
-    if (!aiResp.ok) return json({ error: "AI error" }, 500);
+    if (!aiResp.ok) {
+      const safeMessage = (await aiResp.json().catch(() => ({})))?.message;
+      return json({ error: typeof safeMessage === "string" ? safeMessage : "AI error" }, aiResp.status);
+    }
 
-    const aiData = await aiResp.json();
-    const content: string = (aiData?.output ?? [])
-      .flatMap((item: { content?: Array<{ type?: string; text?: string }> }) => item.content ?? [])
-      .find((item: { type?: string }) => item.type === "output_text")?.text ?? "";
+    const content = await readOutputText(aiResp);
     let translated: Record<string, string>[];
     try {
       translated = parseJsonLenient(content) as Record<string, string>[];
@@ -177,6 +182,31 @@ function json(payload: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+async function readOutputText(response: Response): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let output = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+    for (const event of events) {
+      const dataLine = event.split("\n").find((line) => line.startsWith("data:"));
+      if (!dataLine) continue;
+      const raw = dataLine.slice(5).trim();
+      if (!raw || raw === "[DONE]") continue;
+      const data = JSON.parse(raw);
+      if (data.type === "response.output_text.delta" && typeof data.delta === "string") output += data.delta;
+      if (data.type === "error") throw new Error(data.error?.message ?? "AI stream error");
+    }
+    if (done) break;
+  }
+  return output;
 }
 
 /**

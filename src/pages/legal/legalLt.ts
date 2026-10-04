@@ -42,7 +42,7 @@ export const privacyLt: LegalDoc = {
     {
       "heading": "5. Saugojimo laikotarpis",
       "paragraphs": [
-        "Jūsų paskyros informaciją saugome tol, kol ji yra. Ištrynus paskyrą, duomenys ištrinami; administravimo šiukšliadėžėje esantys elementai automatiškai ištrinami per 7 dienas.",
+        "Jūsų paskyros duomenis saugome tol, kol paskyra egzistuoja. Ištrynus paskyrą duomenys pašalinami; administravimo šiukšliadėžėje esantys elementai automatiškai ištrinami po 7 dienų.",
         "Buhalterinės apskaitos dokumentus saugome įstatymų nustatytą laikotarpį (paprastai 10 metų)."
       ]
     },
@@ -145,7 +145,7 @@ export const termsLt: LegalDoc = {
     {
       "heading": "5. Sutarties atsisakymas",
       "paragraphs": [
-        "Tai yra skaitmeninis turinys, pristatomas iš karto po apmokėjimo. Sumokėdamas ir pateikdamas turinį, vartotojas aiškiai sutinka, kad būtų pradėtas vykdyti prieš pasibaigiant 14 dienų laikotarpiui, ir pripažįsta, kad teisė atsisakyti sutarties baigiasi (Civilinio kodekso 1837 straipsnis).",
+        "Tai yra skaitmeninis turinys, suteikiamas iš karto po apmokėjimo. Sumokėdamas ir prašydamas suteikti prieigą, vartotojas aiškiai sutinka, kad sutartis būtų pradėta vykdyti nepasibaigus 14 dienų atsisakymo terminui, ir pripažįsta, kad dėl to praranda teisę atsisakyti sutarties (Čekijos civilinio kodekso § 1837).",
         "Jei turinys nebuvo pateiktas arba paslauga neveikia, rašykite info@zinzinogroup.com – grąžinsime pinigus."
       ]
     },
