@@ -113,7 +113,7 @@ export default function Account() {
   };
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== 'SMAZAT') return;
+    if (deleteConfirmText.trim().toUpperCase() !== t('SMAZAT').toUpperCase()) return;
     if (user) {
       const { error } = await supabase.rpc('delete_my_account');
       if (error) {
@@ -245,9 +245,9 @@ export default function Account() {
             ) : (
               <div className="space-y-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
                 <p className="text-xs font-medium text-destructive">{t('Pro potvrzení napište „SMAZAT":')}</p>
-                <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder="SMAZAT" className="border-destructive/30 h-8 text-sm" />
+                <Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder={t('SMAZAT')} className="border-destructive/30 h-8 text-sm" />
                 <div className="flex gap-2">
-                  <Button variant="destructive" size="sm" disabled={deleteConfirmText !== 'SMAZAT'} onClick={handleDeleteAccount}>{t('Potvrdit')}</Button>
+                  <Button variant="destructive" size="sm" disabled={deleteConfirmText.trim().toUpperCase() !== t('SMAZAT').toUpperCase()} onClick={handleDeleteAccount}>{t('Potvrdit')}</Button>
                   <Button variant="outline" size="sm" onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}>{t('Zrušit')}</Button>
                 </div>
               </div>

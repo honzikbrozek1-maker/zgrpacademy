@@ -103,6 +103,7 @@ export const skShell: Record<string, string> = {
   'Smazání účtu': 'Zmazanie účtu',
   'Smazat účet': 'Zmazať účet',
   'Pro potvrzení napište „SMAZAT":': 'Pre potvrdenie napíšte „ZMAZAŤ":',
+  'SMAZAT': 'ZMAZAŤ',
   'Potvrdit': 'Potvrdiť',
   'Chyba': 'Chyba',
   'Uloženo': 'Uložené',
