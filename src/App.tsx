@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
-import { LanguageProvider } from "@/lib/i18n";
+import { LanguageProvider, ForceCzech } from "@/lib/i18n";
 import { PathProvider } from "@/lib/pathContext";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
