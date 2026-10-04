@@ -375,7 +375,7 @@ export default function LevelDetail() {
               )}
             </div>
 
-            {(level.infographic_landscape || level.infographic_portrait) && (
+            {lang !== 'lt' && (level.infographic_landscape || level.infographic_portrait) && (
               <Card className="shadow-card mt-4">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-2">

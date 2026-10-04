@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
-import { LanguageProvider } from "@/lib/i18n";
+import { LanguageProvider, ForceCzech } from "@/lib/i18n";
 import { PathProvider } from "@/lib/pathContext";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
@@ -102,8 +102,8 @@ const App = () => (
                 {/* Shared - per section */}
                 <Route path="/products/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/backoffice/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                <Route path="/products/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
-                <Route path="/backoffice/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                <Route path="/products/admin" element={<ProtectedRoute><ForceCzech><AdminPanel /></ForceCzech></ProtectedRoute>} />
+                <Route path="/backoffice/admin" element={<ProtectedRoute><ForceCzech><AdminPanel /></ForceCzech></ProtectedRoute>} />
                 <Route path="/products/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
                 <Route path="/backoffice/share" element={<ProtectedRoute><AdminShare /></ProtectedRoute>} />
                 
