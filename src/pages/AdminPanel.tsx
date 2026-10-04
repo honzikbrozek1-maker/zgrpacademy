@@ -32,6 +32,10 @@ interface Level {
   order_index: number;
   passing_score: number;
   category: string;
+  title_sk?: string | null;
+  description_sk?: string | null;
+  title_lt?: string | null;
+  description_lt?: string | null;
 }
 
 interface Question {
@@ -60,6 +64,15 @@ interface Question {
   wrong_option_1_sk?: string | null;
   wrong_option_2_sk?: string | null;
   wrong_option_3_sk?: string | null;
+  question_text_lt?: string | null;
+  option_1_lt?: string | null;
+  option_2_lt?: string | null;
+  option_3_lt?: string | null;
+  option_4_lt?: string | null;
+  back_text_lt?: string | null;
+  wrong_option_1_lt?: string | null;
+  wrong_option_2_lt?: string | null;
+  wrong_option_3_lt?: string | null;
 }
 
 interface UserProfile {
@@ -97,7 +110,8 @@ export default function AdminPanel() {
   const [adminList, setAdminList] = useState<{ user_id: string; display_name: string }[]>([]);
   const [selectedTargetAdmin, setSelectedTargetAdmin] = useState<string | null>(null);
 
-  const [levelForm, setLevelForm] = useState({ title: '', description: '', order_index: 1, passing_score: 90, category });
+  const [levelForm, setLevelForm] = useState({ title: '', description: '', title_sk: '', description_sk: '', title_lt: '', description_lt: '', order_index: 1, passing_score: 90, category });
+  const [levelEditLang, setLevelEditLang] = useState<'cs' | 'sk' | 'lt'>('cs');
   const [editingLevel, setEditingLevel] = useState<string | null>(null);
   const [showLevelDialog, setShowLevelDialog] = useState(false);
 
@@ -115,10 +129,12 @@ export default function AdminPanel() {
     option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '',
     back_text_sk: '',
     wrong_option_1_sk: '', wrong_option_2_sk: '', wrong_option_3_sk: '',
+    question_text_lt: '', option_1_lt: '', option_2_lt: '', option_3_lt: '', option_4_lt: '',
+    back_text_lt: '', wrong_option_1_lt: '', wrong_option_2_lt: '', wrong_option_3_lt: '',
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
-  const [qEditLang, setQEditLang] = useState<'cs' | 'sk'>('cs');
+  const [qEditLang, setQEditLang] = useState<'cs' | 'sk' | 'lt'>('cs');
 
   // Fill-blank: cursor position for blank insertion
   const sentenceRef = useRef<HTMLTextAreaElement>(null);
@@ -238,7 +254,7 @@ export default function AdminPanel() {
     }
     setShowLevelDialog(false);
     setEditingLevel(null);
-    setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 90, category });
+    setLevelForm({ title: '', description: '', title_sk: '', description_sk: '', title_lt: '', description_lt: '', order_index: levels.length + 1, passing_score: 90, category });
     fetchLevels();
     toast({ title: t('Uloženo') });
   };
@@ -252,7 +268,8 @@ export default function AdminPanel() {
   };
 
   const editLevel = (level: Level) => {
-    setLevelForm({ title: level.title, description: level.description || '', order_index: level.order_index, passing_score: level.passing_score, category: level.category });
+    setLevelForm({ title: level.title, description: level.description || '', title_sk: level.title_sk || '', description_sk: level.description_sk || '', title_lt: level.title_lt || '', description_lt: level.description_lt || '', order_index: level.order_index, passing_score: level.passing_score, category: level.category });
+    setLevelEditLang('cs');
     setEditingLevel(level.id);
     setShowLevelDialog(true);
   };
@@ -286,6 +303,15 @@ export default function AdminPanel() {
       wrong_option_1_sk: isFlashcard ? optional(qForm.wrong_option_1_sk) : null,
       wrong_option_2_sk: isFlashcard ? optional(qForm.wrong_option_2_sk) : null,
       wrong_option_3_sk: isFlashcard ? optional(qForm.wrong_option_3_sk) : null,
+      question_text_lt: optional(qForm.question_text_lt),
+      option_1_lt: needsOptions ? optional(qForm.option_1_lt) : null,
+      option_2_lt: needsOptions ? optional(qForm.option_2_lt) : null,
+      option_3_lt: needsOptions ? optional(qForm.option_3_lt) : null,
+      option_4_lt: needsOptions ? optional(qForm.option_4_lt) : null,
+      back_text_lt: (qForm.type === 'flashcard' || qForm.type === 'fill_blank') ? optional(qForm.back_text_lt) : null,
+      wrong_option_1_lt: isFlashcard ? optional(qForm.wrong_option_1_lt) : null,
+      wrong_option_2_lt: isFlashcard ? optional(qForm.wrong_option_2_lt) : null,
+      wrong_option_3_lt: isFlashcard ? optional(qForm.wrong_option_3_lt) : null,
     };
     if (editingQuestion) {
       await supabase.from('questions').update(payload).eq('id', editingQuestion);
@@ -325,6 +351,9 @@ export default function AdminPanel() {
     const sk = q.type === 'fill_blank'
       ? normalizeBlank(blankSentence(q.question_text_sk, q.back_text_sk) || q.back_text_sk || '')
       : (q.back_text_sk || '');
+    const lt = q.type === 'fill_blank'
+      ? normalizeBlank(blankSentence(q.question_text_lt, q.back_text_lt) || q.back_text_lt || '')
+      : (q.back_text_lt || '');
     setQForm({
       type: q.type,
       question_text: q.question_text,
@@ -344,6 +373,11 @@ export default function AdminPanel() {
       wrong_option_1_sk: q.wrong_option_1_sk || '',
       wrong_option_2_sk: q.wrong_option_2_sk || '',
       wrong_option_3_sk: q.wrong_option_3_sk || '',
+      question_text_lt: q.question_text_lt || '',
+      option_1_lt: q.option_1_lt || '', option_2_lt: q.option_2_lt || '',
+      option_3_lt: q.option_3_lt || '', option_4_lt: q.option_4_lt || '',
+      back_text_lt: lt,
+      wrong_option_1_lt: q.wrong_option_1_lt || '', wrong_option_2_lt: q.wrong_option_2_lt || '', wrong_option_3_lt: q.wrong_option_3_lt || '',
     });
     setEditingQuestion(q.id);
     setAddStep('edit');
@@ -357,6 +391,7 @@ export default function AdminPanel() {
     setQForm({
       type: 'quiz', question_text: '', option_1: '', option_2: '', option_3: '', option_4: '', correct_answer: 1, back_text: '', wrong_option_1: '', wrong_option_2: '', wrong_option_3: '', order_index: questions.length, in_practice: true,
       question_text_sk: '', option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '', back_text_sk: '', wrong_option_1_sk: '', wrong_option_2_sk: '', wrong_option_3_sk: '',
+      question_text_lt: '', option_1_lt: '', option_2_lt: '', option_3_lt: '', option_4_lt: '', back_text_lt: '', wrong_option_1_lt: '', wrong_option_2_lt: '', wrong_option_3_lt: '',
     });
     setBlankInserted(false);
     setQEditLang('cs');
@@ -716,7 +751,7 @@ export default function AdminPanel() {
     );
   };
 
-  const qField = (base: string) => (qEditLang === 'sk' ? `${base}_sk` : base) as keyof typeof qForm;
+  const qField = (base: string) => (qEditLang === 'cs' ? base : `${base}_${qEditLang}`) as keyof typeof qForm;
   const qVal = (base: string) => (qForm as any)[qField(base)] as string;
   const qSet = (base: string, value: string) => setQForm({ ...qForm, [qField(base)]: value } as typeof qForm);
 
@@ -737,8 +772,11 @@ export default function AdminPanel() {
         >
           🇸🇰 {t('Slovenčina')}
         </button>
+        <button type="button" onClick={() => setQEditLang('lt')} className={`px-2.5 py-1 text-xs font-medium rounded ${qEditLang === 'lt' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}>
+          🇱🇹 {t('Litevština')}
+        </button>
       </div>
-      {qEditLang === 'sk' && (
+      {qEditLang !== 'cs' && (
         <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
       )}
     </div>
@@ -960,6 +998,7 @@ export default function AdminPanel() {
         if (qForm.type === 'fill_blank') {
           qForm.question_text = qForm.back_text;
           qForm.question_text_sk = qForm.back_text_sk;
+          qForm.question_text_lt = qForm.back_text_lt;
         }
         saveQuestion();
       }} className="w-full">{t('Uložit')}</Button>
@@ -1351,15 +1390,22 @@ export default function AdminPanel() {
                   <h2 className="text-lg font-semibold">{t('Levely')}</h2>
                   <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelForm({ title: '', description: '', order_index: levels.length + 1, passing_score: 90, category }); }}>
+                      <Button size="sm" onClick={() => { setEditingLevel(null); setLevelEditLang('cs'); setLevelForm({ title: '', description: '', title_sk: '', description_sk: '', title_lt: '', description_lt: '', order_index: levels.length + 1, passing_score: 90, category }); }}>
                         <Plus className="mr-1 h-4 w-4" /> {t('Přidat level')}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader><DialogTitle>{editingLevel ? t('Upravit level') : t('Nový level')}</DialogTitle></DialogHeader>
                       <div className="space-y-4">
-                        <Input placeholder={t('Název')} value={levelForm.title} onChange={e => setLevelForm({ ...levelForm, title: e.target.value })} />
-                        <Textarea placeholder={t('Popis')} value={levelForm.description} onChange={e => setLevelForm({ ...levelForm, description: e.target.value })} />
+                        <div className="inline-flex rounded-md border p-0.5 bg-muted/40">
+                          {(['cs', 'sk', 'lt'] as const).map(code => (
+                            <Button key={code} type="button" size="sm" variant={levelEditLang === code ? 'default' : 'ghost'} onClick={() => setLevelEditLang(code)}>
+                              {code === 'cs' ? '🇨🇿 Čeština' : code === 'sk' ? '🇸🇰 Slovenčina' : '🇱🇹 Lietuvių'}
+                            </Button>
+                          ))}
+                        </div>
+                        <Input placeholder={t('Název')} value={levelEditLang === 'cs' ? levelForm.title : levelForm[`title_${levelEditLang}`]} onChange={e => setLevelForm({ ...levelForm, [levelEditLang === 'cs' ? 'title' : `title_${levelEditLang}`]: e.target.value })} />
+                        <Textarea placeholder={t('Popis')} value={levelEditLang === 'cs' ? levelForm.description : levelForm[`description_${levelEditLang}`]} onChange={e => setLevelForm({ ...levelForm, [levelEditLang === 'cs' ? 'description' : `description_${levelEditLang}`]: e.target.value })} />
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm text-muted-foreground">{t('Pořadí')}</label>

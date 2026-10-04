@@ -40,6 +40,14 @@ interface Group {
   diploma_award_title_sk: string | null;
   diploma_note_text_sk: string | null;
   diploma_issuer_sk: string | null;
+  title_lt: string | null;
+  description_lt: string | null;
+  diploma_title_lt: string | null;
+  diploma_subtitle_lt: string | null;
+  diploma_intro_text_lt: string | null;
+  diploma_award_title_lt: string | null;
+  diploma_note_text_lt: string | null;
+  diploma_issuer_lt: string | null;
 }
 
 interface Level {
@@ -76,6 +84,8 @@ const emptyForm = {
   diploma_award_title_sk: '',
   diploma_note_text_sk: '',
   diploma_issuer_sk: '',
+  title_lt: '', description_lt: '', diploma_title_lt: '', diploma_subtitle_lt: '',
+  diploma_intro_text_lt: '', diploma_award_title_lt: '', diploma_note_text_lt: '', diploma_issuer_lt: '',
 };
 
 export default function AdminGroupsTab() {
@@ -88,7 +98,7 @@ export default function AdminGroupsTab() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [editLang, setEditLang] = useState<'cs' | 'sk'>('cs');
+  const [editLang, setEditLang] = useState<'cs' | 'sk' | 'lt'>('cs');
 
   const load = async () => {
     const [{ data: g }, { data: l }] = await Promise.all([
@@ -131,6 +141,10 @@ export default function AdminGroupsTab() {
       diploma_award_title_sk: g.diploma_award_title_sk ?? '',
       diploma_note_text_sk: g.diploma_note_text_sk ?? '',
       diploma_issuer_sk: g.diploma_issuer_sk ?? '',
+      title_lt: g.title_lt ?? '', description_lt: g.description_lt ?? '',
+      diploma_title_lt: g.diploma_title_lt ?? '', diploma_subtitle_lt: g.diploma_subtitle_lt ?? '',
+      diploma_intro_text_lt: g.diploma_intro_text_lt ?? '', diploma_award_title_lt: g.diploma_award_title_lt ?? '',
+      diploma_note_text_lt: g.diploma_note_text_lt ?? '', diploma_issuer_lt: g.diploma_issuer_lt ?? '',
     });
     setEditingId(g.id);
     setEditLang('cs');
@@ -138,9 +152,9 @@ export default function AdminGroupsTab() {
   };
 
   // Generic accessor helpers so the same inputs edit either the Czech or Slovak column.
-  const fv = (key: keyof typeof emptyForm) => (editLang === 'sk' ? (form as any)[`${key}_sk`] ?? '' : (form as any)[key]);
+  const fv = (key: keyof typeof emptyForm) => (editLang === 'cs' ? (form as any)[key] : (form as any)[`${key}_${editLang}`] ?? '');
   const setFv = (key: keyof typeof emptyForm) => (value: string) => {
-    if (editLang === 'sk') setForm({ ...form, [`${key}_sk`]: value } as any);
+    if (editLang !== 'cs') setForm({ ...form, [`${key}_${editLang}`]: value } as any);
     else setForm({ ...form, [key]: value } as any);
   };
 
@@ -211,8 +225,11 @@ export default function AdminGroupsTab() {
         >
           🇸🇰 {t('Slovenčina')}
         </button>
+        <button type="button" onClick={() => setEditLang('lt')} className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'lt' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}>
+          🇱🇹 {t('Litevština')}
+        </button>
       </div>
-      {editLang === 'sk' && (
+      {editLang !== 'cs' && (
         <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
       )}
     </div>

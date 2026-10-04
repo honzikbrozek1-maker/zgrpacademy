@@ -29,6 +29,12 @@ interface Question {
   option_3_sk: string | null;
   option_4_sk: string | null;
   back_text_sk: string | null;
+  question_text_lt: string | null;
+  option_1_lt: string | null;
+  option_2_lt: string | null;
+  option_3_lt: string | null;
+  option_4_lt: string | null;
+  back_text_lt: string | null;
 }
 
 interface Props {
@@ -48,6 +54,7 @@ const emptyForm = {
   question_text_sk: '',
   option_1_sk: '', option_2_sk: '', option_3_sk: '', option_4_sk: '',
   back_text_sk: '',
+  question_text_lt: '', option_1_lt: '', option_2_lt: '', option_3_lt: '', option_4_lt: '', back_text_lt: '',
 };
 
 export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore }: Props) {
@@ -58,7 +65,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [editLang, setEditLang] = useState<'cs' | 'sk'>('cs');
+  const [editLang, setEditLang] = useState<'cs' | 'sk' | 'lt'>('cs');
 
   // AI generation
   const [showAi, setShowAi] = useState(false);
@@ -89,6 +96,10 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       option_1_sk: q.option_1_sk || '', option_2_sk: q.option_2_sk || '',
       option_3_sk: q.option_3_sk || '', option_4_sk: q.option_4_sk || '',
       back_text_sk: q.back_text_sk || '',
+      question_text_lt: q.question_text_lt || '',
+      option_1_lt: q.option_1_lt || '', option_2_lt: q.option_2_lt || '',
+      option_3_lt: q.option_3_lt || '', option_4_lt: q.option_4_lt || '',
+      back_text_lt: q.back_text_lt || '',
     });
     setEditingId(q.id);
     setEditLang('cs');
@@ -104,11 +115,11 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
 
   // Generic accessor helpers so the same inputs edit either the Czech or Slovak column.
   const fv = (key: 'question_text' | 'option_1' | 'option_2' | 'option_3' | 'option_4' | 'back_text') =>
-    (editLang === 'sk' ? (form as any)[`${key}_sk`] ?? '' : (form as any)[key]);
+    (editLang === 'cs' ? (form as any)[key] : (form as any)[`${key}_${editLang}`] ?? '');
   const setFv = (key: 'question_text' | 'option_1' | 'option_2' | 'option_3' | 'option_4' | 'back_text') => (value: string) => {
-    if (editLang === 'sk') {
-      if (key === 'back_text') setForm({ ...form, back_text_sk: value, question_text_sk: value });
-      else setForm({ ...form, [`${key}_sk`]: value } as any);
+    if (editLang !== 'cs') {
+      if (key === 'back_text') setForm({ ...form, [`back_text_${editLang}`]: value, [`question_text_${editLang}`]: value } as any);
+      else setForm({ ...form, [`${key}_${editLang}`]: value } as any);
     } else {
       if (key === 'back_text') setForm({ ...form, back_text: value, question_text: value });
       else setForm({ ...form, [key]: value } as any);
@@ -144,6 +155,10 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       option_3_sk: optional(form.option_3_sk),
       option_4_sk: optional(form.option_4_sk),
       back_text_sk: isFillBlank ? optional(form.back_text_sk) : null,
+      question_text_lt: isFillBlank ? optional(form.back_text_lt) : optional(form.question_text_lt),
+      option_1_lt: optional(form.option_1_lt), option_2_lt: optional(form.option_2_lt),
+      option_3_lt: optional(form.option_3_lt), option_4_lt: optional(form.option_4_lt),
+      back_text_lt: isFillBlank ? optional(form.back_text_lt) : null,
     };
     const { error } = editingId
       ? await supabase.from('questions').update(payload).eq('id', editingId)
@@ -248,8 +263,11 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
         >
           🇸🇰 {t('Slovenčina')}
         </button>
+        <button type="button" onClick={() => setEditLang('lt')} className={`px-2.5 py-1 text-xs font-medium rounded ${editLang === 'lt' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}>
+          🇱🇹 {t('Litevština')}
+        </button>
       </div>
-      {editLang === 'sk' && (
+      {editLang !== 'cs' && (
         <span className="text-xs text-muted-foreground">{t('Prázdné pole = použije se česká verze')}</span>
       )}
     </div>

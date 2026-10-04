@@ -1,6 +1,6 @@
 // Edge function: translate-content
 // Admin-only: translates Czech course content (levels, groups, questions) into
-// Slovak (`*_sk` columns) via the Lovable AI Gateway. Processes one batch per
+// Slovak or Lithuanian via the Lovable AI Gateway. Processes one batch per
 // call so the client can drive progress.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -11,6 +11,7 @@ const corsHeaders = {
 };
 
 type Entity = "levels" | "groups" | "questions";
+type TargetLang = "sk" | "lt";
 
 const FIELDS: Record<Entity, { table: string; key: string; fields: string[] }> = {
   levels: { table: "levels", key: "title", fields: ["title", "description"] },
@@ -73,9 +74,10 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!roleRow) return json({ error: "Forbidden: admin role required" }, 403);
 
-    const body = (await req.json().catch(() => ({}))) as { entity?: Entity; force?: boolean };
+    const body = (await req.json().catch(() => ({}))) as { entity?: Entity; target_lang?: TargetLang; force?: boolean };
     const entity = body?.entity;
     if (!entity || !FIELDS[entity]) return json({ error: "Invalid entity" }, 400);
+    const targetLang: TargetLang = body.target_lang === "lt" ? "lt" : "sk";
 
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableKey) return json({ error: "AI not configured" }, 500);
@@ -84,7 +86,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     const selectCols = ["id", ...cfg.fields].join(", ");
-    const missingFilter = `${cfg.key}_sk.is.null,${cfg.key}_sk.eq.`;
+    const missingFilter = `${cfg.key}_${targetLang}.is.null,${cfg.key}_${targetLang}.eq.`;
 
     // How many rows still need translating (before this batch).
     const countQuery = admin.from(cfg.table).select("id", { count: "exact", head: true });
@@ -108,33 +110,41 @@ Deno.serve(async (req) => {
       return item;
     });
 
-    const systemPrompt = `Jsi profesionální překladatel z češtiny do slovenštiny pro vzdělávací aplikaci.
-Dostaneš JSON pole objektů. Přelož do přirozené spisovné slovenštiny HODNOTY všech textových polí kromě pole "id".
+    const targetName = targetLang === "lt" ? "litevštiny" : "slovenštiny";
+    const systemPrompt = `Jsi profesionální překladatel z češtiny do ${targetName} pro vzdělávací aplikaci.
+    Dostaneš JSON pole objektů. Přelož do přirozeného spisovného cílového jazyka HODNOTY všech textových polí kromě pole "id".
 PRAVIDLA:
 - Zachovej PŘESNĚ strukturu JSON, stejná pole i stejné "id".
 - Nepřekládej ani neměň zástupné texty jako ______ (podtržítka), {group_title}, {score}, čísla, značky a vlastní jména organizací (ZGRP).
 - Neměň pořadí ani počet položek — správné odpovědi jsou určeny pořadím možností.
-- Pokud je věta s mezerou ______, slovenský překlad musí mezeru ______ obsahovat na odpovídajícím místě.
+- Pokud je věta s mezerou ______, překlad musí mezeru ______ obsahovat na odpovídajícím místě.
 - Vrať POUZE JSON pole, žádný jiný text ani markdown.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+      signal: req.signal,
+      headers: { "Lovable-API-Key": lovableKey, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
+        model: "openai/gpt-6-astra",
+        input: [
           { role: "system", content: systemPrompt },
           { role: "user", content: JSON.stringify(payload) },
         ],
+        stream: true,
+        store: false,
+        reasoning: { effort: "low", summary: "auto" },
+        include: ["reasoning.encrypted_content"],
       }),
     });
 
     if (aiResp.status === 429) return json({ error: "Rate limit. Zkuste to později." }, 429);
     if (aiResp.status === 402) return json({ error: "AI kredit vyčerpán." }, 402);
-    if (!aiResp.ok) return json({ error: "AI error" }, 500);
+    if (!aiResp.ok) {
+      const safeMessage = (await aiResp.json().catch(() => ({})))?.message;
+      return json({ error: typeof safeMessage === "string" ? safeMessage : "AI error" }, aiResp.status);
+    }
 
-    const aiData = await aiResp.json();
-    const content: string = aiData?.choices?.[0]?.message?.content ?? "";
+    const content = await readOutputText(aiResp);
     let translated: Record<string, string>[];
     try {
       translated = parseJsonLenient(content) as Record<string, string>[];
@@ -153,7 +163,7 @@ PRAVIDLA:
       const update: Record<string, string> = {};
       for (const f of cfg.fields) {
         const val = item[f];
-        if (typeof val === "string" && val.trim() && original[f]) update[`${f}_sk`] = val.trim();
+        if (typeof val === "string" && val.trim() && original[f]) update[`${f}_${targetLang}`] = val.trim();
       }
       if (Object.keys(update).length === 0) continue;
       const { error: upErr } = await admin.from(cfg.table).update(update).eq("id", id);
@@ -172,6 +182,31 @@ function json(payload: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+async function readOutputText(response: Response): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let output = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+    for (const event of events) {
+      const dataLine = event.split("\n").find((line) => line.startsWith("data:"));
+      if (!dataLine) continue;
+      const raw = dataLine.slice(5).trim();
+      if (!raw || raw === "[DONE]") continue;
+      const data = JSON.parse(raw);
+      if (data.type === "response.output_text.delta" && typeof data.delta === "string") output += data.delta;
+      if (data.type === "error") throw new Error(data.error?.message ?? "AI stream error");
+    }
+    if (done) break;
+  }
+  return output;
 }
 
 /**
