@@ -34,7 +34,7 @@ interface LanguageContextValue {
   t: (cs: string, vars?: Vars) => string;
 }
 
-const LanguageContext = createContext<LanguageContextValue>({
+export const LanguageContext = createContext<LanguageContextValue>({
   lang: 'cs',
   setLang: () => {},
   t: (cs, vars) => interpolate(cs, vars),
