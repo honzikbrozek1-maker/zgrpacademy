@@ -109,7 +109,7 @@ export const lt: Record<string, string> = {
   "Hledat stránky, levely a otázky…": "Ieškokite puslapių, lygių ir klausimų…",
   "Hledat…": "Ieškoti…",
   "Hotovo": "Atlikta",
-  "Infografika": "Infografika",
+  "Infografika": "Infografikas",
   "Infografika – {title}": "Infografija – {title}",
   "Jak to funguje": "Kaip tai veikia",
   "Jazyk aplikace": "Programėlės kalba",
