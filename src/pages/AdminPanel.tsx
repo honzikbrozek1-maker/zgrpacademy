@@ -23,6 +23,7 @@ import SlovakContentTab from '@/components/SlovakContentTab';
 import { NumberField } from '@/components/NumberField';
 import { useT } from '@/lib/i18n';
 import { blankSentence, hasBlank, normalizeBlank } from '@/lib/fillBlank';
+import { findSimilarQuestions, flagBatchDuplicates } from '@/lib/questionSimilarity';
 
 
 interface Level {
@@ -274,8 +275,26 @@ export default function AdminPanel() {
     setShowLevelDialog(true);
   };
 
+  const aiDuplicateIndexes = aiResults
+    ? flagBatchDuplicates(aiResults.map(q => ({ type: q.type, question_text: q.question_text || '', in_practice: !aiForTest })), questions)
+    : new Set<number>();
+
+  const selectableAiIndexes = (list: any[]) => {
+    const dupes = flagBatchDuplicates(list.map(q => ({ type: q.type, question_text: q.question_text || '', in_practice: !aiForTest })), questions);
+    return new Set(list.map((_, i) => i).filter(i => !dupes.has(i)));
+  };
+
   const saveQuestion = async () => {
     if (!selectedLevel) return;
+    const similar = findSimilarQuestions(
+      { id: editingQuestion || undefined, type: qForm.type, question_text: qForm.question_text.trim(), in_practice: qForm.in_practice },
+      questions,
+    );
+    if (similar.length > 0) {
+      const where = qForm.in_practice ? t('ve stejném cvičení') : t('ve stejném testu levelu');
+      const list = similar.slice(0, 3).map(q => `• ${q.question_text}`).join('\n');
+      if (!window.confirm(t('Velmi podobná otázka už je {where}:\n\n{list}\n\nUživatel by ji viděl dvakrát. Přesto uložit?', { where, list }))) return;
+    }
     const needsOptions = qForm.type === 'quiz' || qForm.type === 'fill_blank';
     const isFlashcard = qForm.type === 'flashcard';
     const clean = (value: string) => value.trim().replace(/[\u00a0\u202f\u2009]/g, ' ');
@@ -555,11 +574,11 @@ export default function AdminPanel() {
         }
       }
       setAiResults(all);
-      setAiSelected(new Set(all.map((_, i) => i)));
+      setAiSelected(selectableAiIndexes(all));
     } catch (e: any) {
       if (all.length > 0) {
         setAiResults(all);
-        setAiSelected(new Set(all.map((_, i) => i)));
+        setAiSelected(selectableAiIndexes(all));
         toast({ title: t('Generování přerušeno'), description: t('{msg}. Vygenerováno {done} z {total} otázek.', { msg: e.message, done: all.length, total: grandTotal }), variant: 'destructive' });
       } else {
         toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se vygenerovat otázky'), variant: 'destructive' });
@@ -1165,9 +1184,14 @@ export default function AdminPanel() {
                           <div className="space-y-4">
                             <p className="text-sm text-muted-foreground">{t('Vygenerováno {count} otázek. Vyberte které chcete přidat:', { count: aiResults.length })}</p>
                             <div className="flex gap-2 mb-2">
-                              <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>{t('Vybrat vše')}</Button>
+                              <Button variant="outline" size="sm" onClick={() => setAiSelected(selectableAiIndexes(aiResults))}>{t('Vybrat vše')}</Button>
                               <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>{t('Zrušit výběr')}</Button>
                             </div>
+                            {aiDuplicateIndexes.size > 0 && (
+                              <p className="text-xs text-destructive">
+                                {t('{count} otázek je velmi podobných otázce, která už v tomto cvičení nebo testu je. Nejsou vybrané, ale můžete je přidat ručně.', { count: aiDuplicateIndexes.size })}
+                              </p>
+                            )}
                             <div className="space-y-2 max-h-[50vh] overflow-y-auto">
                               {aiResults.map((q, i) => (
                                 <div
@@ -1181,6 +1205,9 @@ export default function AdminPanel() {
                                     <Badge variant="secondary" className="text-[10px]">
                                       {q.type === 'quiz' ? t('🧠 Kvíz') : q.type === 'flashcard' ? t('📖 Kartička') : t('✏️ Doplňování')}
                                     </Badge>
+                                    {aiDuplicateIndexes.has(i) && (
+                                      <Badge variant="destructive" className="text-[10px]">{t('Podobná už existuje')}</Badge>
+                                    )}
                                     {aiSelected.has(i) && <CheckCircle className="h-4 w-4 text-primary" />}
                                   </div>
                                   <p className="text-sm font-medium">{q.question_text}</p>
