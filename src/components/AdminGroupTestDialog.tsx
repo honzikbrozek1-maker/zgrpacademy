@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Sparkles, Loader2, CheckCircle, GraduationCap, ArrowLeft } from 'lucide-react';
 import { NumberField } from './NumberField';
 import { useT } from '@/lib/i18n';
+import { findSimilarQuestions, flagBatchDuplicates } from '@/lib/questionSimilarity';
 
 interface Question {
   id: string;
@@ -126,12 +127,30 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
     }
   };
 
+  // Every question of the group lands in the same final test, so all types share one pool.
+  const groupPool = questions.map(q => ({ id: q.id, type: q.type, question_text: q.question_text, in_practice: null }));
+  const aiDuplicateIndexes = aiResults
+    ? flagBatchDuplicates(aiResults.map(q => ({ type: q.type, question_text: q.question_text || '', in_practice: null })), groupPool)
+    : new Set<number>();
+  const selectableAiIndexes = (list: any[]) => {
+    const dupes = flagBatchDuplicates(list.map(q => ({ type: q.type, question_text: q.question_text || '', in_practice: null })), groupPool);
+    return new Set(list.map((_, i) => i).filter(i => !dupes.has(i)));
+  };
+
   const save = async () => {
     if (!form.question_text.trim() && form.type === 'quiz') {
       toast({ title: t('Chyba'), description: t('Vyplňte text otázky'), variant: 'destructive' });
       return;
     }
     const isFillBlank = form.type === 'fill_blank';
+    const similar = findSimilarQuestions(
+      { id: editingId || undefined, type: form.type, question_text: (isFillBlank ? form.back_text : form.question_text).trim(), in_practice: null },
+      groupPool,
+    );
+    if (similar.length > 0) {
+      const list = similar.slice(0, 3).map(q => `• ${q.question_text}`).join('\n');
+      if (!window.confirm(t('Velmi podobná otázka už je {where}:\n\n{list}\n\nUživatel by ji viděl dvakrát. Přesto uložit?', { where: t('v tomto závěrečném testu'), list }))) return;
+    }
     const clean = (value: string) => value.trim().replace(/[\u00a0\u202f\u2009]/g, ' ');
     const optional = (value: string) => clean(value) || null;
     const payload: any = {
@@ -202,7 +221,7 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
       if (data?.error) throw new Error(data.error);
       const list = (data?.questions || []) as any[];
       setAiResults(list);
-      setAiSelected(new Set(list.map((_, i) => i)));
+      setAiSelected(selectableAiIndexes(list));
     } catch (e: any) {
       toast({ title: t('Chyba'), description: e.message || t('Nepodařilo se vygenerovat'), variant: 'destructive' });
     } finally {
@@ -333,9 +352,14 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
               <>
                 <p className="text-sm text-muted-foreground">{t('Vygenerováno {n} otázek. Vyberte které uložit:', { n: aiResults.length })}</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set(aiResults.map((_, i) => i)))}>{t('Vybrat vše')}</Button>
+                  <Button variant="outline" size="sm" onClick={() => setAiSelected(selectableAiIndexes(aiResults))}>{t('Vybrat vše')}</Button>
                   <Button variant="outline" size="sm" onClick={() => setAiSelected(new Set())}>{t('Zrušit')}</Button>
                 </div>
+                {aiDuplicateIndexes.size > 0 && (
+                  <p className="text-xs text-destructive">
+                    {t('{count} otázek je velmi podobných otázce, která už v tomto testu je. Nejsou vybrané, ale můžete je přidat ručně.', { count: aiDuplicateIndexes.size })}
+                  </p>
+                )}
                 <div className="space-y-2 max-h-[40vh] overflow-y-auto">
                   {aiResults.map((q, i) => (
                     <div
@@ -353,6 +377,9 @@ export default function AdminGroupTestDialog({ groupId, groupTitle, passingScore
                         <Badge variant="secondary" className="text-[10px]">
                           {q.type === 'quiz' ? `🧠 ${t('Kvíz')}` : `✏️ ${t('Doplňování')}`}
                         </Badge>
+                        {aiDuplicateIndexes.has(i) && (
+                          <Badge variant="destructive" className="text-[10px]">{t('Podobná už existuje')}</Badge>
+                        )}
                         {aiSelected.has(i) && <CheckCircle className="h-4 w-4 text-primary" />}
                       </div>
                       <p className="text-sm font-medium">{q.question_text}</p>
