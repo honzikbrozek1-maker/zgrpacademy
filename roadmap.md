@@ -8,6 +8,6 @@
 - [ ] Jazykově zkontrolovat automaticky přeložený studijní obsah rodilým mluvčím — čeká na dokončení překladu.
 
 ## Selected security fixes
-- [ ] Restrict both answer-checking functions to questions the learner may access.
-- [ ] Restrict role, payment, and level-unlock checks to the owner or authorized staff while preserving administrator requests.
-- [ ] Run permission regression tests, verify the signed-in flow, and update only the five selected findings.
+- [x] Restrict both answer-checking functions to questions the learner may access.
+- [x] Restrict role, payment, and level-unlock checks to the owner or authorized staff while preserving administrator requests.
+- [x] Run permission regression tests, verify the signed-in flow, and update only the five selected findings.

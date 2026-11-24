@@ -8,6 +8,13 @@
       "when": 1795500989202,
       "tag": "0000_scope_selected_security_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795501147149,
+      "tag": "0001_normalize_security_identity",
+      "breakpoints": true
     }
   ]
 }
