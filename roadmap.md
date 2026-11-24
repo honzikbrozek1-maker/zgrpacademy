@@ -11,3 +11,4 @@
 - [x] Restrict both answer-checking functions to questions the learner may access.
 - [x] Restrict role, payment, and level-unlock checks to the owner or authorized staff while preserving administrator requests.
 - [x] Run permission regression tests, verify the signed-in flow, and update only the five selected findings.
+- [x] Sweep all related screens, server functions, policies, and scheduled jobs; report out-of-scope gaps without changing them.
